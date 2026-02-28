@@ -20,6 +20,7 @@ export function inicializarReservas() {
 
 function reservarCupo(cupo) {
     cupo.classList.remove("disponible");
+    cupo.classList.remove("reservado");
     cupo.classList.add("ocupado");
 
     const estado = cupo.querySelector(".estado");
@@ -39,6 +40,7 @@ function reservarCupo(cupo) {
 
 function cancelarReserva(cupo) {
     cupo.classList.remove("ocupado");
+    cupo.classList.remove("reservado");
     cupo.classList.add("disponible");
 
     const estado = cupo.querySelector(".estado");
@@ -58,6 +60,8 @@ function cancelarReserva(cupo) {
 function actualizarResumen() {
     const total = document.querySelectorAll(".cupo").length;
     const disponibles = document.querySelectorAll(".cupo.disponible").length;
+    console.log(document.querySelectorAll(".cupo.disponible"));
+    
     const ocupados = document.querySelectorAll(".cupo.ocupado").length;
 
     document.getElementById("total-cupos").textContent = total;

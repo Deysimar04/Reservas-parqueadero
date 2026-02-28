@@ -102,6 +102,10 @@ main {
     border: 2px solid #e74c3c;
 }
 
+.reservado {
+    border: 2px solid #ffff00;
+}
+
 /* ESTADO */
 .estado {
     margin: 12px 0;
