@@ -25,36 +25,50 @@ function formatearRangoFechas(inicio, fin) {
 }
 
 
+// 🔹 PINTA UNA RESERVA INDIVIDUAL
 export function pintarReserva(data) {
 
-    const cupo = document.querySelector(`[data-id="${data.spot_number}"]`);
+    // Asegura que use el identificador correcto
+    const id = data.spot_number || data.id;
+
+    if (!id) return;
+
+    const cupo = document.querySelector(`[data-id="${id}"]`);
     if (!cupo) return;
 
     const estado = cupo.querySelector(".estado");
     const btn = cupo.querySelector("button");
 
-    // Resetear estado SIEMPRE
+    // Resetear siempre el estado visual
     cupo.classList.remove("disponible", "ocupado");
 
     if (data.status === "ocupado") {
 
         cupo.classList.add("ocupado");
 
-        estado.textContent = "🔴 Ocupado";
-        btn.textContent = "Cancelar";
-        btn.className = "btn-cancelar";
+        if (estado) estado.textContent = "🔴 Ocupado";
+
+        if (btn) {
+            btn.textContent = "Cancelar";
+            btn.className = "btn-cancelar";
+        }
 
     } else {
 
         cupo.classList.add("disponible");
 
-        estado.textContent = "🟢 Disponible";
-        btn.textContent = "Reservar";
-        btn.className = "btn-reservar";
+        if (estado) estado.textContent = "🟢 Disponible";
+
+        if (btn) {
+            btn.textContent = "Reservar";
+            btn.className = "btn-reservar";
+        }
     }
 }
 
-export function pintarParqueadero(reservas) {
+
+// 🔹 PINTA TODAS LAS RESERVAS
+export function pintarParqueadero(reservas = []) {
 
     reservas.forEach(reserva => {
         pintarReserva(reserva);
@@ -64,6 +78,7 @@ export function pintarParqueadero(reservas) {
 }
 
 
+// 🔹 ACTUALIZA CONTADORES
 export function actualizarResumen() {
 
     const total = document.querySelectorAll(".cupo").length;
@@ -74,7 +89,11 @@ export function actualizarResumen() {
     const ocupados =
         document.querySelectorAll(".cupo.ocupado").length;
 
-    document.getElementById("total-cupos").textContent = total;
-    document.getElementById("disponibles").textContent = disponibles;
-    document.getElementById("ocupados").textContent = ocupados;
+    const totalElement = document.getElementById("total-cupos");
+    const disponiblesElement = document.getElementById("disponibles");
+    const ocupadosElement = document.getElementById("ocupados");
+
+    if (totalElement) totalElement.textContent = total;
+    if (disponiblesElement) disponiblesElement.textContent = disponibles;
+    if (ocupadosElement) ocupadosElement.textContent = ocupados;
 }
