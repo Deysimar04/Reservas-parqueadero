@@ -1,15 +1,17 @@
 // main.js
-import { inicializarReservas } from "./reservas.js";
-import { obtenerReserva } from "./api.js";
+import { inicializarReservas, aplicarFiltro } from "./reservas.js";
 import { pintarParqueadero } from "./validaciones.js";
+import { obtenerReserva } from "./api.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-    // inicializa handlers locales (botones Reservar/Cancelar)
+    // Traer datos de la API
+    const data = await obtenerReserva();
+    pintarParqueadero(data);
+
+    // Inicializar botones y estados
     inicializarReservas();
 
-    // traer datos desde la API
-    const data = await obtenerReserva();
-
-    // pintar todo el parqueadero y actualizar contadores
-    pintarParqueadero(data);
+    // Checkbox de filtro
+    const filtroCheckbox = document.getElementById("filtro");
+    filtroCheckbox.addEventListener("change", aplicarFiltro);
 });
