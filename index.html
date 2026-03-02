@@ -8,146 +8,151 @@
 </head>
 <body>
 
-<header>
-    <h1>🚗 Parqueadero Inteligente</h1>
-</header>
+    <!-- HEADER -->
+    <header>
+        <h1>🚗 Parqueadero Inteligente</h1>
+    </header>
 
-<main>
+    <!-- MAIN -->
+    <main>
 
-<section class="resumen">
-    <div class="card-resumen">
-        <h3>Total Cupos</h3>
-        <p id="total-cupos">0</p>
-    </div>
+        <!-- PANEL RESUMEN -->
+        <section class="resumen">
+            <div class="card-resumen">
+                <h3>Total Cupos</h3>
+                <p id="total-cupos">16</p>
+            </div>
 
-    <div class="card-resumen">
-        <h3>🟢 Disponibles</h3>
-        <p id="disponibles">0</p>
-    </div>
+            <div class="card-resumen">
+                <h3>🟢 Disponibles</h3>
+                <p id="disponibles">11</p>
+            </div>
 
-    <div class="card-resumen">
-        <h3>🔴 Ocupados</h3>
-        <p id="ocupados">0</p>
-    </div>
-</section>
+            <div class="card-resumen">
+                <h3>🔴 Ocupados</h3>
+                <p id="ocupados">5</p>
+            </div>
+        </section>
 
-<section class="zona-parqueadero">
-    <h2 style="text-align:center; margin-bottom:30px;">
-        Zona de Estacionamiento
-    </h2>
+        <!-- ZONA PARQUEADERO -->
+        <section class="zona-parqueadero">
+            <h2 style="text-align:center; margin-bottom:30px;">Zona de Estacionamiento</h2>
 
-    <div class="parqueadero" id="parqueadero">
+            <div class="parqueadero">
 
-        <!-- FILA A -->
-        <div class="cupo disponible" data-id="A1">
-            <h3>Cupo A1</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <!-- FILA A -->
+                <div class="cupo reservado" data-id="A1">
+                    <h3>Cupo A1</h3>
+                    <p class="estado">🔴 Ocupado</p>
+                    <button class="btn-cancelar">Cancelar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="A2">
-            <h3>Cupo A2</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo disponible" data-id="A2">
+                    <h3>Cupo A2</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Cancelar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="A3">
-            <h3>Cupo A3</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo ocupado" data-id="A3">
+                    <h3>Cupo A3</h3>
+                    <p class="estado">🔴 Ocupado</p>
+                    <button class="btn-cancelar">Cancelar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="A4">
-            <h3>Cupo A4</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo disponible" data-id="A4">
+                    <h3>Cupo A4</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Reservar</button>
+                </div>
 
-        <!-- FILA B -->
-        <div class="cupo disponible" data-id="B1">
-            <h3>Cupo B1</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <!-- FILA B -->
+                <div class="cupo reservado" data-id="B1">
+                    <h3>Cupo B1</h3>
+                    <p class="estado">🔴 Ocupado</p>
+                    <button class="btn-cancelar">Cancelar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="B2">
-            <h3>Cupo B2</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo disponible" data-id="B2">
+                    <h3>Cupo B2</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Reservar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="B3">
-            <h3>Cupo B3</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo reservado" data-id="B3">
+                    <h3>Cupo B3</h3>
+                    <p class="estado">🔴 Ocupado</p>
+                    <button class="btn-cancelar">Reservar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="B4">
-            <h3>Cupo B4</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo disponible" data-id="B4">
+                    <h3>Cupo B4</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Cancelar</button>
+                </div>
 
-        <!-- FILA C -->
-        <div class="cupo disponible" data-id="C1">
-            <h3>Cupo C1</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <!-- FILA C -->
+                <div class="cupo disponible" data-id="C1">
+                    <h3>Cupo C1</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Reservar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="C2">
-            <h3>Cupo C2</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo disponible" data-id="C2">
+                    <h3>Cupo C2</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Reservar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="C3">
-            <h3>Cupo C3</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo ocupado" data-id="C3">
+                    <h3>Cupo C3</h3>
+                    <p class="estado">🔴 Ocupado</p>
+                    <button class="btn-cancelar">Cancelar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="C4">
-            <h3>Cupo C4</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo disponible" data-id="C4">
+                    <h3>Cupo C4</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Reservar</button>
+                </div>
 
-        <!-- FILA D -->
-        <div class="cupo disponible" data-id="D1">
-            <h3>Cupo D1</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <!-- FILA D -->
+                <div class="cupo disponible" data-id="D1">
+                    <h3>Cupo D1</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Reservar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="D2">
-            <h3>Cupo D2</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo ocupado" data-id="D2">
+                    <h3>Cupo D2</h3>
+                    <p class="estado">🔴 Ocupado</p>
+                    <button class="btn-cancelar">Cancelar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="D3">
-            <h3>Cupo D3</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo disponible" data-id="D3">
+                    <h3>Cupo D3</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Reservar</button>
+                </div>
 
-        <div class="cupo disponible" data-id="D4">
-            <h3>Cupo D4</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
-        </div>
+                <div class="cupo disponible" data-id="D4">
+                    <h3>Cupo D4</h3>
+                    <p class="estado">🟢 Disponible</p>
+                    <button class="btn-reservar">Reservar</button>
+                </div>
 
-    </div>
-</section>
+            </div>
+        </section>
 
-</main>
+    </main>
 
-<footer>
-    <p>Proyecto académico - Sistema de Reservas de Parqueadero</p>
-</footer>
+    <!-- FOOTER -->
+    <footer>
+        <p>Proyecto académico - Sistema de Reservas de Parqueadero</p>
+    </footer>
 
-<script type="module" src="js/main.js"></script>
+    <script type="module" src="js/main.js"></script>
+
+
 
 </body>
 </html>

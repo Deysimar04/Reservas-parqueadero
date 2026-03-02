@@ -1,33 +1,15 @@
 // main.js
-
-import { obtenerReserva } from "./api.js";
-import { pintarParqueadero } from "./ui.js";
 import { inicializarReservas } from "./reservas.js";
+import { obtenerReserva } from "./api.js";
+import { pintarParqueadero } from "./validaciones.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
-
+    // inicializa handlers locales (botones Reservar/Cancelar)
     inicializarReservas();
 
-    try {
+    // traer datos desde la API
+    const data = await obtenerReserva();
 
-        const data = await obtenerReserva();
-
-        // Normalizar estados
-        const reservasNormalizadas = data.reservations.map(r => {
-
-            if (r.status === "reservado") {
-                r.status = "ocupado";
-            }
-
-            return r;
-        });
-
-        pintarParqueadero(reservasNormalizadas);
-
-    } catch (error) {
-
-        console.error("Error cargando reservas:", error);
-
-    }
-
+    // pintar todo el parqueadero y actualizar contadores
+    pintarParqueadero(data);
 });

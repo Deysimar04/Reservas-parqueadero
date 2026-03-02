@@ -1,96 +1,70 @@
 // reservas.js
 
-import { actualizarResumen } from "./ui.js";
-
-let accionEnProceso = false; // evita múltiples clics rápidos
-
 export function inicializarReservas() {
+    const cupos = document.querySelectorAll(".cupo");
 
-    const contenedor = document.querySelector("#parqueadero");
+    cupos.forEach(cupo => {
+        const btnReservar = cupo.querySelector(".btn-reservar");
+        const btnCancelar = cupo.querySelector(".btn-cancelar");
 
-    contenedor.addEventListener("click", function (e) {
-
-        if (accionEnProceso) return;
-
-        const boton = e.target.closest("button");
-        if (!boton) return;
-
-        const cupo = boton.closest(".cupo");
-        if (!cupo) {
-            alert("Error: cupo no encontrado.");
-            return;
+        if (btnReservar) {
+            btnReservar.addEventListener("click", () => reservarCupo(cupo));
         }
 
-        if (cupo.classList.contains("disponible")) {
-            reservarCupo(cupo);
+        if (btnCancelar) {
+            btnCancelar.addEventListener("click", () => cancelarReserva(cupo));
         }
-
-        else if (cupo.classList.contains("ocupado")) {
-            cancelarReserva(cupo);
-        }
-
-        else {
-            alert("Estado inválido detectado.");
-        }
-
     });
-
+    actualizarResumen();
 }
 
-
-// 🔹 LÓGICA CON VALIDACIONES
-
 function reservarCupo(cupo) {
-
-    // 🔴 Validar que realmente esté disponible
-    if (!cupo.classList.contains("disponible")) {
-        alert("No se puede reservar un cupo ocupado.");
-        return;
-    }
-
-    accionEnProceso = true;
-
     cupo.classList.remove("disponible");
+    cupo.classList.remove("reservado");
     cupo.classList.add("ocupado");
 
     const estado = cupo.querySelector(".estado");
-    if (estado) estado.textContent = "🔴 Ocupado";
+    estado.textContent = "🔴 Ocupado";
 
+    // Cambiar botón
     const btn = cupo.querySelector("button");
-    if (btn) {
-        btn.textContent = "Cancelar";
-        btn.className = "btn-cancelar";
-    }
+    btn.textContent = "Cancelar";
+    btn.className = "btn-cancelar";
+
+    btn.onclick = () => cancelarReserva(cupo);
+
+    console.log(`Cupo ${cupo.dataset.id} reservado`);
 
     actualizarResumen();
-
-    accionEnProceso = false;
 }
 
-
 function cancelarReserva(cupo) {
-
-    // 🔴 Validar que realmente esté ocupado
-    if (!cupo.classList.contains("ocupado")) {
-        alert("No se puede cancelar un cupo disponible.");
-        return;
-    }
-
-    accionEnProceso = true;
-
     cupo.classList.remove("ocupado");
+    cupo.classList.remove("reservado");
     cupo.classList.add("disponible");
 
     const estado = cupo.querySelector(".estado");
-    if (estado) estado.textContent = "🟢 Disponible";
+    estado.textContent = "🟢 Disponible";
 
+    // Cambiar botón
     const btn = cupo.querySelector("button");
-    if (btn) {
-        btn.textContent = "Reservar";
-        btn.className = "btn-reservar";
-    }
+    btn.textContent = "Reservar";
+    btn.className = "btn-reservar";
+
+    btn.onclick = () => reservarCupo(cupo);
+
+    console.log(`Reserva del cupo ${cupo.dataset.id} cancelada`);
 
     actualizarResumen();
+}
+function actualizarResumen() {
+    const total = document.querySelectorAll(".cupo").length;
+    const disponibles = document.querySelectorAll(".cupo.disponible").length;
+    console.log(document.querySelectorAll(".cupo.disponible"));
+    
+    const ocupados = document.querySelectorAll(".cupo.ocupado").length;
 
-    accionEnProceso = false;
+    document.getElementById("total-cupos").textContent = total;
+    document.getElementById("disponibles").textContent = disponibles;
+    document.getElementById("ocupados").textContent = ocupados;
 }
