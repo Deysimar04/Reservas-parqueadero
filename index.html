@@ -1,158 +1,167 @@
+
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Parqueadero Inteligente</title>
-    <link rel="stylesheet" href="css/styles.css">
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ParkApp</title>
+
+<link rel="stylesheet" href="./css/styles.css">
+
 </head>
+
 <body>
 
-    <!-- HEADER -->
-    <header>
-        <h1>🚗 Parqueadero Inteligente</h1>
-    </header>
+<header class="header">
 
-    <!-- MAIN -->
-    <main>
+<div class="header-left">
+<h1 class="logo">ParkApp</h1>
+<p class="lema">Reserva tu cupo fácil y rápido</p>
+</div>
 
-        <!-- PANEL RESUMEN -->
-        <section class="resumen">
-            <div class="card-resumen">
-                <h3>Total Cupos</h3>
-                <p id="total-cupos">16</p>
-            </div>
+<div class="header-right">
+<button class="btn-header">Crear cuenta</button>
+<button class="btn-header">Iniciar sesión</button>
+</div>
 
-            <div class="card-resumen">
-                <h3>🟢 Disponibles</h3>
-                <p id="disponibles">11</p>
-            </div>
-
-            <div class="card-resumen">
-                <h3>🔴 Ocupados</h3>
-                <p id="ocupados">5</p>
-            </div>
-        </section>
-
-        <!-- ZONA PARQUEADERO -->
-        <section class="zona-parqueadero">
-            <h2 style="text-align:center; margin-bottom:30px;">Zona de Estacionamiento</h2>
-
-            <div class="parqueadero">
-
-                <!-- FILA A -->
-                <div class="cupo reservado" data-id="A1">
-                    <h3>Cupo A1</h3>
-                    <p class="estado">🔴 Ocupado</p>
-                    <button class="btn-cancelar">Cancelar</button>
-                </div>
-
-                <div class="cupo disponible" data-id="A2">
-                    <h3>Cupo A2</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Cancelar</button>
-                </div>
-
-                <div class="cupo ocupado" data-id="A3">
-                    <h3>Cupo A3</h3>
-                    <p class="estado">🔴 Ocupado</p>
-                    <button class="btn-cancelar">Cancelar</button>
-                </div>
-
-                <div class="cupo disponible" data-id="A4">
-                    <h3>Cupo A4</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Reservar</button>
-                </div>
-
-                <!-- FILA B -->
-                <div class="cupo reservado" data-id="B1">
-                    <h3>Cupo B1</h3>
-                    <p class="estado">🔴 Ocupado</p>
-                    <button class="btn-cancelar">Cancelar</button>
-                </div>
-
-                <div class="cupo disponible" data-id="B2">
-                    <h3>Cupo B2</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Reservar</button>
-                </div>
-
-                <div class="cupo reservado" data-id="B3">
-                    <h3>Cupo B3</h3>
-                    <p class="estado">🔴 Ocupado</p>
-                    <button class="btn-cancelar">Reservar</button>
-                </div>
-
-                <div class="cupo disponible" data-id="B4">
-                    <h3>Cupo B4</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Cancelar</button>
-                </div>
-
-                <!-- FILA C -->
-                <div class="cupo disponible" data-id="C1">
-                    <h3>Cupo C1</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Reservar</button>
-                </div>
-
-                <div class="cupo disponible" data-id="C2">
-                    <h3>Cupo C2</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Reservar</button>
-                </div>
-
-                <div class="cupo ocupado" data-id="C3">
-                    <h3>Cupo C3</h3>
-                    <p class="estado">🔴 Ocupado</p>
-                    <button class="btn-cancelar">Cancelar</button>
-                </div>
-
-                <div class="cupo disponible" data-id="C4">
-                    <h3>Cupo C4</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Reservar</button>
-                </div>
-
-                <!-- FILA D -->
-                <div class="cupo disponible" data-id="D1">
-                    <h3>Cupo D1</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Reservar</button>
-                </div>
-
-                <div class="cupo ocupado" data-id="D2">
-                    <h3>Cupo D2</h3>
-                    <p class="estado">🔴 Ocupado</p>
-                    <button class="btn-cancelar">Cancelar</button>
-                </div>
-
-                <div class="cupo disponible" data-id="D3">
-                    <h3>Cupo D3</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Reservar</button>
-                </div>
-
-                <div class="cupo disponible" data-id="D4">
-                    <h3>Cupo D4</h3>
-                    <p class="estado">🟢 Disponible</p>
-                    <button class="btn-reservar">Reservar</button>
-                </div>
-
-            </div>
-        </section>
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer>
-        <p>Proyecto académico - Sistema de Reservas de Parqueadero</p>
-    </footer>
-
-    <script type="module" src="js/main.js"></script>
+</header>
 
 
+<section class="buscador">
+
+<h2>Buscar parqueadero</h2>
+
+<input type="text" placeholder="Buscar ubicación">
+
+<button>Buscar</button>
+
+</section>
+
+
+
+<section class="categorias">
+
+<h2>Categorías</h2>
+
+<div class="grid-categorias">
+
+<div class="categoria" data-tipo="carro">🚗 Carros</div>
+
+<div class="categoria" data-tipo="moto">🏍️ Motos</div>
+
+<div class="categoria" data-tipo="camion">🚚 Camiones</div>
+
+<div class="categoria" data-tipo="electrico">⚡ Eléctricos</div>
+
+</div>
+
+</section>
+
+
+
+<section class="recomendaciones">
+
+<h2>Recomendados</h2>
+
+<div class="grid-recomendaciones">
+
+<div class="card">
+<h3>Centro Comercial</h3>
+<p>Alta disponibilidad de cupos</p>
+</div>
+
+<div class="card">
+<h3>Aeropuerto</h3>
+<p>Servicio 24 horas</p>
+</div>
+
+<div class="card">
+<h3>Zona Centro</h3>
+<p>Mejor precio de la ciudad</p>
+</div>
+
+</div>
+
+</section>
+
+
+
+<section class="detalles-vehiculo">
+
+<h2>Características del parqueadero</h2>
+
+<div id="info-vehiculo">
+Selecciona una categoría para ver las dimensiones del cupo.
+</div>
+
+</section>
+
+
+
+<section class="zona-parqueadero">
+
+<h2>Zona de Estacionamiento</h2>
+
+<div id="parqueadero" class="parqueadero"></div>
+
+</section>
+
+
+
+<section class="galeria">
+
+<h2>Galería</h2>
+
+<div class="grid-galeria">
+
+<img src="https://" class="principal">
+
+<div class="miniaturas">
+<img src="https://">
+<img src="https://">
+<img src="https://">
+<img src="https://">
+</div>
+
+</div>
+
+<button class="btn-vermas">Ver más</button>
+
+</section>
+
+
+
+<section class="politicas">
+
+<h2 class="titulo-politicas">Políticas del parqueadero</h2>
+
+<div class="grid-politicas">
+
+<div class="politica">
+<h3>Tiempo máximo</h3>
+<p>El tiempo máximo de reserva es de 8 horas.</p>
+</div>
+
+<div class="politica">
+<h3>Cancelaciones</h3>
+<p>Las reservas pueden cancelarse hasta 30 minutos antes.</p>
+</div>
+
+<div class="politica">
+<h3>Seguridad</h3>
+<p>El parqueadero cuenta con vigilancia 24/7.</p>
+</div>
+
+</div>
+
+</section>
+
+
+<script type="module" src="./js/main.js"></script>
 
 </body>
 </html>
+

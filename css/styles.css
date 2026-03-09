@@ -1,155 +1,409 @@
-/* RESET */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+
+/* =========================
+RESET Y BASE
+========================= */
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
 }
 
-/* BODY */
-body {
-    font-family: 'Poppins', sans-serif;
-    background: linear-gradient(135deg, #141e30, #243b55);
-    color: white;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
+body{
+font-family:"Segoe UI", Arial, sans-serif;
+background:#f4f6fb;
+color:#333;
+min-height:100vh;
+line-height:1.5;
 }
 
-/* HEADER */
-header {
-    padding: 25px;
-    text-align: center;
-    background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+section{
+max-width:1100px;
+margin:auto;
+padding:50px 20px;
 }
 
-header h1 {
-    font-size: 30px;
-    letter-spacing: 1px;
+h2{
+margin-bottom:25px;
+font-size:26px;
+color:#1f3c66;
 }
 
-/* MAIN */
-main {
-    flex: 1;
-    padding: 40px;
+
+/* =========================
+HEADER
+========================= */
+
+.header{
+position:sticky;
+top:0;
+width:100%;
+background:#1f3c66;
+color:white;
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:15px 40px;
+z-index:1000;
+box-shadow:0 3px 8px rgba(0,0,0,0.15);
 }
 
-/* RESUMEN */
-.resumen {
-    display: flex;
-    justify-content: center;
-    gap: 25px;
-    margin-bottom: 50px;
-    flex-wrap: wrap;
+.logo{
+font-size:24px;
+font-weight:700;
 }
 
-.card-resumen {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(15px);
-    padding: 25px 50px;
-    border-radius: 20px;
-    text-align: center;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-    transition: transform 0.2s ease;
+.lema{
+font-size:13px;
+opacity:.8;
 }
 
-.card-resumen:hover {
-    transform: translateY(-5px);
+.header-left{
+display:flex;
+flex-direction:column;
 }
 
-.card-resumen h3 {
-    font-size: 16px;
-    margin-bottom: 10px;
-    color: #ccc;
+.header-right{
+display:flex;
+gap:10px;
 }
 
-.card-resumen p {
-    font-size: 28px;
-    font-weight: bold;
+.btn-header{
+background:white;
+color:#1f3c66;
+border:none;
+padding:8px 14px;
+border-radius:6px;
+cursor:pointer;
+font-weight:600;
+transition:0.2s;
 }
 
-/* GRID PARQUEADERO */
-.parqueadero {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    gap: 30px;
+.btn-header:hover{
+background:#e6e6e6;
+transform:translateY(-1px);
 }
 
-/* CUPOS */
-.cupo {
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(15px);
-    border-radius: 20px;
-    padding: 25px;
-    text-align: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-    position: relative;
+
+/* =========================
+BUSCADOR
+========================= */
+
+.buscador{
+text-align:center;
+padding:40px;
 }
 
-.cupo:hover {
-    transform: translateY(-6px) scale(1.02);
+.buscador input{
+padding:12px;
+width:260px;
+border-radius:8px;
+border:1px solid #ccc;
+margin-right:10px;
 }
 
-/* DISPONIBLE */
-.disponible {
-    border: 2px solid #2ecc71;
+.buscador button{
+padding:12px 20px;
+border:none;
+background:#1f3c66;
+color:white;
+border-radius:8px;
+cursor:pointer;
+font-weight:600;
 }
 
-/* OCUPADO */
-.ocupado {
-    border: 2px solid #e74c3c;
+.buscador button:hover{
+background:#294d82;
 }
 
-.reservado {
-    border: 2px solid #ffff00;
+
+/* =========================
+CATEGORIAS
+========================= */
+
+.grid-categorias{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+gap:20px;
 }
 
-/* ESTADO */
-.estado {
-    margin: 12px 0;
-    font-weight: bold;
-    font-size: 15px;
+.categoria{
+background:white;
+padding:25px;
+border-radius:12px;
+text-align:center;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+cursor:pointer;
+font-size:18px;
+transition:0.25s;
 }
 
-/* BOTONES */
-button {
-    padding: 10px 18px;
-    border: none;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    transition: all 0.2s ease;
+.categoria:hover{
+transform:translateY(-5px);
+box-shadow:0 6px 14px rgba(0,0,0,0.15);
 }
 
-/* RESERVAR */
-.btn-reservar {
-    background: #2ecc71;
-    color: white;
+
+/* =========================
+RECOMENDADOS
+========================= */
+
+.grid-recomendaciones{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:25px;
 }
 
-.btn-reservar:hover {
-    background: #27ae60;
-    transform: scale(1.05);
+.card{
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+transition:0.25s;
 }
 
-/* CANCELAR */
-.btn-cancelar {
-    background: #e74c3c;
-    color: white;
+.card:hover{
+transform:translateY(-5px);
+box-shadow:0 6px 16px rgba(0,0,0,0.15);
 }
 
-.btn-cancelar:hover {
-    background: #c0392b;
-    transform: scale(1.05);
+
+/* =========================
+RESUMEN
+========================= */
+
+.resumen{
+display:flex;
+justify-content:center;
+gap:25px;
+flex-wrap:wrap;
 }
 
-/* FOOTER */
-footer {
-    text-align: center;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.4);
-    font-size: 14px;
-    color: #aaa;
+.resumen div{
+background:white;
+padding:25px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+min-width:140px;
+text-align:center;
 }
+
+.resumen p{
+font-size:24px;
+font-weight:bold;
+margin-top:5px;
+}
+
+
+/* =========================
+FILTRO
+========================= */
+
+.filtro{
+text-align:center;
+font-size:16px;
+margin-top:-20px;
+}
+
+
+/* =========================
+PARQUEADERO
+========================= */
+
+.zona-parqueadero{
+text-align:center;
+}
+
+.parqueadero{
+display:grid;
+grid-template-columns:repeat(5,150px);
+gap:22px;
+justify-content:center;
+margin-top:30px;
+padding:40px;
+background:#e7ebf2;
+border-radius:15px;
+box-shadow:inset 0 0 10px rgba(0,0,0,0.05);
+}
+
+
+/* =========================
+CUPOS
+========================= */
+
+.cupo{
+background:white;
+border:3px solid #ccc;
+border-radius:12px;
+width:150px;
+height:130px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+gap:6px;
+font-weight:600;
+transition:0.25s;
+}
+
+.cupo:hover{
+transform:scale(1.05);
+}
+
+.cupo::before{
+content:"🚗";
+font-size:22px;
+}
+
+.cupo.disponible{
+border-color:#2ecc71;
+}
+
+.cupo.ocupado{
+border-color:#e74c3c;
+background:#ffecec;
+}
+
+
+/* =========================
+BOTONES
+========================= */
+
+button{
+border:none;
+padding:6px 12px;
+border-radius:6px;
+cursor:pointer;
+font-size:13px;
+font-weight:600;
+}
+
+.btn-reservar{
+background:#2ecc71;
+color:white;
+}
+
+.btn-reservar:hover{
+background:#28b463;
+}
+
+.btn-cancelar{
+background:#e74c3c;
+color:white;
+}
+
+.btn-cancelar:hover{
+background:#c0392b;
+}
+
+
+/* =========================
+GALERIA
+========================= */
+
+.galeria{
+text-align:center;
+}
+
+.grid-galeria{
+display:grid;
+grid-template-columns:2fr 1fr;
+gap:20px;
+}
+
+.principal{
+width:100%;
+border-radius:12px;
+object-fit:cover;
+}
+
+.miniaturas{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+}
+
+.miniaturas img{
+width:100%;
+border-radius:10px;
+object-fit:cover;
+}
+
+.btn-vermas{
+margin-top:20px;
+padding:12px 20px;
+background:#1f3c66;
+color:white;
+border:none;
+border-radius:8px;
+cursor:pointer;
+}
+
+.btn-vermas:hover{
+background:#294d82;
+}
+
+
+/* =========================
+POLITICAS
+========================= */
+
+.politicas{
+text-align:center;
+}
+
+.titulo-politicas{
+border-bottom:3px solid #1f3c66;
+display:inline-block;
+padding-bottom:5px;
+margin-bottom:20px;
+}
+
+.grid-politicas{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+gap:20px;
+}
+
+.politica{
+background:white;
+padding:22px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.08);
+}
+
+
+/* =========================
+RESPONSIVE
+========================= */
+
+@media(max-width:900px){
+
+.parqueadero{
+grid-template-columns:repeat(3,140px);
+}
+
+}
+
+@media(max-width:600px){
+
+.header{
+flex-direction:column;
+align-items:flex-start;
+gap:10px;
+}
+
+.header-right{
+align-self:flex-end;
+}
+
+.parqueadero{
+grid-template-columns:repeat(2,130px);
+}
+
+.grid-galeria{
+grid-template-columns:1fr;
+}
+
+}
+

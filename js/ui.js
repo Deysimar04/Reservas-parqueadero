@@ -1,5 +1,34 @@
 // ui.js
 
+// 🔹 GENERA LOS CUPOS DINÁMICAMENTE
+export function generarCupos(cantidad = 10) {
+
+    const contenedor = document.getElementById("parqueadero");
+
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+
+    for (let i = 1; i <= cantidad; i++) {
+
+        const cupo = document.createElement("div");
+
+        cupo.className = "cupo disponible";
+        cupo.dataset.id = i;
+
+        cupo.innerHTML = `
+            <h3>Cupo ${i}</h3>
+            <p class="estado">🟢 Disponible</p>
+            <button class="btn-reservar">Reservar</button>
+        `;
+
+        contenedor.appendChild(cupo);
+    }
+
+    actualizarResumen();
+}
+
+
 function formatearRangoFechas(inicio, fin) {
 
     if (!inicio || !fin) return "";
@@ -28,7 +57,6 @@ function formatearRangoFechas(inicio, fin) {
 // 🔹 PINTA UNA RESERVA INDIVIDUAL
 export function pintarReserva(data) {
 
-    // Asegura que use el identificador correcto
     const id = data.spot_number || data.id;
 
     if (!id) return;
@@ -39,7 +67,6 @@ export function pintarReserva(data) {
     const estado = cupo.querySelector(".estado");
     const btn = cupo.querySelector("button");
 
-    // Resetear siempre el estado visual
     cupo.classList.remove("disponible", "ocupado");
 
     if (data.status === "ocupado") {
