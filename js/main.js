@@ -1,5 +1,8 @@
+import { obtenerReserva } from "./api.js";
+import { generarCupos } from "./ui.js";
+import { inicializarReservas } from "./reservas.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
 const info = document.getElementById("info-vehiculo");
 
@@ -46,25 +49,22 @@ info.innerHTML = caracteristicas[tipo];
 });
 
 
-/* CUPOS DEL PARQUEADERO */
+/* ACTIVAR EVENTOS DE LOS CUPOS */
+inicializarReservas();
 
-const parqueadero = document.getElementById("parqueadero");
 
-for(let i=1;i<=10;i++){
+/* CUPOS DEL PARQUEADERO DESDE API */
 
-const cupo = document.createElement("div");
+try {
 
-cupo.className="cupo disponible";
+const data = await obtenerReserva();
 
-cupo.innerHTML=`
-<h3>Cupo ${i}</h3>
-<p>🟢 Disponible</p>
-<button class="btn-reservar">Reservar</button>
-`;
+generarCupos(data.reservations);
 
-parqueadero.appendChild(cupo);
+} catch (error) {
+
+console.error("Error cargando cupos:", error);
 
 }
 
 });
-

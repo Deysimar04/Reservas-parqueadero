@@ -1,7 +1,7 @@
 // ui.js
 
 // 🔹 GENERA LOS CUPOS DINÁMICAMENTE
-export function generarCupos(cantidad = 10) {
+export function generarCupos(reservas = []) {
 
     const contenedor = document.getElementById("parqueadero");
 
@@ -9,21 +9,53 @@ export function generarCupos(cantidad = 10) {
 
     contenedor.innerHTML = "";
 
-    for (let i = 1; i <= cantidad; i++) {
+    // imágenes según tipo de vehículo
+    const imagenes = {
+        carro: "🚗",
+        moto: "🏍️",
+        camion: "🚚",
+        electrico: "⚡",
+        disponible: ""
+    };
+
+    reservas.forEach(reserva => {
 
         const cupo = document.createElement("div");
 
-        cupo.className = "cupo disponible";
-        cupo.dataset.id = i;
+        let claseEstado = "disponible";
+        let textoEstado = "🟢 Disponible";
+        let boton = `<button class="btn-reservar">Reservar</button>`;
+
+        if (reserva.status === "ocupado") {
+            claseEstado = "ocupado";
+            textoEstado = `🔴 Ocupado ${reserva.vehicle_plate ?? ""}`;
+            boton = `<button class="btn-cancelar">Cancelar</button>`;
+        }
+
+        if (reserva.status === "reservado") {
+            claseEstado = "reservado";
+            textoEstado = `🟡 Reservado`;
+            boton = `<button class="btn-cancelar">Cancelar</button>`;
+        }
+
+        // seleccionar imagen según tipo
+        const tipoVehiculo = reserva.type ?? "disponible";
+        const imagen = imagenes[tipoVehiculo] || imagenes.disponible;
+
+        cupo.className = `cupo ${claseEstado}`;
+        cupo.dataset.id = reserva.spot_number;
 
         cupo.innerHTML = `
-            <h3>Cupo ${i}</h3>
-            <p class="estado">🟢 Disponible</p>
-            <button class="btn-reservar">Reservar</button>
+            <h3>${imagen}</h3>
+            <h3>Cupo ${reserva.spot_number}</h3>
+
+            <p class="estado">${textoEstado}</p>
+
+            ${boton}
         `;
 
         contenedor.appendChild(cupo);
-    }
+    });
 
     actualizarResumen();
 }

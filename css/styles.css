@@ -251,8 +251,7 @@ transform:scale(1.05);
 }
 
 .cupo::before{
-content:"🚗";
-font-size:22px;
+content: none;
 }
 
 .cupo.disponible{
@@ -262,6 +261,11 @@ border-color:#2ecc71;
 .cupo.ocupado{
 border-color:#e74c3c;
 background:#ffecec;
+}
+
+.cupo.reservado{
+border-color:#ffbf00;
+background:#fff4d4;
 }
 
 
