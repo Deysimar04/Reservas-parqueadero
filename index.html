@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ParkApp</title>
-    <!-- Asegúrate de que esta ruta a tu CSS sea correcta -->
+    <title>ParkApp - Completo</title>
     <link rel="stylesheet" href="./css/styles.css">
 </head>
 <body>
@@ -15,17 +14,25 @@
         <p class="lema">Reserva tu cupo fácil y rápido</p>
     </div>
     <div class="header-right">
-        <button class="btn-header">Crear cuenta</button>
-        <button class="btn-header">Iniciar sesión</button>
+        <button id="btn-register-main" class="btn-header">Crear cuenta</button>
+        <button id="btn-login-main" class="btn-header">Iniciar sesión</button>
     </div>
 </header>
 
+<!-- BUSCADOR RESTAURADO -->
 <section class="buscador">
     <h2>Buscar parqueadero</h2>
-    <input type="text" placeholder="Buscar ubicación">
-    <button>Buscar</button>
+    <div class="inputs-busqueda">
+        <input type="text" id="input-lugar" placeholder="Escribe: moto, carro, camion o placa">
+        <div class="grupo-fechas">
+            <label for="fecha-reserva">Día:</label>
+            <input type="date" id="fecha-reserva">
+        </div>
+        <button id="btn-buscar">Verificar Disponibilidad</button>
+    </div>
 </section>
 
+<!-- CATEGORÍAS RESTAURADAS -->
 <section class="categorias">
     <h2>Categorías</h2>
     <div class="grid-categorias">
@@ -36,48 +43,50 @@
     </div>
 </section>
 
+<!-- RECOMENDADOS RESTAURADOS -->
 <section class="recomendaciones">
     <h2>Recomendados</h2>
     <div class="grid-recomendaciones">
-        <div class="card"><h3>Centro Comercial</h3><p>Alta disponibilidad de cupos</p></div>
+        <div class="card"><h3>Centro Comercial</h3><p>Alta disponibilidad</p></div>
         <div class="card"><h3>Aeropuerto</h3><p>Servicio 24 horas</p></div>
-        <div class="card"><h3>Zona Centro</h3><p>Mejor precio de la ciudad</p></div>
+        <div class="card"><h3>Zona Centro</h3><p>Mejor precio</p></div>
     </div>
 </section>
 
+<!-- DETALLES RESTAURADOS -->
 <section class="detalles-vehiculo">
-    <h2>Características del parqueadero</h2>
-    <div id="info-vehiculo" class="card">
-        Selecciona una categoría para ver las dimensiones del cupo.
-    </div>
+    <h2>Características</h2>
+    <div id="info-vehiculo" class="card">Selecciona una categoría para ver detalles.</div>
 </section>
 
 <section class="zona-parqueadero">
     <h2>Zona de Estacionamiento</h2>
     <div class="resumen">
-        <p>Total cupos: <span id="total-cupos">0</span></p>
-        <p>Disponibles: <span id="disponibles">0</span></p>
-        <p>Ocupados: <span id="ocupados">0</span></p>
+        <div>Total: <p id="total-cupos">10</p></div>
+        <div>Libres: <p id="disponibles">0</p></div>
+        <div>Ocupados: <p id="ocupados">0</p></div>
     </div>
     <div id="parqueadero" class="parqueadero"></div>
 </section>
 
+<!-- GALERÍA (Corregida con tus nombres de archivo) -->
 <section class="galeria">
     <h2>Galería</h2>
     <div class="grid-galeria">
-        <img src="img/centroComer.jpeg" class="principal">
+        <img src="img/centroComer.jpeg" class="principal" alt="Vista General">
         <div class="miniaturas">
-            <img src="img/puerto.jpeg">
-            <img src="img/centro.jpeg">
-            <img src="img/centro2.jpeg">
-            <img src="img/centro3.jpeg">
+            <img src="img/puerto.jpeg" alt="Puerto">
+            <img src="img/centro.jpeg" alt="Centro">
+            <img src="img/centro2.jpeg" alt="Centro 2">
+            <img src="img/centro3.jpeg" alt="Centro 3">
         </div>
     </div>
-    <button class="btn-vermas">Ver más</button>
+    <button class="btn-vermas">Ver Servicios Adicionales</button>
 </section>
 
+<!-- POLÍTICAS RESTAURADAS -->
 <section class="politicas">
-    <h2 class="titulo-politicas">Políticas del parqueadero</h2>
+    <h2 class="titulo-politicas">Políticas</h2>
     <div class="grid-politicas">
         <div class="politica"><h3>Tiempo máximo</h3><p>8 horas.</p></div>
         <div class="politica"><h3>Cancelaciones</h3><p>Hasta 30 min antes.</p></div>
@@ -85,7 +94,27 @@
     </div>
 </section>
 
-<!-- El script debe ser type="module" -->
+<!-- MODALES -->
+<div id="services-container" class="hidden">
+    <div class="services-box">
+        <button id="close-services">×</button>
+        <h2>Servicios Adicionales</h2>
+        <table class="tabla-servicios">
+            <tr><th>Servicio</th><th>Detalle</th><th>Costo</th></tr>
+            <tr><td>⚡ Carga Eléctrica</td><td>Carga rápida (Cupos 9 y 10)</td><td>$5.000/h</td></tr>
+            <tr><td>💨 Aire / Inflado</td><td>Zona de motos</td><td>Gratis</td></tr>
+            <tr><td>🧼 Lavado Eco</td><td>Lavado en seco</td><td>$20.000</td></tr>
+        </table>
+    </div>
+</div>
+
+<div id="auth-container" class="hidden">
+    <div class="auth-box">
+        <button id="close-auth">×</button>
+        <div id="auth-content"></div>
+    </div>
+</div>
+
 <script type="module" src="./js/main.js"></script>
 </body>
 </html>

@@ -1,39 +1,55 @@
-import { actualizarResumen } from "./reservas.js";
+export function generarCupos(reservas) {
+    const contenedor = document.getElementById("parqueadero");
+    // Ajuste de IDs según tu captura de pantalla
+    const disponiblesH3 = document.getElementById("disponibles"); 
+    const ocupadosH3 = document.getElementById("ocupados");
+    const totalCuposH3 = document.getElementById("total-cupos");
+
+    if (!contenedor) return;
+
+    contenedor.innerHTML = "";
+    let countDisponibles = 0;
+    let countOcupados = 0;
+
+    reservas.forEach(reserva => {
+        const div = document.createElement("div");
+        div.classList.add("cupo", reserva.estado.toLowerCase(), reserva.tipo.toLowerCase());
+
+        div.innerHTML = `
+            <span class="icono">${obtenerIcono(reserva.tipo)}</span>
+            <h3>Cupo ${reserva.id}</h3>
+            <p class="estado-texto">${reserva.estado.toUpperCase()}</p>
+            <button class="${reserva.estado === 'disponible' ? 'btn-reservar' : 'btn-cancelar'}">
+                ${reserva.estado === 'disponible' ? 'Reservar' : 'Cancelar'}
+            </button>
+        `;
+
+        contenedor.appendChild(div);
+
+        if (reserva.estado.toLowerCase() === "disponible") {
+            countDisponibles++;
+        } else {
+            countOcupados++;
+        }
+    });
+
+    // ACTUALIZACIÓN DE CONTADORES
+    if (disponiblesH3) disponiblesH3.innerText = countDisponibles;
+    if (ocupadosH3) ocupadosH3.innerText = countOcupados;
+    if (totalCuposH3) totalCuposH3.innerText = reservas.length;
+}
+
+function obtenerIcono(tipo) {
+    const iconos = { carro: "🚗", moto: "🏍️", camion: "🚚", electrico: "⚡" };
+    return iconos[tipo.toLowerCase()] || "🅿️";
+}
 
 export function generarDatosAleatorios() {
     const tipos = ["carro", "moto", "camion", "electrico"];
     const estados = ["disponible", "ocupado", "reservado"];
     return Array.from({ length: 10 }, (_, i) => ({
-        spot_number: i + 1,
-        type: tipos[Math.floor(Math.random() * tipos.length)],
-        status: estados[Math.floor(Math.random() * estados.length)],
-        vehicle_plate: "ABC-" + Math.floor(100 + Math.random() * 900)
+        id: i + 1,
+        tipo: tipos[Math.floor(Math.random() * tipos.length)],
+        estado: estados[Math.floor(Math.random() * estados.length)]
     }));
-}
-
-export function generarCupos(reservas = []) {
-    const contenedor = document.getElementById("parqueadero");
-    if (!contenedor) return;
-    contenedor.innerHTML = "";
-
-    const iconos = { carro: "🚗", moto: "🏍️", camion: "🚚", electrico: "⚡" };
-
-    reservas.forEach(res => {
-        const div = document.createElement("div");
-        div.className = `cupo ${res.status}`;
-        div.dataset.id = res.spot_number;
-        
-        const icono = iconos[res.type] || "🅿️";
-        const btnTexto = res.status === "disponible" ? "Reservar" : "Cancelar";
-        const btnClase = res.status === "disponible" ? "btn-reservar" : "btn-cancelar";
-
-        div.innerHTML = `
-            <h3>${icono}</h3>
-            <h3>Cupo ${res.spot_number}</h3>
-            <p class="estado">${res.status.toUpperCase()}</p>
-            <button class="${btnClase}">${btnTexto}</button>
-        `;
-        contenedor.appendChild(div);
-    });
-    actualizarResumen();
 }
