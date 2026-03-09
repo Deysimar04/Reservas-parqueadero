@@ -1,173 +1,91 @@
-
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>ParkApp</title>
-
-<link rel="stylesheet" href="./css/styles.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkApp</title>
+    <!-- Asegúrate de que esta ruta a tu CSS sea correcta -->
+    <link rel="stylesheet" href="./css/styles.css">
 </head>
-
 <body>
 
 <header class="header">
-
-<div class="header-left">
-<h1 class="logo">ParkApp</h1>
-<p class="lema">Reserva tu cupo fácil y rápido</p>
-</div>
-
-<div class="header-right">
-<button class="btn-header">Crear cuenta</button>
-<button class="btn-header">Iniciar sesión</button>
-</div>
-
+    <div class="header-left">
+        <h1 class="logo">ParkApp</h1>
+        <p class="lema">Reserva tu cupo fácil y rápido</p>
+    </div>
+    <div class="header-right">
+        <button class="btn-header">Crear cuenta</button>
+        <button class="btn-header">Iniciar sesión</button>
+    </div>
 </header>
 
-
 <section class="buscador">
-
-<h2>Buscar parqueadero</h2>
-
-<input type="text" placeholder="Buscar ubicación">
-
-<button>Buscar</button>
-
+    <h2>Buscar parqueadero</h2>
+    <input type="text" placeholder="Buscar ubicación">
+    <button>Buscar</button>
 </section>
-
-
 
 <section class="categorias">
-
-<h2>Categorías</h2>
-
-<div class="grid-categorias">
-
-<div class="categoria" data-tipo="carro">🚗 Carros</div>
-
-<div class="categoria" data-tipo="moto">🏍️ Motos</div>
-
-<div class="categoria" data-tipo="camion">🚚 Camiones</div>
-
-<div class="categoria" data-tipo="electrico">⚡ Eléctricos</div>
-
-</div>
-
+    <h2>Categorías</h2>
+    <div class="grid-categorias">
+        <div class="categoria" data-tipo="carro">🚗 Carros</div>
+        <div class="categoria" data-tipo="moto">🏍️ Motos</div>
+        <div class="categoria" data-tipo="camion">🚚 Camiones</div>
+        <div class="categoria" data-tipo="electrico">⚡ Eléctricos</div>
+    </div>
 </section>
-
-
 
 <section class="recomendaciones">
-
-<h2>Recomendados</h2>
-
-<div class="grid-recomendaciones">
-
-<div class="card">
-<h3>Centro Comercial</h3>
-<p>Alta disponibilidad de cupos</p>
-</div>
-
-<div class="card">
-<h3>Aeropuerto</h3>
-<p>Servicio 24 horas</p>
-</div>
-
-<div class="card">
-<h3>Zona Centro</h3>
-<p>Mejor precio de la ciudad</p>
-</div>
-
-</div>
-
+    <h2>Recomendados</h2>
+    <div class="grid-recomendaciones">
+        <div class="card"><h3>Centro Comercial</h3><p>Alta disponibilidad de cupos</p></div>
+        <div class="card"><h3>Aeropuerto</h3><p>Servicio 24 horas</p></div>
+        <div class="card"><h3>Zona Centro</h3><p>Mejor precio de la ciudad</p></div>
+    </div>
 </section>
-
-
 
 <section class="detalles-vehiculo">
-
-<h2>Características del parqueadero</h2>
-
-<div id="info-vehiculo">
-Selecciona una categoría para ver las dimensiones del cupo.
-</div>
-
+    <h2>Características del parqueadero</h2>
+    <div id="info-vehiculo" class="card">
+        Selecciona una categoría para ver las dimensiones del cupo.
+    </div>
 </section>
-
-
 
 <section class="zona-parqueadero">
-
-<h2>Zona de Estacionamiento</h2>
-
-<div class="resumen">
-    <p>Total cupos: <span id="total-cupos">0</span></p>
-    <p>Disponibles: <span id="disponibles">0</span></p>
-    <p>Ocupados: <span id="ocupados">0</span></p>
-</div>
-
-<div id="parqueadero" class="parqueadero"></div>
-
+    <h2>Zona de Estacionamiento</h2>
+    <div class="resumen">
+        <p>Total cupos: <span id="total-cupos">0</span></p>
+        <p>Disponibles: <span id="disponibles">0</span></p>
+        <p>Ocupados: <span id="ocupados">0</span></p>
+    </div>
+    <div id="parqueadero" class="parqueadero"></div>
 </section>
-
-
 
 <section class="galeria">
-
-<h2>Galería</h2>
-
-<div class="grid-galeria">
-
-<img src="img/centroComer.jpeg" class="principal">
-
-<div class="miniaturas">
-<img src="img/puerto.jpeg">
-<img src="img/centro.jpeg">
-<img src="img/centro2.jpeg">
-<img src="img/centro3.jpeg">
-</div>
-
-</div>
-
-<button class="btn-vermas">Ver más</button>
-
+    <h2>Galería</h2>
+    <div class="grid-galeria">
+        <img src="img/centroComer.jpeg" class="principal">
+        <div class="miniaturas">
+            <img src="img/puerto.jpeg">
+            <img src="img/centro.jpeg">
+            <img src="img/centro2.jpeg">
+            <img src="img/centro3.jpeg">
+        </div>
+    </div>
+    <button class="btn-vermas">Ver más</button>
 </section>
-
-
 
 <section class="politicas">
-
-<h2 class="titulo-politicas">Políticas del parqueadero</h2>
-
-<div class="grid-politicas">
-
-<div class="politica">
-<h3>Tiempo máximo</h3>
-<p>El tiempo máximo de reserva es de 8 horas.</p>
-</div>
-
-<div class="politica">
-<h3>Cancelaciones</h3>
-<p>Las reservas pueden cancelarse hasta 30 minutos antes.</p>
-</div>
-
-<div class="politica">
-<h3>Seguridad</h3>
-<p>El parqueadero cuenta con vigilancia 24/7.</p>
-</div>
-
-</div>
-
+    <h2 class="titulo-politicas">Políticas del parqueadero</h2>
+    <div class="grid-politicas">
+        <div class="politica"><h3>Tiempo máximo</h3><p>8 horas.</p></div>
+        <div class="politica"><h3>Cancelaciones</h3><p>Hasta 30 min antes.</p></div>
+        <div class="politica"><h3>Seguridad</h3><p>Vigilancia 24/7.</p></div>
+    </div>
 </section>
 
-
+<!-- El script debe ser type="module" -->
 <script type="module" src="./js/main.js"></script>
-
 </body>
 </html>
-
