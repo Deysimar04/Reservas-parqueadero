@@ -173,6 +173,4 @@ Sin frameworks ni dependencias externas.
 
 ---
 
-## Autor
 
-Proyecto académico — ParkApp 2026
