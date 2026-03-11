@@ -1,7 +1,5 @@
 ParkApp — Sistema de Reservas de Parqueadero
-
 Plataforma web para reservar plazas de parqueo en tiempo real, con filtros por zona y tipo de vehículo.
-
 
 Estructura del proyecto
 ParkApp/
@@ -13,17 +11,22 @@ ParkApp/
 │   ├── main.js
 │   └── api.js
 └── img/
-   
-Páginas
-index.html — Página principal
-Contiene todas las secciones del sistema: header, categorías, zonas, filtros, plazas, galería, características y políticas.
-galeria.html — Página interna
-Muestra la galería completa de imágenes de los parqueaderos con un header interno que incluye botón de regreso.
 
-Archivos JavaScript
-api.js
-Genera el mock de datos de las plazas. Cada plaza tiene:
-json{
+## Páginas
+
+| Página | Descripción |
+|---|---|
+| `index.html` | Página principal con header, categorías, zonas, filtros, plazas, galería, características y políticas |
+| `galeria.html` | Galería completa con header interno y botón de regreso |
+
+
+## Archivos JavaScript
+
+### api.js
+
+Genera el mock de datos. Cada plaza tiene esta estructura:
+```json
+{
   "id": 1,
   "zona": "Aeropuerto",
   "tipo": "automovil",
@@ -35,84 +38,85 @@ json{
     "discapacitados": false
   }
 }
-
 Genera 10 plazas aleatorias al cargar la página
-Zonas disponibles: Aeropuerto, Centro Comercial, Centro Ciudad
-Tipos de vehículo: automovil, camioneta, moto
-Estados posibles: disponible, reservado, ocupado
-Los extras se asignan aleatoriamente con Math.random() > 0.5
-
+Zonas: Aeropuerto · Centro Comercial · Centro Ciudad
+Tipos: automovil · camioneta · moto
+Estados: disponible · reservado · ocupado
+Extras asignados aleatoriamente con Math.random() > 0.5
 main.js
-Controla toda la lógica de la aplicación. Módulos principales:
-FunciónDescripcióniniciar()Carga plazas, sesión y configura todos los eventoscargarSesion()Lee usuario desde localStorageguardarSesion()Guarda usuario en localStorage y actualiza UIcerrarSesion()Elimina sesión y resetea la vistarender()Redibuja las plazas según filtros activosfiltrarPlazas()Filtra por zona y tipo de vehículomostrarPlazas()Genera las tarjetas de plaza en el DOMactualizarContador()Actualiza el contador de estadosconfigurarCategorias()Maneja selección de tipo de vehículoconfigurarBotonesZona()Maneja selección de zona de parqueoconfigurarModales()Maneja login, crear cuenta y logoutmostrarNotificacion()Muestra alertas flotantes temporales
+Controla toda la lógica de la aplicación.
 
+Función	Descripción
+iniciar()	Carga plazas, sesión y configura todos los eventos
+cargarSesion()	Lee usuario desde localStorage
+guardarSesion()	Guarda usuario en localStorage y actualiza UI
+cerrarSesion()	Elimina sesión y resetea la vista
+render()	Redibuja las plazas según filtros activos
+filtrarPlazas()	Filtra por zona y tipo de vehículo
+mostrarPlazas()	Genera las tarjetas de plaza en el DOM
+actualizarContador()	Actualiza el contador de estados
+configurarCategorias()	Maneja selección de tipo de vehículo
+configurarBotonesZona()	Maneja selección de zona de parqueo
+configurarModales()	Maneja login, crear cuenta y logout
+mostrarNotificacion()	Muestra alertas flotantes temporales
 Flujo de uso
-1. El usuario entra a la página
-2. Debe crear una cuenta o iniciar sesión
-3. Selecciona un tipo de vehículo (Automóvil / Camioneta / Moto)
-4. Selecciona una zona (Aeropuerto / Centro Comercial / Centro Ciudad)
-5. Aparece el campo de fecha — debe elegir una fecha de reserva
-6. Ve las plazas filtradas con sus extras
-7. Hace clic en "Reservar" en una plaza disponible
-8. Puede cancelar su reserva en cualquier momento
-
+1. Entrar a la página
+2. Crear cuenta o iniciar sesión
+3. Seleccionar tipo de vehículo  →  Automóvil / Camioneta / Moto
+4. Seleccionar zona              →  Aeropuerto / Centro Comercial / Centro Ciudad
+5. Elegir fecha de reserva       →  Campo obligatorio
+6. Ver plazas filtradas con sus extras
+7. Clic en "Reservar" en una plaza disponible
+8. Cancelar reserva cuando se desee
 Funcionalidades implementadas
 Autenticación
-
 Crear cuenta con nombre, email y contraseña
 Iniciar y cerrar sesión
 Datos guardados en localStorage
 Sin sesión: categorías y zonas deshabilitadas visualmente
-
 Filtros
-
 Por tipo de vehículo (categoría)
 Por zona de parqueo
 Validación: no se puede filtrar zona sin seleccionar categoría primero
-Botón "Volver" para resetear todos los filtros
-
+Botón Volver para resetear todos los filtros
 Reservas
-
 Fecha obligatoria antes de reservar (input type="date")
 Error visible si se intenta reservar sin fecha
-Al reservar: la plaza pasa a estado reservado y muestra la fecha
-Al cancelar: la plaza vuelve a disponible
-Plaza ocupada: muestra mensaje de error amigable al hacer clic
-
+Al reservar: plaza pasa a reservado y muestra la fecha elegida
+Al cancelar: plaza vuelve a disponible
+Plaza ocupada: mensaje de error amigable al hacer clic
 Tarjetas de plaza
 Cada tarjeta muestra:
 
-Número de plaza
-Zona y tipo de vehículo
-Estado (DISPONIBLE / RESERVADO / OCUPADO) con color
-Badges de extras (Techado, Camaras, Iluminado, Accesible)
+Número de plaza, zona y tipo de vehículo
+Estado con color: DISPONIBLE · RESERVADO · OCUPADO
+Badges de extras: Techado · Camaras · Iluminado · Accesible
 Fecha de reserva si está reservada
 Botón de acción según estado
-
 Galería
-
 Vista previa en index.html: 1 imagen grande + 4 pequeñas en 2x2
 Vista completa en galeria.html: grid de 3 columnas con 8 imágenes
 Responsive en móvil
 Estilos CSS
 El archivo styles.css está organizado por secciones con comentarios:
+
 AJUSTE GLOBAL → HEADER → CATEGORIAS → ZONAS → CONTADOR
 → TARJETAS → ESTADOS → GALERIA → CARACTERISTICAS
 → POLITICAS → FOOTER → NOTIFICACION → MODAL
 → FECHA RESERVA → EXTRAS → PAGINA INTERNA
-Colores principales:
+Paleta de colores:
 
-Fondo oscuro header: #1e2a38
-Azul acento: #3498db
-Verde disponible: #27ae60
-Amarillo reservado: #f1c40f
-Rojo ocupado: #e74c3c
-
-
+Uso	Color
+Header / fondo oscuro	#1e2a38
+Azul acento	#3498db
+Verde disponible	#27ae60
+Amarillo reservado	#f1c40f
+Rojo ocupado	#e74c3c
 Cómo ejecutar
-El proyecto es HTML/CSS/JS puro con módulos ES6. Requiere un servidor local para que funcionen los import:
-bash# Opción 1 — VS Code
-Instalar extensión "Live Server" → clic derecho en index.html → Open with Live Server
+El proyecto usa módulos ES6 y requiere un servidor local. No funciona abriendo el .html directamente con doble clic.
+
+# Opción 1 — VS Code
+# Instalar extensión "Live Server" → clic derecho en index.html → Open with Live Server
 
 # Opción 2 — Python
 python -m http.server 5500
@@ -121,13 +125,13 @@ python -m http.server 5500
 npx serve .
 Luego abrir http://localhost:5500 en el navegador.
 
-No abrir index.html directamente con doble clic — los módulos JS no funcionan con file://
-
-
 Tecnologías
+Tecnología	Uso
+HTML5 semántico	Estructura de las páginas
+CSS3 (Grid + Flexbox)	Diseño y responsive
+JavaScript ES6+	Lógica, módulos, async/await
+localStorage	Persistencia de sesión y usuarios
+Sin frameworks ni dependencias externas.
 
-HTML5 semántico
-CSS3 (Grid, Flexbox, variables de color)
-JavaScript ES6+ (módulos, async/await, arrow functions)
-localStorage para persistencia de sesión
-Sin frameworks ni dependencias externas
+Autor
+Proyecto académico — ParkApp 2026
