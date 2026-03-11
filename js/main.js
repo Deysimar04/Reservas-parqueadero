@@ -1,159 +1,294 @@
-import { obtenerReserva } from "./api.js";
-import { generarCupos, generarDatosAleatorios } from "./ui.js";
-import { authLogic } from "./auth.js";
+import { obtenerPlazas } from "./api.js";
 
-document.addEventListener("DOMContentLoaded", async () => {
-    const info = document.getElementById("info-vehiculo"); 
-    const inputLugar = document.getElementById("input-lugar");
-    const contenedorParqueadero = document.getElementById("parqueadero");
-    const authContainer = document.getElementById("auth-container");
-    const servicesContainer = document.getElementById("services-container");
+let plazas = [];
+let plazasFiltradas = [];
+let zonaSeleccionada = "";
+let tipoSeleccionado = "";
+let usuarioActual = null;
 
-    // Variable para rastrear qué tipo de vehículo está buscando el usuario
-    let tipoVehiculoActual = "carro"; 
+async function iniciar() {
+  plazas = await obtenerPlazas();
+  plazasFiltradas = [...plazas];
 
-    // --- 1. SESIÓN ---
-    if (authLogic.estaLogueado()) {
-        const btnLogin = document.getElementById("btn-login-main");
-        if (btnLogin) {
-            btnLogin.innerText = "Cerrar Sesión";
-            btnLogin.onclick = () => authLogic.cerrarSesion();
-        }
-        const btnReg = document.getElementById("btn-register-main");
-        if (btnReg) btnReg.style.display = "none";
-    }
+  cargarSesion();
+  configurarBotonesZona();
+  configurarCategorias();
+  configurarLogo();
+  configurarBotonVolver();
+  configurarModales();
+  actualizarEstadoUI();
+  render();
+}
 
-    // --- 2. MODALES ---
-    const mostrarForm = (tipo) => {
-        authContainer.classList.remove("hidden");
-        let html = "";
-        if (tipo === 'login') {
-            html = `<h2>Iniciar Sesión</h2>
-                    <input type="email" id="auth-email" placeholder="Correo">
-                    <input type="password" id="auth-pass" placeholder="Contraseña">
-                    <button id="btn-auth-exec">Ingresar</button>
-                    <p><a href="#" id="link-olvido" style="font-size:12px;">¿Olvidaste tu contraseña?</a></p>`;
-        } else if (tipo === 'register') {
-            html = `<h2>Crear Cuenta</h2>
-                    <input type="email" id="auth-email" placeholder="Correo">
-                    <input type="password" id="auth-pass" placeholder="Contraseña">
-                    <button id="btn-auth-exec">Registrar</button>`;
-        }
-        document.getElementById("auth-content").innerHTML = html;
-        
-        document.getElementById("btn-auth-exec").onclick = () => {
-            const e = document.getElementById("auth-email").value;
-            const p = document.getElementById("auth-pass").value;
-            if (tipo === 'login') authLogic.login(e, p);
-            else if (tipo === 'register') { if(authLogic.registrar(e,p)) mostrarForm('login'); }
-        };
+/* ================= SESIÓN ================= */
+function cargarSesion() {
+  const user = localStorage.getItem("usuarioActual");
+  if (user) {
+    usuarioActual = JSON.parse(user);
+    mostrarHeaderUsuario();
+  } else {
+    mostrarHeaderLogin();
+  }
+}
+
+function guardarSesion(user) {
+  localStorage.setItem("usuarioActual", JSON.stringify(user));
+  usuarioActual = user;
+  mostrarHeaderUsuario();
+  actualizarEstadoUI();
+  render();
+}
+
+function cerrarSesion() {
+  localStorage.removeItem("usuarioActual");
+  usuarioActual = null;
+  mostrarHeaderLogin();
+  actualizarEstadoUI();
+  render();
+}
+
+function mostrarHeaderUsuario() {
+  document.getElementById("headerBtns").style.display = "none";
+  const headerUser = document.getElementById("headerUser");
+  headerUser.style.display = "flex";
+  document.getElementById("usuarioActual").textContent = `Hola, ${usuarioActual.nombre}`;
+}
+
+function mostrarHeaderLogin() {
+  document.getElementById("headerBtns").style.display = "flex";
+  document.getElementById("headerUser").style.display = "none";
+}
+
+/* ================= BLOQUEO VISUAL ================= */
+function actualizarEstadoUI() {
+  const categorias = document.querySelectorAll(".categoria-card");
+  const botonesZona = document.querySelectorAll(".btn-zona");
+
+  if (!usuarioActual) {
+    categorias.forEach(c => c.classList.add("deshabilitado"));
+    botonesZona.forEach(b => b.disabled = true);
+  } else {
+    categorias.forEach(c => c.classList.remove("deshabilitado"));
+    botonesZona.forEach(b => b.disabled = false);
+  }
+}
+
+/* ================= FECHA ================= */
+function obtenerFecha() {
+  return document.getElementById("fechaReserva").value;
+}
+
+/* ================= RENDER ================= */
+function render() {
+  const cont = document.getElementById("parkingContainer");
+  if (!usuarioActual) {
+    cont.innerHTML = "<div class='aviso-login'>Inicia sesión para ver y reservar plazas</div>";
+    return;
+  }
+
+  filtrarPlazas();
+  mostrarPlazas();
+  actualizarContador();
+}
+
+function filtrarPlazas() {
+  plazasFiltradas = [...plazas];
+  if (zonaSeleccionada !== "") {
+    plazasFiltradas = plazasFiltradas.filter(p => p.zona.toLowerCase() === zonaSeleccionada.toLowerCase());
+  }
+  if (tipoSeleccionado !== "") {
+    plazasFiltradas = plazasFiltradas.filter(p => p.tipo.toLowerCase() === tipoSeleccionado.toLowerCase());
+  }
+}
+
+function mostrarPlazas() {
+  const cont = document.getElementById("parkingContainer");
+  cont.innerHTML = "";
+
+  if (plazasFiltradas.length === 0) {
+    cont.innerHTML = `<p>No hay plazas disponibles con estos filtros.</p>`;
+    return;
+  }
+
+  plazasFiltradas.forEach(p => {
+    // Índice real en el array principal
+    const idx = plazas.findIndex(pl => pl.id === p.id);
+
+    const card = document.createElement("div");
+    card.className = `tarjeta ${plazas[idx].estado}`;
+
+    const etiquetas = {
+      techado:        { on: "Techado",   off: "Descubierto" },
+      camaras:        { on: "Camaras",   off: "Sin camaras" },
+      iluminado:      { on: "Iluminado", off: "Sin luz" },
+      discapacitados: { on: "Accesible", off: "" }
     };
 
-    document.getElementById("btn-login-main")?.addEventListener("click", () => mostrarForm('login'));
-    document.getElementById("btn-register-main")?.addEventListener("click", () => mostrarForm('register'));
-    document.getElementById("close-auth")?.addEventListener("click", () => authContainer.classList.add("hidden"));
-    document.querySelector(".btn-vermas")?.addEventListener("click", () => servicesContainer.classList.remove("hidden"));
-    document.getElementById("close-services")?.addEventListener("click", () => servicesContainer.classList.add("hidden"));
+    const extrasHtml = Object.entries(plazas[idx].extras)
+      .map(([clave, valor]) => {
+        const etiqueta = etiquetas[clave];
+        if (!etiqueta) return "";
+        if (!valor && etiqueta.off === "") return "";
+        return `<span class="extra-badge ${valor ? "extra-si" : "extra-no"}">
+                  ${valor ? etiqueta.on : etiqueta.off}
+                </span>`;
+      }).join("");
 
-    // --- 3. CATEGORÍAS Y BUSCADOR ---
-    const caracteristicas = {
-        carro: "<h3>🚗 Carros</h3><p>Dimensiones: 2.5m x 5m. Niveles 1 y 2.</p>",
-        moto: "<h3>🏍️ Motos</h3><p>Dimensiones: 1.2m x 2.5m. Zona preferencial.</p>",
-        camion: "<h3>🚚 Camiones</h3><p>Dimensiones: 3.5m x 10m. Zona exterior.</p>",
-        electrico: "<h3>⚡ Eléctricos</h3><p>Carga rápida disponible para tu vehículo.</p>"
+    const fechaTexto = plazas[idx].fecha
+      ? `<p class="plaza-fecha">Reservado para: ${plazas[idx].fecha}</p>`
+      : "";
+
+    let btnHtml = "";
+    if      (plazas[idx].estado === "disponible") btnHtml = `<button class="btn-reservar">Reservar</button>`;
+    else if (plazas[idx].estado === "reservado")  btnHtml = `<button class="btn-cancelar">Cancelar</button>`;
+    else                                           btnHtml = `<button class="btn-ocupada">Plaza ocupada</button>`;
+
+    card.innerHTML = `
+      <h3>Plaza ${plazas[idx].id}</h3>
+      <p>Zona: ${plazas[idx].zona}</p>
+      <p>Vehiculo: ${plazas[idx].tipo}</p>
+      <p class="estado-texto">${plazas[idx].estado.toUpperCase()}</p>
+      <div class="extras-container">${extrasHtml}</div>
+      ${fechaTexto}
+      ${btnHtml}
+    `;
+
+    card.querySelector(".btn-reservar")?.addEventListener("click", () => {
+      const fecha = obtenerFecha();
+      const errorSpan = document.getElementById("fechaError");
+      if (!fecha) {
+        errorSpan.classList.add("visible");
+        document.getElementById("fechaReserva").focus();
+        return;
+      }
+      errorSpan.classList.remove("visible");
+      plazas[idx].estado = "reservado";
+      plazas[idx].fecha  = fecha;
+      mostrarNotificacion(`Reservada para el ${fecha}`);
+      render();
+    });
+
+    card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
+      plazas[idx].estado = "disponible";
+      plazas[idx].fecha  = null;
+      mostrarNotificacion("Reserva cancelada");
+      render();
+    });
+
+    card.querySelector(".btn-ocupada")?.addEventListener("click", () => {
+      mostrarNotificacion("Esta plaza ya esta ocupada, elige otra disponible");
+    });
+
+    cont.appendChild(card);
+  });
+}
+
+function actualizarContador() {
+  document.getElementById("totalPlazas").textContent = plazas.length;
+  document.getElementById("plazasLibres").textContent = plazas.filter(p => p.estado === "disponible").length;
+  document.getElementById("plazasReservadas").textContent = plazas.filter(p => p.estado === "reservado").length;
+  document.getElementById("plazasOcupadas").textContent = plazas.filter(p => p.estado === "ocupado").length;
+}
+
+/* ================= CATEGORIAS ================= */
+function configurarCategorias() {
+  const categorias = document.querySelectorAll(".categoria-card");
+  categorias.forEach(card => {
+    card.onclick = () => {
+      if (!usuarioActual) return;
+      categorias.forEach(c => c.classList.remove("activa"));
+      card.classList.add("activa");
+      tipoSeleccionado = card.dataset.tipo;
+      mostrarNotificacion("Seleccionado: " + tipoSeleccionado);
     };
+  });
+}
 
-    document.querySelectorAll(".categoria").forEach(cat => {
-        cat.addEventListener("click", () => {
-            const tipo = cat.dataset.tipo;
-            tipoVehiculoActual = tipo; // Actualizamos el tipo global
-            if (info) info.innerHTML = caracteristicas[tipo];
-            
-            // Opcional: poner el texto en el buscador automáticamente
-            if(inputLugar) {
-                inputLugar.value = tipo;
-                inputLugar.dispatchEvent(new Event('input'));
-            }
-        });
-    });
+/* ================= BOTONES DE ZONA ================= */
+function configurarBotonesZona() {
+  document.querySelectorAll(".btn-zona").forEach(btn => {
+    btn.onclick = () => {
+      if (!usuarioActual) return;
+      if (tipoSeleccionado === "") {
+        mostrarNotificacion("Primero selecciona un tipo de vehiculo arriba");
+        return;
+      }
+      zonaSeleccionada = btn.closest(".zona-card").querySelector("h3").textContent;
+      document.getElementById("fechaReservaContainer").style.display = "block";
+      document.getElementById("btnVolver").style.display = "block";
+      render();
+      document.getElementById("parkingContainer").scrollIntoView({ behavior: "smooth" });
+    };
+  });
+}
 
-    inputLugar?.addEventListener("input", () => {
-        const f = inputLugar.value.toLowerCase().trim();
-        
-        // Detectar si el usuario escribe "electrico" o usa el filtro
-        if(f.includes("electri")) tipoVehiculoActual = "electrico";
-        else if(f.includes("moto")) tipoVehiculoActual = "moto";
-        else if(f.includes("camion")) tipoVehiculoActual = "camion";
-        else if(f !== "") tipoVehiculoActual = "carro";
+/* ================= MODALES ================= */
+function configurarModales() {
+  const mCrear = document.getElementById("modalCrear");
+  const mLogin = document.getElementById("modalLogin");
 
-        document.querySelectorAll(".cupo").forEach(c => {
-            const match = c.textContent.toLowerCase().includes(f) || c.className.toLowerCase().includes(f);
-            c.classList.toggle("no-relevante", f !== "" && !match);
-            c.classList.toggle("resaltado", f !== "" && match);
-        });
-    });
+  document.getElementById("btnHeaderCrear").onclick = () => mCrear.style.display = "flex";
+  document.getElementById("btnHeaderLogin").onclick = () => mLogin.style.display = "flex";
 
-    
-    contenedorParqueadero?.addEventListener("click", (e) => {
-        const btn = e.target;
-        const cupo = btn.closest(".cupo");
-        if (!cupo) return;
-        const nCupo = cupo.querySelector("h3").innerText;
+  document.querySelectorAll(".cerrar").forEach(btn => {
+    btn.onclick = () => { mCrear.style.display = "none"; mLogin.style.display = "none"; };
+  });
 
-        if (btn.classList.contains("btn-reservar")) {
-            if (!authLogic.estaLogueado()) {
-                alert("⚠️ Inicia sesión para reservar.");
-                mostrarForm('login');
-                return;
-            }
-            
-            let msg = ` ¡Reserva Exitosa!\nHas reservado el ${nCupo}.`;
-            
-            // OFERTA AUTOMÁTICA: Si el usuario seleccionó "Eléctrico" en categorías o buscador
-            if (tipoVehiculoActual === "electrico") {
-                if (confirm(msg + "\n\nDetectamos que tu vehículo es Eléctrico. ¿Deseas activar carga rápida por $5.000?")) {
-                    alert("⚡ Servicio de carga vinculado a tu reserva.");
-                } else {
-                    alert(msg);
-                }
-            } else { 
-                alert(msg + "\nRecuerda: Tiempo máximo 8 horas."); 
-            }
+  window.onclick = (e) => { if (e.target.classList.contains("modal")) e.target.style.display = "none"; };
 
-            cupo.classList.replace("disponible", "reservado");
-            cupo.querySelector(".estado-texto").innerText = "RESERVADO";
-            btn.innerText = "Cancelar";
-            btn.className = "btn-cancelar";
-            actualizarContadores();
-        } 
-        
-        else if (btn.classList.contains("btn-cancelar")) {
-            if (cupo.classList.contains("ocupado")) {
-                alert("🚫 No se puede cancelar, el vehículo ya está en el sitio.");
-                return;
-            }
-            if (confirm(`¿Cancelar reserva del ${nCupo}?`)) {
-                cupo.classList.remove("reservado");
-                cupo.classList.add("disponible");
-                cupo.querySelector(".estado-texto").innerText = "DISPONIBLE";
-                btn.innerText = "Reservar";
-                btn.className = "btn-reservar";
-                actualizarContadores();
-            }
-        }
-    });
+  document.getElementById("btnCrearCuenta").onclick = () => {
+    const nombre = document.getElementById("nombreCrear").value;
+    const email  = document.getElementById("emailCrear").value;
+    const pass   = document.getElementById("passCrear").value;
+    if (!nombre || !email || !pass) return;
 
-    function actualizarContadores() {
-        document.getElementById("disponibles").innerText = document.querySelectorAll(".cupo.disponible").length;
-        document.getElementById("ocupados").innerText = document.querySelectorAll(".cupo.ocupado, .cupo.reservado").length;
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    usuarios.push({ nombre, email, pass });
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+    guardarSesion({ nombre, email });
+    mCrear.style.display = "none";
+  };
+
+  document.getElementById("btnLogin").onclick = () => {
+    const email = document.getElementById("emailLogin").value;
+    const pass  = document.getElementById("passLogin").value;
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    const user = usuarios.find(u => u.email === email && u.pass === pass);
+
+    if (user) {
+      guardarSesion(user);
+      mLogin.style.display = "none";
+    } else {
+      mostrarNotificacion("Error en datos");
     }
+  };
 
-    // --- INICIO ---
-    try {
-        const data = await obtenerReserva();
-        generarCupos(data?.reservations || generarDatosAleatorios());
-    } catch {
-        generarCupos(generarDatosAleatorios());
-    }
-    actualizarContadores();
-});
+  document.getElementById("btnLogout").onclick = cerrarSesion;
+}
+
+function configurarLogo() {
+  document.querySelector(".logo").onclick = () => location.reload();
+}
+
+function configurarBotonVolver() {
+  document.getElementById("btnVolver").onclick = () => {
+    zonaSeleccionada = "";
+    tipoSeleccionado = "";
+    document.querySelectorAll(".categoria-card").forEach(c => c.classList.remove("activa"));
+    document.getElementById("btnVolver").style.display = "none";
+    document.getElementById("fechaReservaContainer").style.display = "none";
+    document.getElementById("fechaReserva").value = "";
+    document.getElementById("fechaError").classList.remove("visible");
+    render();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+}
+
+function mostrarNotificacion(msj) {
+  const n = document.getElementById("notificacion");
+  n.textContent = msj;
+  n.classList.add("mostrar");
+  setTimeout(() => n.classList.remove("mostrar"), 2000);
+}
+
+iniciar();

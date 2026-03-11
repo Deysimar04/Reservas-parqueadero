@@ -1,20 +1,25 @@
-// js/api.js
+export async function obtenerPlazas() {
 
-export async function obtenerReserva() {
-    // Reemplaza con tu URL real de Mockfly
-    const URL_API = "https://api.mockfly.dev/mocks/tu-id-aqui/reservations";
+  const zonas = ["Aeropuerto", "Centro Comercial", "Centro Ciudad"];
+  const tipos = ["automovil", "camioneta", "moto"];
+  const estados = ["disponible", "reservado", "ocupado"];
 
-    try {
-        const respuesta = await fetch(URL_API);
-        
-        if (!respuesta.ok) {
-            throw new Error("Error en la respuesta de la API");
-        }
+  let plazas = [];
 
-        const datos = await respuesta.json();
-        return datos; 
-    } catch (error) {
-        console.warn("API no disponible, se usarán datos locales/aleatorios:", error.message);
-        return null; // Devolvemos null para que main.js use generarDatosAleatorios()
-    }
+  for (let i = 1; i <= 10; i++) {
+    plazas.push({
+      id: i,
+      zona: zonas[Math.floor(Math.random() * zonas.length)],
+      tipo: tipos[Math.floor(Math.random() * tipos.length)],
+      estado: estados[Math.floor(Math.random() * estados.length)],
+      extras: {
+        techado: Math.random() > 0.5,
+        camaras: Math.random() > 0.5,
+        iluminado: Math.random() > 0.5,
+        discapacitados: Math.random() > 0.5
+      }
+    });
+  }
+
+  return plazas;
 }

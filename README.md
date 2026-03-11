@@ -1,97 +1,133 @@
-# Sistema de Gestión de Parqueadero
+ParkApp — Sistema de Reservas de Parqueadero
 
-Aplicación web desarrollada en JavaScript para la gestión de cupos de un parqueadero.  
-Permite reservar y cancelar espacios dinámicamente, actualizando el estado y los contadores en tiempo real.
+Plataforma web para reservar plazas de parqueo en tiempo real, con filtros por zona y tipo de vehículo.
 
----
 
-## Descripción
+Estructura del proyecto
+ParkApp/
+├── index.html
+├── galeria.html
+├── css/
+│   └── styles.css
+├── js/
+│   ├── main.js
+│   └── api.js
+└── img/
+   
+Páginas
+index.html — Página principal
+Contiene todas las secciones del sistema: header, categorías, zonas, filtros, plazas, galería, características y políticas.
+galeria.html — Página interna
+Muestra la galería completa de imágenes de los parqueaderos con un header interno que incluye botón de regreso.
 
-El sistema administra los cupos disponibles y ocupados mediante manipulación dinámica del DOM y manejo estructurado de eventos.
+Archivos JavaScript
+api.js
+Genera el mock de datos de las plazas. Cada plaza tiene:
+json{
+  "id": 1,
+  "zona": "Aeropuerto",
+  "tipo": "automovil",
+  "estado": "disponible",
+  "extras": {
+    "techado": true,
+    "camaras": false,
+    "iluminado": true,
+    "discapacitados": false
+  }
+}
 
-Se implementaron validaciones para evitar inconsistencias y se organizó el proyecto por módulos para mantener una arquitectura clara y escalable.
+Genera 10 plazas aleatorias al cargar la página
+Zonas disponibles: Aeropuerto, Centro Comercial, Centro Ciudad
+Tipos de vehículo: automovil, camioneta, moto
+Estados posibles: disponible, reservado, ocupado
+Los extras se asignan aleatoriamente con Math.random() > 0.5
 
----
+main.js
+Controla toda la lógica de la aplicación. Módulos principales:
+FunciónDescripcióniniciar()Carga plazas, sesión y configura todos los eventoscargarSesion()Lee usuario desde localStorageguardarSesion()Guarda usuario en localStorage y actualiza UIcerrarSesion()Elimina sesión y resetea la vistarender()Redibuja las plazas según filtros activosfiltrarPlazas()Filtra por zona y tipo de vehículomostrarPlazas()Genera las tarjetas de plaza en el DOMactualizarContador()Actualiza el contador de estadosconfigurarCategorias()Maneja selección de tipo de vehículoconfigurarBotonesZona()Maneja selección de zona de parqueoconfigurarModales()Maneja login, crear cuenta y logoutmostrarNotificacion()Muestra alertas flotantes temporales
 
-##  Funcionalidades
+Flujo de uso
+1. El usuario entra a la página
+2. Debe crear una cuenta o iniciar sesión
+3. Selecciona un tipo de vehículo (Automóvil / Camioneta / Moto)
+4. Selecciona una zona (Aeropuerto / Centro Comercial / Centro Ciudad)
+5. Aparece el campo de fecha — debe elegir una fecha de reserva
+6. Ve las plazas filtradas con sus extras
+7. Hace clic en "Reservar" en una plaza disponible
+8. Puede cancelar su reserva en cualquier momento
 
--  Reservar cupos disponibles  
-- Cancelar cupos ocupados  
-- Actualización automática de contadores  
-- Validaciones antes de cambiar estados  
-- Protección contra múltiples clics rápidos  
-- Verificación automática de inconsistencias  
-- Manejo centralizado de eventos con `addEventListener`
+Funcionalidades implementadas
+Autenticación
 
----
+Crear cuenta con nombre, email y contraseña
+Iniciar y cerrar sesión
+Datos guardados en localStorage
+Sin sesión: categorías y zonas deshabilitadas visualmente
 
-## Estados del Sistema
+Filtros
 
-El sistema maneja únicamente dos estados:
+Por tipo de vehículo (categoría)
+Por zona de parqueo
+Validación: no se puede filtrar zona sin seleccionar categoría primero
+Botón "Volver" para resetear todos los filtros
 
-- 🟢 disponible
-- 🔴 ocupado
+Reservas
 
-Se eliminó el estado "reservado" para evitar conflictos lógicos e inconsistencias.
+Fecha obligatoria antes de reservar (input type="date")
+Error visible si se intenta reservar sin fecha
+Al reservar: la plaza pasa a estado reservado y muestra la fecha
+Al cancelar: la plaza vuelve a disponible
+Plaza ocupada: muestra mensaje de error amigable al hacer clic
 
----
+Tarjetas de plaza
+Cada tarjeta muestra:
 
----
+Número de plaza
+Zona y tipo de vehículo
+Estado (DISPONIBLE / RESERVADO / OCUPADO) con color
+Badges de extras (Techado, Camaras, Iluminado, Accesible)
+Fecha de reserva si está reservada
+Botón de acción según estado
 
-##  Arquitectura
+Galería
 
-El proyecto está organizado por módulos:
+Vista previa en index.html: 1 imagen grande + 4 pequeñas en 2x2
+Vista completa en galeria.html: grid de 3 columnas con 8 imágenes
+Responsive en móvil
+Estilos CSS
+El archivo styles.css está organizado por secciones con comentarios:
+AJUSTE GLOBAL → HEADER → CATEGORIAS → ZONAS → CONTADOR
+→ TARJETAS → ESTADOS → GALERIA → CARACTERISTICAS
+→ POLITICAS → FOOTER → NOTIFICACION → MODAL
+→ FECHA RESERVA → EXTRAS → PAGINA INTERNA
+Colores principales:
 
-- **main.js** → Inicialización del sistema  
-- **api.js** → Gestión de datos  
-- **ui.js** → Renderizado y actualización visual  
-- **reservas.js** → Lógica de reservas y eventos  
+Fondo oscuro header: #1e2a38
+Azul acento: #3498db
+Verde disponible: #27ae60
+Amarillo reservado: #f1c40f
+Rojo ocupado: #e74c3c
 
-Se separó la lógica de negocio, la manipulación del DOM y la gestión de eventos para mejorar el mantenimiento y escalabilidad.
 
----
+Cómo ejecutar
+El proyecto es HTML/CSS/JS puro con módulos ES6. Requiere un servidor local para que funcionen los import:
+bash# Opción 1 — VS Code
+Instalar extensión "Live Server" → clic derecho en index.html → Open with Live Server
 
-##  Validaciones Implementadas
+# Opción 2 — Python
+python -m http.server 5500
 
-- No se puede reservar un cupo ocupado.
-- No se puede cancelar un cupo disponible.
-- Validación de existencia del cupo antes de modificarlo.
-- Control contra múltiples clics rápidos.
-- Verificación automática de estados inválidos y desincronización de contadores.
+# Opción 3 — Node
+npx serve .
+Luego abrir http://localhost:5500 en el navegador.
 
----
+No abrir index.html directamente con doble clic — los módulos JS no funcionan con file://
 
-## Pruebas Realizadas
 
-- Cambio correcto de estados.
-- Actualización correcta de contadores.
-- Intentos de acciones inválidas.
-- Pruebas con múltiples clics rápidos.
-- Revisión de errores en consola.
+Tecnologías
 
----
-
-## Cómo ejecutar el proyecto
-
-1. Clonar el repositorio:
-2. Abrir la carpeta en Visual Studio Code.
-
-3. Ejecutar con Live Server o abrir `index.html` en el navegador.
-
----
-
-##  Roles del Proyecto
-
-- Persona 1 – Arquitectura
-- Persona 3 – API y datos
-- Persona 4 – Lógica de reservas
-- Persona 5 – Validaciones y testing
-
----
-
-##  Estado del Proyecto
-
-Sistema funcional  
- Arquitectura organizada  
-Validaciones implementadas  
- Listo para entrega académica
+HTML5 semántico
+CSS3 (Grid, Flexbox, variables de color)
+JavaScript ES6+ (módulos, async/await, arrow functions)
+localStorage para persistencia de sesión
+Sin frameworks ni dependencias externas
