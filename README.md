@@ -127,5 +127,4 @@ TecnologíaUsoHTML5 semánticoEstructura de las páginasCSS3 (Grid + Flexbox)Dis
 Sin frameworks ni dependencias externas.
 
 
-👤 Autor
-Proyecto académico — ParkApp 2026
+
