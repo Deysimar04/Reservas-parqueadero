@@ -22,7 +22,10 @@
   </div>
 
   <div class="header-right" id="headerUser" style="display:none;">
-    <span id="usuarioActual"></span>
+    <div id="usuarioInfo">
+      <div class="avatar"></div>
+      <span id="usuarioActual"></span>
+    </div>
     <button class="btn-header" id="btnLogout">Cerrar sesión</button>
   </div>
 </header>
@@ -78,7 +81,7 @@
 </section>
 
 <!-- FECHA DE RESERVA -->
-<div id="fechaReservaContainer" style="display:none;">
+<div id="fechaReservaContainer">
   <div class="fecha-wrapper">
     <label for="fechaReserva">Fecha de reserva:</label>
     <input type="date" id="fechaReserva">
@@ -165,6 +168,10 @@
     <input type="text" id="nombreCrear" placeholder="Nombre">
     <input type="email" id="emailCrear" placeholder="Email">
     <input type="password" id="passCrear" placeholder="Contraseña">
+    <select id="rolCrear">
+      <option value="cliente">Cliente</option>
+      <option value="admin">Administrador</option>
+    </select>
     <button id="btnCrearCuenta">Crear Cuenta</button>
   </div>
 </div>

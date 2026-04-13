@@ -49,9 +49,23 @@ function cerrarSesion() {
 
 function mostrarHeaderUsuario() {
   document.getElementById("headerBtns").style.display = "none";
+
   const headerUser = document.getElementById("headerUser");
   headerUser.style.display = "flex";
-  document.getElementById("usuarioActual").textContent = `Hola, ${usuarioActual.nombre}`;
+
+  const nombre = usuarioActual.nombre;
+
+  // Iniciales
+  const iniciales = nombre
+    .split(" ")
+    .map(n => n[0])
+    .join("")
+    .toUpperCase();
+
+  document.querySelector(".avatar").textContent = iniciales;
+  document.getElementById("usuarioActual").textContent = `Hola, ${nombre}`;
+  document.getElementById("usuarioActual").textContent = 
+  `Hola, ${usuarioActual.nombre} (${usuarioActual.rol})`;
 }
 
 function mostrarHeaderLogin() {
@@ -139,9 +153,19 @@ function mostrarPlazas() {
       : "";
 
     let btnHtml = "";
-    if      (plazas[idx].estado === "disponible") btnHtml = `<button class="btn-reservar">Reservar</button>`;
-    else if (plazas[idx].estado === "reservado")  btnHtml = `<button class="btn-cancelar">Cancelar</button>`;
-    else                                           btnHtml = `<button class="btn-ocupada">Plaza ocupada</button>`;
+    if (plazas[idx].estado === "disponible") {
+      btnHtml = `<button class="btn-reservar">Reservar</button>`;
+    } 
+    else if (plazas[idx].estado === "reservado") {
+      btnHtml = `<button class="btn-cancelar">Cancelar</button>`;
+    } 
+    else if (plazas[idx].estado === "ocupado") {
+      if (usuarioActual.rol === "admin") {
+      btnHtml = `<button class="btn-liberar">Liberar plaza</button>`;
+    } else {
+      btnHtml = `<button class="btn-ocupada">Plaza ocupada</button>`;
+    }
+  }
 
     card.innerHTML = `
       <h3>Plaza ${plazas[idx].id}</h3>
@@ -164,20 +188,30 @@ function mostrarPlazas() {
       errorSpan.classList.remove("visible");
       plazas[idx].estado = "reservado";
       plazas[idx].fecha  = fecha;
-      mostrarNotificacion(`Reservada para el ${fecha}`);
+      alert(`Reservada para el ${fecha}`);
       render();
     });
 
     card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
       plazas[idx].estado = "disponible";
       plazas[idx].fecha  = null;
-      mostrarNotificacion("Reserva cancelada");
+      alert("Reserva cancelada");
       render();
     });
 
     card.querySelector(".btn-ocupada")?.addEventListener("click", () => {
-      mostrarNotificacion("Esta plaza ya esta ocupada, elige otra disponible");
+      alert("Esta plaza ya esta ocupada, elige otra disponible");
     });
+
+    card.querySelector(".btn-liberar")?.addEventListener("click", () => {
+    if (usuarioActual.rol !== "admin") return;
+
+    plazas[idx].estado = "disponible";
+    plazas[idx].fecha = null;
+
+    alert("Plaza liberada por administrador");
+    render();
+  });
 
     cont.appendChild(card);
   });
@@ -199,7 +233,7 @@ function configurarCategorias() {
       categorias.forEach(c => c.classList.remove("activa"));
       card.classList.add("activa");
       tipoSeleccionado = card.dataset.tipo;
-      mostrarNotificacion("Seleccionado: " + tipoSeleccionado);
+      alert("Seleccionado: " + tipoSeleccionado);
     };
   });
 }
@@ -210,7 +244,7 @@ function configurarBotonesZona() {
     btn.onclick = () => {
       if (!usuarioActual) return;
       if (tipoSeleccionado === "") {
-        mostrarNotificacion("Primero selecciona un tipo de vehiculo arriba");
+        alert("Primero selecciona un tipo de vehiculo arriba");
         return;
       }
       zonaSeleccionada = btn.closest(".zona-card").querySelector("h3").textContent;
@@ -236,37 +270,72 @@ function configurarModales() {
 
   window.onclick = (e) => { if (e.target.classList.contains("modal")) e.target.style.display = "none"; };
 
-  document.getElementById("btnCrearCuenta").onclick = () => {
-    const nombre = document.getElementById("nombreCrear").value;
-    const email  = document.getElementById("emailCrear").value;
-    const pass   = document.getElementById("passCrear").value;
-    if (!nombre || !email || !pass) return;
+document.getElementById("btnCrearCuenta").onclick = () => {
+  const nombre = document.getElementById("nombreCrear").value.trim();
+  const email  = document.getElementById("emailCrear").value.trim().toLowerCase();
+  const pass   = document.getElementById("passCrear").value.trim();
+  const rol = document.getElementById("rolCrear").value;
 
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-    usuarios.push({ nombre, email, pass });
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-    guardarSesion({ nombre, email });
-    mCrear.style.display = "none";
-  };
+  if (!nombre || !email || !pass) {
+    alert("Completa todos los campos");
+    return;
+  }
+
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+
+  // 🔒 VALIDAR SI YA EXISTE
+  const existe = usuarios.some(u => 
+    u.email.trim().toLowerCase() === email
+  );
+
+  if (existe) {
+    alert("⚠️ Este correo ya está registrado. Intenta iniciar sesión.");
+    return; // 🚫 BLOQUEA CREACIÓN
+  }
+
+  // 🧠 CONFIRMACIÓN ANTES DE CREAR
+  const confirmar = confirm("¿Deseas crear la cuenta con este correo?");
+  if (!confirmar) return;
+
+  const nuevoUsuario = { nombre, email, pass, rol };
+
+  usuarios.push(nuevoUsuario);
+  localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+  guardarSesion(nuevoUsuario);
+  document.getElementById("modalCrear").style.display = "none";
+
+  alert("✅ Cuenta creada correctamente");
+};
 
   document.getElementById("btnLogin").onclick = () => {
-    const email = document.getElementById("emailLogin").value;
-    const pass  = document.getElementById("passLogin").value;
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const user = usuarios.find(u => u.email === email && u.pass === pass);
+  console.log("CLICK LOGIN"); // 👈 agrega esto
 
-    if (user) {
-      guardarSesion(user);
-      mLogin.style.display = "none";
-    } else {
-      mostrarNotificacion("Error en datos");
-    }
-  };
+  const email = document.getElementById("emailLogin").value.trim();
+  const pass  = document.getElementById("passLogin").value.trim();
+
+  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+  
+  const user = usuarios.find(u => 
+  u.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+  u.pass.trim() === pass.trim()
+);
+
+  if (user) {
+    console.log("LOGIN OK"); // 👈 agrega esto
+    guardarSesion(user);
+    document.getElementById("modalLogin").style.display = "none";
+    alert("Inicio de sesión exitoso");
+  } else {
+    console.log(user)
+    console.log("LOGIN FAIL"); // 👈 agrega esto
+    alert("Correo o contraseña incorrectos");
+  }
+};
+  }; 
 
   document.getElementById("btnLogout").onclick = cerrarSesion;
-}
-
-function configurarLogo() {
+  function configurarLogo() {
   document.querySelector(".logo").onclick = () => location.reload();
 }
 
@@ -283,12 +352,4 @@ function configurarBotonVolver() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 }
-
-function mostrarNotificacion(msj) {
-  const n = document.getElementById("notificacion");
-  n.textContent = msj;
-  n.classList.add("mostrar");
-  setTimeout(() => n.classList.remove("mostrar"), 2000);
-}
-
 iniciar();
