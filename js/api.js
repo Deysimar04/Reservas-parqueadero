@@ -1,5 +1,11 @@
 export async function obtenerPlazas() {
+  // Si ya hay plazas guardadas, retornarlas
+  const guardadas = localStorage.getItem("plazas");
+  if (guardadas) {
+    return JSON.parse(guardadas);
+  }
 
+  // Si no hay, generar las iniciales y guardarlas
   const zonas = ["Aeropuerto", "Centro Comercial", "Centro Ciudad"];
   const tipos = ["automovil", "camioneta", "moto"];
   const estados = ["disponible", "reservado", "ocupado"];
@@ -21,5 +27,10 @@ export async function obtenerPlazas() {
     });
   }
 
+  localStorage.setItem("plazas", JSON.stringify(plazas));
   return plazas;
+}
+
+export function guardarPlazas(plazas) {
+  localStorage.setItem("plazas", JSON.stringify(plazas));
 }

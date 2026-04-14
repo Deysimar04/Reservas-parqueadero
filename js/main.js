@@ -1,4 +1,4 @@
-import { obtenerPlazas } from "./api.js";
+import { obtenerPlazas, guardarPlazas } from "./api.js";
 
 let plazas = [];
 let plazasFiltradas = [];
@@ -54,18 +54,19 @@ function mostrarHeaderUsuario() {
   headerUser.style.display = "flex";
 
   const nombre = usuarioActual.nombre;
-
-  // Iniciales
-  const iniciales = nombre
-    .split(" ")
-    .map(n => n[0])
-    .join("")
-    .toUpperCase();
+  const iniciales = nombre.split(" ").map(n => n[0]).join("").toUpperCase();
 
   document.querySelector(".avatar").textContent = iniciales;
-  document.getElementById("usuarioActual").textContent = `Hola, ${nombre}`;
-  document.getElementById("usuarioActual").textContent = 
-  `Hola, ${usuarioActual.nombre} (${usuarioActual.rol})`;
+  document.getElementById("usuarioActual").textContent =
+    `Hola, ${usuarioActual.nombre} (${usuarioActual.rol})`;
+
+  const btnAdmin = document.getElementById("btnAdminPanel");
+  if (usuarioActual.rol === "admin") {
+    btnAdmin.style.display = "inline-block";
+    btnAdmin.onclick = () => location.href = "admin.html";
+  } else {
+    btnAdmin.style.display = "none";
+  }
 }
 
 function mostrarHeaderLogin() {
@@ -125,7 +126,6 @@ function mostrarPlazas() {
   }
 
   plazasFiltradas.forEach(p => {
-    // Índice real en el array principal
     const idx = plazas.findIndex(pl => pl.id === p.id);
 
     const card = document.createElement("div");
@@ -155,17 +155,15 @@ function mostrarPlazas() {
     let btnHtml = "";
     if (plazas[idx].estado === "disponible") {
       btnHtml = `<button class="btn-reservar">Reservar</button>`;
-    } 
-    else if (plazas[idx].estado === "reservado") {
+    } else if (plazas[idx].estado === "reservado") {
       btnHtml = `<button class="btn-cancelar">Cancelar</button>`;
-    } 
-    else if (plazas[idx].estado === "ocupado") {
+    } else if (plazas[idx].estado === "ocupado") {
       if (usuarioActual.rol === "admin") {
-      btnHtml = `<button class="btn-liberar">Liberar plaza</button>`;
-    } else {
-      btnHtml = `<button class="btn-ocupada">Plaza ocupada</button>`;
+        btnHtml = `<button class="btn-liberar">Liberar plaza</button>`;
+      } else {
+        btnHtml = `<button class="btn-ocupada">Plaza ocupada</button>`;
+      }
     }
-  }
 
     card.innerHTML = `
       <h3>Plaza ${plazas[idx].id}</h3>
@@ -188,6 +186,7 @@ function mostrarPlazas() {
       errorSpan.classList.remove("visible");
       plazas[idx].estado = "reservado";
       plazas[idx].fecha  = fecha;
+      guardarPlazas(plazas);
       alert(`Reservada para el ${fecha}`);
       render();
     });
@@ -195,6 +194,7 @@ function mostrarPlazas() {
     card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
       plazas[idx].estado = "disponible";
       plazas[idx].fecha  = null;
+      guardarPlazas(plazas);
       alert("Reserva cancelada");
       render();
     });
@@ -204,14 +204,13 @@ function mostrarPlazas() {
     });
 
     card.querySelector(".btn-liberar")?.addEventListener("click", () => {
-    if (usuarioActual.rol !== "admin") return;
-
-    plazas[idx].estado = "disponible";
-    plazas[idx].fecha = null;
-
-    alert("Plaza liberada por administrador");
-    render();
-  });
+      if (usuarioActual.rol !== "admin") return;
+      plazas[idx].estado = "disponible";
+      plazas[idx].fecha = null;
+      guardarPlazas(plazas);
+      alert("Plaza liberada por administrador");
+      render();
+    });
 
     cont.appendChild(card);
   });
@@ -270,72 +269,60 @@ function configurarModales() {
 
   window.onclick = (e) => { if (e.target.classList.contains("modal")) e.target.style.display = "none"; };
 
-document.getElementById("btnCrearCuenta").onclick = () => {
-  const nombre = document.getElementById("nombreCrear").value.trim();
-  const email  = document.getElementById("emailCrear").value.trim().toLowerCase();
-  const pass   = document.getElementById("passCrear").value.trim();
-  const rol = document.getElementById("rolCrear").value;
+  document.getElementById("btnCrearCuenta").onclick = () => {
+    const nombre = document.getElementById("nombreCrear").value.trim();
+    const email  = document.getElementById("emailCrear").value.trim().toLowerCase();
+    const pass   = document.getElementById("passCrear").value.trim();
+    const rol    = document.getElementById("rolCrear").value;
 
-  if (!nombre || !email || !pass) {
-    alert("Completa todos los campos");
-    return;
-  }
+    if (!nombre || !email || !pass) {
+      alert("Completa todos los campos");
+      return;
+    }
 
-  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    const existe = usuarios.some(u => u.email.trim().toLowerCase() === email);
 
-  // 🔒 VALIDAR SI YA EXISTE
-  const existe = usuarios.some(u => 
-    u.email.trim().toLowerCase() === email
-  );
+    if (existe) {
+      alert(" Este correo ya está registrado. Intenta iniciar sesión.");
+      return;
+    }
 
-  if (existe) {
-    alert("⚠️ Este correo ya está registrado. Intenta iniciar sesión.");
-    return; // 🚫 BLOQUEA CREACIÓN
-  }
+    const confirmar = confirm("¿Deseas crear la cuenta con este correo?");
+    if (!confirmar) return;
 
-  // 🧠 CONFIRMACIÓN ANTES DE CREAR
-  const confirmar = confirm("¿Deseas crear la cuenta con este correo?");
-  if (!confirmar) return;
+    const nuevoUsuario = { nombre, email, pass, rol };
+    usuarios.push(nuevoUsuario);
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
 
-  const nuevoUsuario = { nombre, email, pass, rol };
-
-  usuarios.push(nuevoUsuario);
-  localStorage.setItem("usuarios", JSON.stringify(usuarios));
-
-  guardarSesion(nuevoUsuario);
-  document.getElementById("modalCrear").style.display = "none";
-
-  alert("✅ Cuenta creada correctamente");
-};
+    guardarSesion(nuevoUsuario);
+    document.getElementById("modalCrear").style.display = "none";
+    alert(" Cuenta creada correctamente");
+  };
 
   document.getElementById("btnLogin").onclick = () => {
-  console.log("CLICK LOGIN"); // 👈 agrega esto
+    const email = document.getElementById("emailLogin").value.trim();
+    const pass  = document.getElementById("passLogin").value.trim();
 
-  const email = document.getElementById("emailLogin").value.trim();
-  const pass  = document.getElementById("passLogin").value.trim();
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    const user = usuarios.find(u =>
+      u.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+      u.pass.trim() === pass.trim()
+    );
 
-  let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-  
-  const user = usuarios.find(u => 
-  u.email.trim().toLowerCase() === email.trim().toLowerCase() &&
-  u.pass.trim() === pass.trim()
-);
-
-  if (user) {
-    console.log("LOGIN OK"); // 👈 agrega esto
-    guardarSesion(user);
-    document.getElementById("modalLogin").style.display = "none";
-    alert("Inicio de sesión exitoso");
-  } else {
-    console.log(user)
-    console.log("LOGIN FAIL"); // 👈 agrega esto
-    alert("Correo o contraseña incorrectos");
-  }
-};
-  }; 
+    if (user) {
+      guardarSesion(user);
+      document.getElementById("modalLogin").style.display = "none";
+      alert("Inicio de sesión exitoso");
+    } else {
+      alert("Correo o contraseña incorrectos");
+    }
+  };
 
   document.getElementById("btnLogout").onclick = cerrarSesion;
-  function configurarLogo() {
+}
+
+function configurarLogo() {
   document.querySelector(".logo").onclick = () => location.reload();
 }
 
@@ -352,4 +339,5 @@ function configurarBotonVolver() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 }
+
 iniciar();
