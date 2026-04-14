@@ -1,14 +1,26 @@
 import { obtenerPlazas, guardarPlazas } from "./api.js";
+import { PlazaManager, ContadorObserver, NotificacionObserver } from "./patrones.js";
 
+// ========== VARIABLES ==========
 let plazas = [];
 let plazasFiltradas = [];
 let zonaSeleccionada = "";
 let tipoSeleccionado = "";
 let usuarioActual = null;
 
+// Singleton
+const manager = new PlazaManager();
+
+// ========== INIT ==========
 async function iniciar() {
   plazas = await obtenerPlazas();
-  plazasFiltradas = [...plazas];
+
+  // Observer — suscribir observadores
+  manager.suscribir(new ContadorObserver());
+  manager.suscribir(new NotificacionObserver());
+
+  // Singleton — cargar plazas en el manager
+  manager.setPlazas(plazas);
 
   cargarSesion();
   configurarBotonesZona();
@@ -184,18 +196,16 @@ function mostrarPlazas() {
         return;
       }
       errorSpan.classList.remove("visible");
-      plazas[idx].estado = "reservado";
-      plazas[idx].fecha  = fecha;
-      guardarPlazas(plazas);
-      alert(`Reservada para el ${fecha}`);
+      // Usar manager (Singleton + Observer)
+      manager.reservar(plazas[idx].id, fecha);
+      plazas = manager.getPlazas();
       render();
     });
 
     card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
-      plazas[idx].estado = "disponible";
-      plazas[idx].fecha  = null;
-      guardarPlazas(plazas);
-      alert("Reserva cancelada");
+      // Usar manager (Singleton + Observer)
+      manager.cancelar(plazas[idx].id);
+      plazas = manager.getPlazas();
       render();
     });
 
@@ -205,10 +215,9 @@ function mostrarPlazas() {
 
     card.querySelector(".btn-liberar")?.addEventListener("click", () => {
       if (usuarioActual.rol !== "admin") return;
-      plazas[idx].estado = "disponible";
-      plazas[idx].fecha = null;
-      guardarPlazas(plazas);
-      alert("Plaza liberada por administrador");
+      // Usar manager (Singleton + Observer)
+      manager.liberar(plazas[idx].id);
+      plazas = manager.getPlazas();
       render();
     });
 
@@ -218,9 +227,12 @@ function mostrarPlazas() {
 
 function actualizarContador() {
   document.getElementById("totalPlazas").textContent = plazas.length;
-  document.getElementById("plazasLibres").textContent = plazas.filter(p => p.estado === "disponible").length;
-  document.getElementById("plazasReservadas").textContent = plazas.filter(p => p.estado === "reservado").length;
-  document.getElementById("plazasOcupadas").textContent = plazas.filter(p => p.estado === "ocupado").length;
+  document.getElementById("plazasLibres").textContent =
+    plazas.filter(p => p.estado === "disponible").length;
+  document.getElementById("plazasReservadas").textContent =
+    plazas.filter(p => p.estado === "reservado").length;
+  document.getElementById("plazasOcupadas").textContent =
+    plazas.filter(p => p.estado === "ocupado").length;
 }
 
 /* ================= CATEGORIAS ================= */
@@ -264,10 +276,15 @@ function configurarModales() {
   document.getElementById("btnHeaderLogin").onclick = () => mLogin.style.display = "flex";
 
   document.querySelectorAll(".cerrar").forEach(btn => {
-    btn.onclick = () => { mCrear.style.display = "none"; mLogin.style.display = "none"; };
+    btn.onclick = () => {
+      mCrear.style.display = "none";
+      mLogin.style.display = "none";
+    };
   });
 
-  window.onclick = (e) => { if (e.target.classList.contains("modal")) e.target.style.display = "none"; };
+  window.onclick = (e) => {
+    if (e.target.classList.contains("modal")) e.target.style.display = "none";
+  };
 
   document.getElementById("btnCrearCuenta").onclick = () => {
     const nombre = document.getElementById("nombreCrear").value.trim();
