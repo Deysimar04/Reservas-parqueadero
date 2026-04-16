@@ -31,8 +31,38 @@
   </div>
 </header>
 
-<!-- CATEGORIAS -->
-<section class="categorias">
+<!-- SECCION DESCRIPCION + CTA VEHICULOS -->
+<section class="vehiculos-cta">
+  <div class="vehiculos-cta-inner">
+    <div class="vehiculos-cta-texto">
+      <h2 class="vehiculos-cta-titulo">¿Qué tipo de vehículo vas a parquear hoy?</h2>
+      <p class="vehiculos-cta-desc">
+        Cada plaza está pensada para el tamaño y necesidades de tu vehículo.
+        Selecciona tu categoría y te mostraremos las plazas disponibles ideales para ti.
+      </p>
+      <button class="btn-ver-categorias" id="btnVerCategorias">
+        <span>¿Qué vehículo vas a parquear?</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+    <div class="vehiculos-cta-icon" aria-hidden="true">🅿️</div>
+  </div>
+</section>
+
+<!-- AVISO LOGIN (visible cuando se abre categorías sin sesión) -->
+<div id="avisoLoginCategorias" style="display:none;">
+  <div class="aviso-login-banner">
+    <span class="aviso-login-icono"></span>
+    <div class="aviso-login-texto">
+      <strong>Inicia sesión para continuar</strong>
+      <span>Necesitas una cuenta activa para seleccionar tu vehículo y reservar una plaza.</span>
+    </div>
+    <button class="aviso-login-btn" id="btnAvisoLogin">Iniciar sesión</button>
+  </div>
+</div>
+
+<!-- CATEGORIAS (ocultas por defecto) -->
+<section class="categorias" id="seccionCategorias" style="display:none;">
   <h2>Categorías de vehículos</h2>
   <div class="categoria-container">
     <div class="categoria-card" data-tipo="automovil">
@@ -65,7 +95,7 @@
     <div class="zona-card">
       <h3>Centro Comercial</h3>
       <div class="zona-img">
-        <img class="zona-img" src="img/mall.jpg" alt="Aeropuerto">
+        <img class="zona-img" src="img/mall.jpg" alt="Centro Comercial">
       </div>
       <p>Parking cubierto para visitantes</p>
       <button class="btn-zona">Ver plazas</button>
@@ -73,7 +103,7 @@
     <div class="zona-card">
       <h3>Centro Ciudad</h3>
       <div class="zona-img">
-        <img class="zona-img" src="img/central.jpg" alt="Aeropuerto">
+        <img class="zona-img" src="img/central.jpg" alt="Centro Ciudad">
       </div>
       <p>Parking público en zona urbana</p>
       <button class="btn-zona">Ver plazas</button>
@@ -100,13 +130,18 @@
   <p>Ocupadas: <span id="plazasOcupadas">0</span></p>
 </section>
 
-//
 <section id="misReservasSection" style="display:none;">
-  <h2>Mis Reservas</h2>
-  <div id="misReservas"></div>
+  <div class="mis-reservas-wrapper">
+    <div class="mis-reservas-header">
+      <span class="mis-reservas-icono">🅿️</span>
+      <div>
+        <h2 class="mis-reservas-titulo">Mis Reservas</h2>
+        <p class="mis-reservas-subtitulo">Tus plazas reservadas activas</p>
+      </div>
+    </div>
+    <div id="misReservas" class="mis-reservas-grid"></div>
+  </div>
 </section>
-
-
 
 <!-- PLAZAS -->
 <section id="parkingContainer"></section>
@@ -202,5 +237,51 @@
 </footer>
 
 <script type="module" src="js/main.js"></script>
+
+<script>
+  // Toggle categorías: muestra aviso si no hay sesión, categorías si hay sesión
+  document.getElementById("btnVerCategorias").addEventListener("click", function () {
+    const seccion   = document.getElementById("seccionCategorias");
+    const aviso     = document.getElementById("avisoLoginCategorias");
+    const btn       = document.getElementById("btnVerCategorias");
+    const abierto   = btn.classList.contains("activo");
+    const haySession = !!localStorage.getItem("usuarioActual");
+
+    if (abierto) {
+      // Cerrar todo
+      seccion.style.display = "none";
+      aviso.style.display   = "none";
+      btn.classList.remove("activo");
+    } else {
+      btn.classList.add("activo");
+      if (!haySession) {
+        aviso.style.display   = "block";
+        seccion.style.display = "none";
+        aviso.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        aviso.style.display   = "none";
+        seccion.style.display = "block";
+        seccion.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  });
+
+  // Botón "Iniciar sesión" del banner abre el modal
+  document.getElementById("btnAvisoLogin").addEventListener("click", function () {
+    document.getElementById("modalLogin").style.display = "flex";
+  });
+
+  // Cuando el usuario inicia sesión, ocultar aviso y mostrar categorías
+  window.addEventListener("storage", function (e) {
+    if (e.key === "usuarioActual" && e.newValue) {
+      document.getElementById("avisoLoginCategorias").style.display = "none";
+      const btn = document.getElementById("btnVerCategorias");
+      if (btn.classList.contains("activo")) {
+        document.getElementById("seccionCategorias").style.display = "block";
+      }
+    }
+  });
+</script>
+
 </body>
 </html>

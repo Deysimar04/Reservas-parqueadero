@@ -10,108 +10,55 @@
 /* ====== MOBILE BLOQUEADO ====== */
 .mobile-bloqueado {
   display: none;
-  position: fixed;
-  top: 0; left: 0;
+  position: fixed; top: 0; left: 0;
   width: 100%; height: 100%;
-  background: #1e2a38;
-  color: white;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 99999;
-  gap: 16px;
-  text-align: center;
-  padding: 30px;
+  background: #1e2a38; color: white;
+  flex-direction: column; align-items: center; justify-content: center;
+  z-index: 99999; gap: 16px; text-align: center; padding: 30px;
 }
 .mobile-bloqueado .icono { font-size: 60px; }
 .mobile-bloqueado h2 { margin: 0; font-size: 22px; }
 .mobile-bloqueado p  { margin: 0; color: rgba(255,255,255,0.6); font-size: 15px; }
-@media (max-width: 768px) {
-  .mobile-bloqueado { display: flex; }
-}
+@media (max-width: 768px) { .mobile-bloqueado { display: flex; } }
 
 /* ====== LAYOUT ADMIN ====== */
-.admin-wrapper {
-  display: flex;
-  min-height: calc(100vh - 64px);
-}
+.admin-wrapper { display: flex; min-height: calc(100vh - 64px); }
 
 /* ====== SIDEBAR ====== */
 .sidebar {
-  width: 240px;
-  min-width: 240px;
-  background: #1e2a38;
-  color: white;
-  display: flex;
-  flex-direction: column;
+  width: 240px; min-width: 240px;
+  background: #1e2a38; color: white;
+  display: flex; flex-direction: column;
   padding-top: 20px;
-  position: sticky;
-  top: 64px;
-  height: calc(100vh - 64px);
-  overflow-y: auto;
+  position: sticky; top: 64px;
+  height: calc(100vh - 64px); overflow-y: auto;
 }
-
 .sidebar-section {
-  padding: 8px 20px 4px 20px;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: rgba(255,255,255,0.4);
-  margin-top: 10px;
+  padding: 8px 20px 4px 20px; font-size: 11px;
+  text-transform: uppercase; letter-spacing: 1.2px;
+  color: rgba(255,255,255,0.4); margin-top: 10px;
 }
-
 .sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  cursor: pointer;
-  transition: background 0.2s;
-  font-size: 14px;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 20px; cursor: pointer;
+  transition: background 0.2s; font-size: 14px;
   color: rgba(255,255,255,0.75);
-  border-left: 3px solid transparent;
-  user-select: none;
+  border-left: 3px solid transparent; user-select: none;
 }
 .sidebar-item:hover { background: rgba(255,255,255,0.07); color: white; }
-.sidebar-item.activo {
-  background: rgba(52,152,219,0.18);
-  border-left: 3px solid #3498db;
-  color: white;
-  font-weight: bold;
-}
+.sidebar-item.activo { background: rgba(52,152,219,0.18); border-left: 3px solid #3498db; color: white; font-weight: bold; }
 .sidebar-item .icon { font-size: 18px; width: 22px; text-align: center; }
 
 /* ====== CONTENIDO ====== */
-.admin-main {
-  flex: 1;
-  padding: 30px;
-  background: #f4f6f9;
-  overflow-y: auto;
-}
-
+.admin-main { flex: 1; padding: 30px; background: #f4f6f9; overflow-y: auto; }
 .admin-page { display: none; }
 .admin-page.visible { display: block; }
-
 .page-title { font-size: 22px; font-weight: bold; color: #1e2a38; margin-bottom: 6px; }
 .page-subtitle { color: #888; font-size: 14px; margin-bottom: 24px; }
 
 /* ====== KPI ====== */
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
-}
-.kpi-card {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  border-top: 4px solid #3498db;
-}
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+.kpi-card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); display: flex; flex-direction: column; gap: 6px; border-top: 4px solid #3498db; }
 .kpi-card.verde    { border-top-color: #27ae60; }
 .kpi-card.amarillo { border-top-color: #f1c40f; }
 .kpi-card.rojo     { border-top-color: #e74c3c; }
@@ -122,278 +69,82 @@
 .kpi-desc  { font-size: 12px; color: #aaa; }
 
 /* ====== TABLA ====== */
-.tabla-wrapper {
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  overflow: hidden;
-  margin-bottom: 24px;
-}
-.tabla-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid #eee;
-}
+.tabla-wrapper { background: white; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; margin-bottom: 24px; }
+.tabla-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #eee; }
 .tabla-titulo { font-weight: bold; color: #1e2a38; font-size: 15px; }
-.tabla-buscar {
-  padding: 7px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 13px;
-  outline: none;
-  width: 200px;
-}
+.tabla-buscar { padding: 7px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; outline: none; width: 200px; }
 .tabla-buscar:focus { border-color: #3498db; }
-
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
 thead tr { background: #f8f9fa; }
-th {
-  text-align: left;
-  padding: 12px 16px;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.7px;
-  color: #888;
-  border-bottom: 1px solid #eee;
-}
+th { text-align: left; padding: 12px 16px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.7px; color: #888; border-bottom: 1px solid #eee; }
 td { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; color: #444; }
 tbody tr:hover { background: #fafbfc; }
 tbody tr:last-child td { border-bottom: none; }
 
 /* ====== BADGES ====== */
-.badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: bold;
-}
+.badge { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: bold; }
 .badge-disponible { background: #eafaf1; color: #27ae60; border: 1px solid #27ae60; }
 .badge-reservado  { background: #fef9e7; color: #d4ac0d; border: 1px solid #f1c40f; }
 .badge-ocupado    { background: #fdf2f2; color: #e74c3c; border: 1px solid #e74c3c; }
 .badge-admin      { background: #eaf0fb; color: #2980b9; border: 1px solid #3498db; }
-.badge-cliente    { background: #f5f5f5; color: #666;    border: 1px solid #ccc; }
+.badge-cliente    { background: #f5f5f5; color: #666; border: 1px solid #ccc; }
 
 /* ====== BOTONES ====== */
-.btn-accion {
-  padding: 5px 11px;
-  border: none;
-  border-radius: 5px;
-  font-size: 12px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-right: 4px;
-  transition: opacity 0.2s;
-}
+.btn-accion { padding: 5px 11px; border: none; border-radius: 5px; font-size: 12px; font-weight: bold; cursor: pointer; margin-right: 4px; transition: opacity 0.2s; }
 .btn-accion:hover { opacity: 0.8; }
-.btn-liberar   { background: #27ae60; color: white; }
-.btn-editar    { background: #3498db; color: white; }
-.btn-eliminar  { background: #e74c3c; color: white; }
-.btn-rol       { background: #8e44ad; color: white; }
+.btn-liberar  { background: #27ae60; color: white; }
+.btn-editar   { background: #3498db; color: white; }
+.btn-eliminar { background: #e74c3c; color: white; }
+.btn-rol      { background: #8e44ad; color: white; }
 
 .filtros-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
-.filtro-select {
-  padding: 7px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 13px;
-  background: white;
-  cursor: pointer;
-  outline: none;
-}
+.filtro-select { padding: 7px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; background: white; cursor: pointer; outline: none; }
 .filtro-select:focus { border-color: #3498db; }
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.btn-nuevo {
-  padding: 9px 18px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  font-weight: bold;
-  cursor: pointer;
-  font-size: 14px;
-}
+.section-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.btn-nuevo { padding: 9px 18px; background: #3498db; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
 .btn-nuevo:hover { background: #2980b9; }
 
 /* ====== MODAL ADMIN ====== */
-.modal-admin {
-  display: none;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.5);
-  z-index: 10000;
-  justify-content: center;
-  align-items: center;
-}
+.modal-admin { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 10000; justify-content: center; align-items: center; }
 .modal-admin.abierto { display: flex; }
-
-.modal-admin-contenido {
-  background: white;
-  border-radius: 12px;
-  padding: 32px;
-  width: 420px;
-  max-width: 95vw;
-  position: relative;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-}
+.modal-admin-contenido { background: white; border-radius: 12px; padding: 32px; width: 420px; max-width: 95vw; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.2); }
 .modal-admin-contenido h3 { margin: 0 0 20px 0; color: #1e2a38; font-size: 18px; }
-
 .form-grupo { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
 .form-grupo label { font-size: 13px; font-weight: bold; color: #555; }
-.form-grupo input,
-.form-grupo select,
-.form-grupo textarea {
-  padding: 9px 12px;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  font-size: 14px;
-  outline: none;
-  font-family: inherit;
-}
-.form-grupo input:focus,
-.form-grupo select:focus,
-.form-grupo textarea:focus { border-color: #3498db; }
-
+.form-grupo input, .form-grupo select, .form-grupo textarea { padding: 9px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; outline: none; font-family: inherit; }
+.form-grupo input:focus, .form-grupo select:focus, .form-grupo textarea:focus { border-color: #3498db; }
 .form-acciones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-.btn-cancelar-modal {
-  padding: 9px 18px;
-  background: #f0f0f0;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-}
-.btn-guardar-modal {
-  padding: 9px 18px;
-  background: #3498db;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  font-weight: bold;
-}
+.btn-cancelar-modal { padding: 9px 18px; background: #f0f0f0; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
+.btn-guardar-modal { padding: 9px 18px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: bold; }
 .btn-guardar-modal:hover { background: #2980b9; }
-
-.modal-cerrar-x {
-  position: absolute;
-  top: 14px; right: 18px;
-  font-size: 22px;
-  cursor: pointer;
-  color: #aaa;
-  line-height: 1;
-}
+.modal-cerrar-x { position: absolute; top: 14px; right: 18px; font-size: 22px; cursor: pointer; color: #aaa; line-height: 1; }
 .modal-cerrar-x:hover { color: #333; }
 
 /* ====== CARACTERISTICAS TAGS ====== */
-.caract-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 6px;
-}
-.caract-tag {
-  background: #eaf0fb;
-  color: #2980b9;
-  border: 1px solid #3498db;
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 12px;
-  font-weight: bold;
-}
-.caract-tag-none {
-  color: #aaa;
-  font-size: 12px;
-  font-style: italic;
-}
-
-/* ====== CHECKBOXES CARACTERISTICAS ====== */
-.caract-check-list {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-height: 180px;
-  overflow-y: auto;
-  border: 1px solid #ddd;
-  border-radius: 6px;
-  padding: 10px;
-}
-.caract-check-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  cursor: pointer;
-}
+.caract-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.caract-tag { background: #eaf0fb; color: #2980b9; border: 1px solid #3498db; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: bold; }
+.caract-tag-none { color: #aaa; font-size: 12px; font-style: italic; }
+.caract-check-list { display: flex; flex-direction: column; gap: 8px; max-height: 180px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px; }
+.caract-check-item { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
 
 /* ====== CHART ====== */
-.chart-wrapper {
-  background: white;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
-  margin-bottom: 24px;
-}
+.chart-wrapper { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); margin-bottom: 24px; }
 .chart-titulo { font-weight: bold; color: #1e2a38; margin-bottom: 16px; font-size: 15px; }
 .bar-chart { display: flex; flex-direction: column; gap: 12px; }
 .bar-row { display: flex; align-items: center; gap: 12px; }
 .bar-label { width: 130px; font-size: 13px; color: #555; text-align: right; flex-shrink: 0; }
 .bar-track { flex: 1; background: #f0f0f0; border-radius: 6px; height: 22px; overflow: hidden; }
-.bar-fill {
-  height: 100%;
-  border-radius: 6px;
-  transition: width 0.8s ease;
-  display: flex;
-  align-items: center;
-  padding-left: 8px;
-  font-size: 11px;
-  font-weight: bold;
-  color: white;
-}
+.bar-fill { height: 100%; border-radius: 6px; transition: width 0.8s ease; display: flex; align-items: center; padding-left: 8px; font-size: 11px; font-weight: bold; color: white; }
 .bar-count { width: 32px; font-size: 13px; font-weight: bold; color: #1e2a38; }
 
 /* ====== ALERT ====== */
-.admin-alert {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  background: #1e2a38;
-  color: white;
-  padding: 13px 20px;
-  border-radius: 8px;
-  font-size: 14px;
-  z-index: 99999;
-  opacity: 0;
-  transform: translateY(10px);
-  transition: 0.3s;
-  pointer-events: none;
-}
+.admin-alert { position: fixed; bottom: 24px; right: 24px; background: #1e2a38; color: white; padding: 13px 20px; border-radius: 8px; font-size: 14px; z-index: 99999; opacity: 0; transform: translateY(10px); transition: 0.3s; pointer-events: none; }
 .admin-alert.mostrar { opacity: 1; transform: translateY(0); }
 .admin-alert.verde { background: #27ae60; }
 .admin-alert.rojo  { background: #e74c3c; }
 
 /* ====== ACCESO DENEGADO ====== */
-.acceso-denegado {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 60vh;
-  gap: 14px;
-  text-align: center;
-}
+.acceso-denegado { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 14px; text-align: center; }
 .acceso-denegado .icono { font-size: 64px; }
 .acceso-denegado h2 { color: #1e2a38; margin: 0; }
 .acceso-denegado p  { color: #888; margin: 0; }
@@ -431,31 +182,15 @@ tbody tr:last-child td { border-bottom: none; }
   <!-- SIDEBAR -->
   <nav class="sidebar" id="sidebar">
     <div class="sidebar-section">Principal</div>
-    <div class="sidebar-item activo" data-page="dashboard">
-      <span class="icon">📊</span> Dashboard
-    </div>
-
+    <div class="sidebar-item activo" data-page="dashboard"><span class="icon">📊</span> Dashboard</div>
     <div class="sidebar-section">Gestión</div>
-    <div class="sidebar-item" data-page="plazas">
-      <span class="icon">🅿️</span> Plazas
-    </div>
-    <div class="sidebar-item" data-page="reservas">
-      <span class="icon">📋</span> Reservas
-    </div>
-    <div class="sidebar-item" data-page="usuarios">
-      <span class="icon">👥</span> Usuarios
-    </div>
-    <div class="sidebar-item" data-page="caracteristicas">
-      <span class="icon">🏷️</span> Características
-    </div>
-
+    <div class="sidebar-item" data-page="plazas"><span class="icon">🅿️</span> Plazas</div>
+    <div class="sidebar-item" data-page="reservas"><span class="icon">📋</span> Reservas</div>
+    <div class="sidebar-item" data-page="usuarios"><span class="icon">👥</span> Usuarios</div>
+    <div class="sidebar-item" data-page="caracteristicas"><span class="icon">🏷️</span> Características</div>
     <div class="sidebar-section">Sistema</div>
-    <div class="sidebar-item" data-page="reportes">
-      <span class="icon">📈</span> Reportes
-    </div>
-    <div class="sidebar-item" data-page="configuracion">
-      <span class="icon">⚙️</span> Configuración
-    </div>
+    <div class="sidebar-item" data-page="reportes"><span class="icon">📈</span> Reportes</div>
+    <div class="sidebar-item" data-page="configuracion"><span class="icon">⚙️</span> Configuración</div>
   </nav>
 
   <!-- CONTENIDO -->
@@ -474,69 +209,34 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="page-title">Dashboard</div>
       <div class="page-subtitle">Resumen general del sistema</div>
       <div class="kpi-grid">
-        <div class="kpi-card verde">
-          <div class="kpi-label">Disponibles</div>
-          <div class="kpi-valor" id="kpi-disponibles">—</div>
-          <div class="kpi-desc">Listas para reservar</div>
-        </div>
-        <div class="kpi-card amarillo">
-          <div class="kpi-label">Reservadas</div>
-          <div class="kpi-valor" id="kpi-reservadas">—</div>
-          <div class="kpi-desc">Con fecha asignada</div>
-        </div>
-        <div class="kpi-card rojo">
-          <div class="kpi-label">Ocupadas</div>
-          <div class="kpi-valor" id="kpi-ocupadas">—</div>
-          <div class="kpi-desc">En uso ahora</div>
-        </div>
-        <div class="kpi-card azul">
-          <div class="kpi-label">Total plazas</div>
-          <div class="kpi-valor" id="kpi-total">—</div>
-          <div class="kpi-desc">En todas las zonas</div>
-        </div>
-        <div class="kpi-card morado">
-          <div class="kpi-label">Usuarios</div>
-          <div class="kpi-valor" id="kpi-usuarios">—</div>
-          <div class="kpi-desc">Registrados</div>
-        </div>
+        <div class="kpi-card verde">  <div class="kpi-label">Disponibles</div><div class="kpi-valor" id="kpi-disponibles">—</div><div class="kpi-desc">Listas para reservar</div></div>
+        <div class="kpi-card amarillo"><div class="kpi-label">Reservadas</div><div class="kpi-valor" id="kpi-reservadas">—</div><div class="kpi-desc">Con fecha asignada</div></div>
+        <div class="kpi-card rojo">   <div class="kpi-label">Ocupadas</div>  <div class="kpi-valor" id="kpi-ocupadas">—</div>  <div class="kpi-desc">En uso ahora</div></div>
+        <div class="kpi-card azul">   <div class="kpi-label">Total plazas</div><div class="kpi-valor" id="kpi-total">—</div>   <div class="kpi-desc">En todas las zonas</div></div>
+        <div class="kpi-card morado"> <div class="kpi-label">Usuarios</div>  <div class="kpi-valor" id="kpi-usuarios">—</div>  <div class="kpi-desc">Registrados</div></div>
       </div>
-      <div class="chart-wrapper">
-        <div class="chart-titulo">Plazas por zona</div>
-        <div class="bar-chart" id="chartZonas"></div>
-      </div>
-      <div class="chart-wrapper">
-        <div class="chart-titulo">Plazas por tipo de vehículo</div>
-        <div class="bar-chart" id="chartTipos"></div>
-      </div>
+      <div class="chart-wrapper"><div class="chart-titulo">Plazas por zona</div><div class="bar-chart" id="chartZonas"></div></div>
+      <div class="chart-wrapper"><div class="chart-titulo">Plazas por tipo de vehículo</div><div class="bar-chart" id="chartTipos"></div></div>
     </div>
 
     <!-- ===== PLAZAS ===== -->
     <div class="admin-page" id="page-plazas">
       <div class="section-header">
-        <div>
-          <div class="page-title">Gestión de plazas</div>
-          <div class="page-subtitle">Administra el estado de cada plaza</div>
-        </div>
+        <div><div class="page-title">Gestión de plazas</div><div class="page-subtitle">Administra el estado de cada plaza</div></div>
         <button class="btn-nuevo" id="btnNuevaPlaza">+ Nueva plaza</button>
       </div>
       <div class="filtros-bar">
         <select class="filtro-select" id="filtroZona">
           <option value="">Todas las zonas</option>
-          <option>Aeropuerto</option>
-          <option>Centro Comercial</option>
-          <option>Centro Ciudad</option>
+          <option>Aeropuerto</option><option>Centro Comercial</option><option>Centro Ciudad</option>
         </select>
         <select class="filtro-select" id="filtroTipo">
           <option value="">Todos los tipos</option>
-          <option value="automovil">Automóvil</option>
-          <option value="camioneta">Camioneta</option>
-          <option value="moto">Moto</option>
+          <option value="automovil">Automóvil</option><option value="camioneta">Camioneta</option><option value="moto">Moto</option>
         </select>
         <select class="filtro-select" id="filtroEstado">
           <option value="">Todos los estados</option>
-          <option value="disponible">Disponible</option>
-          <option value="reservado">Reservado</option>
-          <option value="ocupado">Ocupado</option>
+          <option value="disponible">Disponible</option><option value="reservado">Reservado</option><option value="ocupado">Ocupado</option>
         </select>
       </div>
       <div class="tabla-wrapper">
@@ -544,89 +244,54 @@ tbody tr:last-child td { border-bottom: none; }
           <span class="tabla-titulo">Listado de plazas</span>
           <input class="tabla-buscar" placeholder="Buscar plaza..." id="buscarPlaza">
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th><th>Zona</th><th>Tipo</th><th>Estado</th>
-              <th>Fecha</th><th>Características</th><th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tablaPlazasBody"></tbody>
-        </table>
+        <table><thead><tr><th>ID</th><th>Zona</th><th>Tipo</th><th>Estado</th><th>Fecha</th><th>Características</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaPlazasBody"></tbody></table>
       </div>
     </div>
 
     <!-- ===== RESERVAS ===== -->
     <div class="admin-page" id="page-reservas">
       <div class="section-header">
-        <div>
-          <div class="page-title">Reservas activas</div>
-          <div class="page-subtitle">Plazas reservadas u ocupadas</div>
-        </div>
+        <div><div class="page-title">Reservas activas</div><div class="page-subtitle">Plazas reservadas u ocupadas</div></div>
       </div>
       <div class="tabla-wrapper">
         <div class="tabla-header">
           <span class="tabla-titulo">Historial de reservas</span>
-          <input class="tabla-buscar" placeholder=" Buscar..." id="buscarReserva">
+          <input class="tabla-buscar" placeholder="Buscar..." id="buscarReserva">
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Plaza</th><th>Zona</th><th>Tipo</th>
-              <th>Estado</th><th>Fecha</th><th>Reservado por</th><th>Acción</th>
-            </tr>
-          </thead>
-          <tbody id="tablaReservasBody"></tbody>
-        </table>
+        <table><thead><tr><th>Plaza</th><th>Zona</th><th>Tipo</th><th>Estado</th><th>Fecha</th><th>Reservado por</th><th>Acción</th></tr></thead>
+        <tbody id="tablaReservasBody"></tbody></table>
       </div>
     </div>
 
     <!-- ===== USUARIOS ===== -->
     <div class="admin-page" id="page-usuarios">
       <div class="section-header">
-        <div>
-          <div class="page-title">Gestión de usuarios</div>
-          <div class="page-subtitle">Usuarios registrados — puedes cambiar su rol o eliminarlos</div>
-        </div>
+        <div><div class="page-title">Gestión de usuarios</div><div class="page-subtitle">Usuarios registrados — puedes cambiar su rol o eliminarlos</div></div>
       </div>
       <div class="tabla-wrapper">
         <div class="tabla-header">
           <span class="tabla-titulo">Usuarios registrados</span>
-          <input class="tabla-buscar" placeholder=" Buscar usuario..." id="buscarUsuario">
+          <input class="tabla-buscar" placeholder="Buscar usuario..." id="buscarUsuario">
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tablaUsuariosBody"></tbody>
-        </table>
+        <table><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaUsuariosBody"></tbody></table>
       </div>
     </div>
 
-    <!-- ===== CARACTERÍSTICAS (HU17) ===== -->
+    <!-- ===== CARACTERÍSTICAS ===== -->
     <div class="admin-page" id="page-caracteristicas">
       <div class="section-header">
-        <div>
-          <div class="page-title">Características</div>
-          <div class="page-subtitle">Administra las características y asócialas a plazas</div>
-        </div>
+        <div><div class="page-title">Características</div><div class="page-subtitle">Administra las características y asócialas a plazas</div></div>
         <button class="btn-nuevo" id="btnNuevaCaract">+ Nueva característica</button>
       </div>
       <div class="tabla-wrapper">
         <div class="tabla-header">
           <span class="tabla-titulo">Listado de características</span>
-          <input class="tabla-buscar" placeholder=" Buscar..." id="buscarCaract">
+          <input class="tabla-buscar" placeholder="Buscar..." id="buscarCaract">
         </div>
-        <table>
-          <thead>
-            <tr>
-              <th>ID</th><th>Nombre</th><th>Descripción</th><th>Plazas asociadas</th><th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tablaCaractBody"></tbody>
-        </table>
+        <table><thead><tr><th>ID</th><th>Nombre</th><th>Descripción</th><th>Plazas asociadas</th><th>Acciones</th></tr></thead>
+        <tbody id="tablaCaractBody"></tbody></table>
       </div>
     </div>
 
@@ -635,48 +300,23 @@ tbody tr:last-child td { border-bottom: none; }
       <div class="page-title">Reportes</div>
       <div class="page-subtitle">Estadísticas generales del sistema</div>
       <div class="kpi-grid">
-        <div class="kpi-card verde">
-          <div class="kpi-label">Ocupación total</div>
-          <div class="kpi-valor" id="rep-ocupacion">—</div>
-          <div class="kpi-desc">% plazas no disponibles</div>
-        </div>
-        <div class="kpi-card azul">
-          <div class="kpi-label">Zona más activa</div>
-          <div class="kpi-valor" id="rep-zona" style="font-size:16px;margin-top:4px">—</div>
-          <div class="kpi-desc">Mayor cantidad de reservas</div>
-        </div>
-        <div class="kpi-card morado">
-          <div class="kpi-label">Vehículo más frecuente</div>
-          <div class="kpi-valor" id="rep-tipo" style="font-size:16px;margin-top:4px">—</div>
-          <div class="kpi-desc">Tipo más reservado</div>
-        </div>
+        <div class="kpi-card verde">  <div class="kpi-label">Ocupación total</div><div class="kpi-valor" id="rep-ocupacion">—</div><div class="kpi-desc">% plazas no disponibles</div></div>
+        <div class="kpi-card azul">   <div class="kpi-label">Zona más activa</div><div class="kpi-valor" id="rep-zona" style="font-size:16px;margin-top:4px">—</div><div class="kpi-desc">Mayor cantidad de reservas</div></div>
+        <div class="kpi-card morado"> <div class="kpi-label">Vehículo más frecuente</div><div class="kpi-valor" id="rep-tipo" style="font-size:16px;margin-top:4px">—</div><div class="kpi-desc">Tipo más reservado</div></div>
       </div>
-      <div class="chart-wrapper">
-        <div class="chart-titulo">Estado general de plazas</div>
-        <div class="bar-chart" id="chartEstados"></div>
-      </div>
+      <div class="chart-wrapper"><div class="chart-titulo">Estado general de plazas</div><div class="bar-chart" id="chartEstados"></div></div>
     </div>
 
     <!-- ===== CONFIGURACIÓN ===== -->
     <div class="admin-page" id="page-configuracion">
       <div class="page-title">Configuración</div>
       <div class="page-subtitle">Ajustes del sistema ParkApp</div>
-      <div class="tabla-wrapper" style="padding:24px; max-width:500px">
+      <div class="tabla-wrapper" style="padding:24px;max-width:500px">
         <div style="display:flex;flex-direction:column;gap:16px">
-          <div class="form-grupo">
-            <label>Nombre del sistema</label>
-            <input type="text" id="cfgNombre" value="ParkApp">
-          </div>
-          <div class="form-grupo">
-            <label>Máximo de plazas por zona</label>
-            <input type="number" id="cfgMaxPlazas" value="10" min="1">
-          </div>
-          <div class="form-grupo">
-            <label>Permitir registro de nuevos usuarios</label>
-            <select id="cfgRegistro">
-              <option value="si">Sí</option>
-              <option value="no">No</option>
-            </select>
+          <div class="form-grupo"><label>Nombre del sistema</label><input type="text" id="cfgNombre" value="ParkApp"></div>
+          <div class="form-grupo"><label>Máximo de plazas por zona</label><input type="number" id="cfgMaxPlazas" value="10" min="1"></div>
+          <div class="form-grupo"><label>Permitir registro de nuevos usuarios</label>
+            <select id="cfgRegistro"><option value="si">Sí</option><option value="no">No</option></select>
           </div>
           <button class="btn-nuevo" id="btnGuardarConfig">Guardar configuración</button>
         </div>
@@ -691,49 +331,23 @@ tbody tr:last-child td { border-bottom: none; }
   <div class="modal-admin-contenido">
     <span class="modal-cerrar-x" id="cerrarModalPlaza">&times;</span>
     <h3 id="tituloModalPlaza">Nueva Plaza</h3>
-    <div class="form-grupo">
-      <label>Zona</label>
-      <select id="plazaZona">
-        <option>Aeropuerto</option>
-        <option>Centro Comercial</option>
-        <option>Centro Ciudad</option>
-      </select>
+    <div class="form-grupo"><label>Zona</label>
+      <select id="plazaZona"><option>Aeropuerto</option><option>Centro Comercial</option><option>Centro Ciudad</option></select>
     </div>
-    <div class="form-grupo">
-      <label>Tipo de vehículo</label>
-      <select id="plazaTipo">
-        <option value="automovil">Automóvil</option>
-        <option value="camioneta">Camioneta</option>
-        <option value="moto">Moto</option>
-      </select>
+    <div class="form-grupo"><label>Tipo de vehículo</label>
+      <select id="plazaTipo"><option value="automovil">Automóvil</option><option value="camioneta">Camioneta</option><option value="moto">Moto</option></select>
     </div>
-    <div class="form-grupo">
-      <label>Estado</label>
-      <select id="plazaEstado">
-        <option value="disponible">Disponible</option>
-        <option value="reservado">Reservado</option>
-        <option value="ocupado">Ocupado</option>
-      </select>
+    <div class="form-grupo"><label>Estado</label>
+      <select id="plazaEstado"><option value="disponible">Disponible</option><option value="reservado">Reservado</option><option value="ocupado">Ocupado</option></select>
     </div>
-    <div class="form-grupo">
-      <label>Características asociadas</label>
-      <div class="caract-check-list" id="plazaCaractList"></div>
-    </div>
+    <div class="form-grupo"><label>Características asociadas</label><div class="caract-check-list" id="plazaCaractList"></div></div>
     <div class="form-grupo">
       <label style="margin-bottom:6px">Extras</label>
       <div style="display:flex;gap:16px;flex-wrap:wrap">
-        <label style="font-size:13px;display:flex;gap:6px;align-items:center">
-          <input type="checkbox" id="extraTechado"> Techado
-        </label>
-        <label style="font-size:13px;display:flex;gap:6px;align-items:center">
-          <input type="checkbox" id="extraCamaras"> Cámaras
-        </label>
-        <label style="font-size:13px;display:flex;gap:6px;align-items:center">
-          <input type="checkbox" id="extraIluminado"> Iluminado
-        </label>
-        <label style="font-size:13px;display:flex;gap:6px;align-items:center">
-          <input type="checkbox" id="extraDiscap"> Accesible
-        </label>
+        <label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="extraTechado"> Techado</label>
+        <label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="extraCamaras"> Cámaras</label>
+        <label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="extraIluminado"> Iluminado</label>
+        <label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="extraDiscap"> Accesible</label>
       </div>
     </div>
     <div class="form-acciones">
@@ -748,14 +362,8 @@ tbody tr:last-child td { border-bottom: none; }
   <div class="modal-admin-contenido">
     <span class="modal-cerrar-x" id="cerrarModalCaract">&times;</span>
     <h3 id="tituloModalCaract">Nueva Característica</h3>
-    <div class="form-grupo">
-      <label>Nombre</label>
-      <input type="text" id="caractNombre" placeholder="Ej: Techado, Vigilancia 24h...">
-    </div>
-    <div class="form-grupo">
-      <label>Descripción</label>
-      <textarea id="caractDesc" rows="3" placeholder="Describe esta característica..."></textarea>
-    </div>
+    <div class="form-grupo"><label>Nombre</label><input type="text" id="caractNombre" placeholder="Ej: Techado, Vigilancia 24h..."></div>
+    <div class="form-grupo"><label>Descripción</label><textarea id="caractDesc" rows="3" placeholder="Describe esta característica..."></textarea></div>
     <div class="form-acciones">
       <button class="btn-cancelar-modal" id="cancelarModalCaract">Cancelar</button>
       <button class="btn-guardar-modal" id="guardarCaract">Guardar</button>
@@ -775,13 +383,12 @@ let usuarioActual = null;
 let editandoPlazaId = null;
 let editandoCaractId = null;
 
-// Características en memoria (pre-sembradas)
 let caracteristicas = JSON.parse(localStorage.getItem("caracteristicas")) || [
-  { id: 1, nombre: "Techado",       descripcion: "Plaza con techo protegido de lluvia" },
-  { id: 2, nombre: "Vigilancia 24h",descripcion: "Cámaras y guardia de seguridad" },
-  { id: 3, nombre: "Iluminado",     descripcion: "Iluminación artificial nocturna" },
-  { id: 4, nombre: "Accesible",     descripcion: "Adaptado para personas con discapacidad" },
-  { id: 5, nombre: "Eléctrico",     descripcion: "Cargador para vehículos eléctricos" },
+  { id: 1, nombre: "Techado",        descripcion: "Plaza con techo protegido de lluvia" },
+  { id: 2, nombre: "Vigilancia 24h", descripcion: "Cámaras y guardia de seguridad" },
+  { id: 3, nombre: "Iluminado",      descripcion: "Iluminación artificial nocturna" },
+  { id: 4, nombre: "Accesible",      descripcion: "Adaptado para personas con discapacidad" },
+  { id: 5, nombre: "Eléctrico",      descripcion: "Cargador para vehículos eléctricos" },
 ];
 
 function guardarCaracteristicas() {
@@ -811,6 +418,7 @@ async function iniciar() {
   configurarBusquedas();
   configurarConfig();
 
+  // ← Renderizar TODO al inicio para que no salga en blanco
   renderDashboard();
   renderTablaPlazas();
   renderTablaReservas();
@@ -912,7 +520,6 @@ function renderTablaPlazas(filtros = {}) {
   tbody.innerHTML = lista.length === 0
     ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No se encontraron plazas</td></tr>`
     : lista.map(p => {
-        // Características asociadas
         const caracts = (p.caracteristicas || [])
           .map(id => caracteristicas.find(c => c.id === id)?.nombre)
           .filter(Boolean);
@@ -933,11 +540,11 @@ function renderTablaPlazas(filtros = {}) {
             <td>${p.fecha || "—"}</td>
             <td><div class="caract-tags">${caractHtml}</div></td>
             <td>
-            <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
-            ${accionLiberar}
-            <button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="eliminar">Eliminar</button>
+              <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
+              ${accionLiberar}
+              <button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="eliminar">Eliminar</button>
             </td>
-            </tr>`;
+          </tr>`;
       }).join("");
 
   tbody.querySelectorAll("[data-accion='liberar']").forEach(btn => {
@@ -957,24 +564,22 @@ function renderTablaPlazas(filtros = {}) {
 
   tbody.querySelectorAll("[data-accion='eliminar']").forEach(btn => {
     btn.onclick = () => {
-     const id = Number(btn.dataset.id);
-     const plaza = plazas.find(p => p.id === id);
-      if(plaza.estado !== "disponible"){
-      toast("No puedes eliminar una plaza reservada u ocupada", "rojo");
-      return;
-    }
-
-    if(!confirm(`¿Eliminar la plaza #${id}?`)) return;
-    plazas = plazas.filter(p => p.id !== id);
-    guardarPlazas(plazas);
-    refrescar();
-
-  };
-
-});
+      const id = Number(btn.dataset.id);
+      const plaza = plazas.find(p => p.id === id);
+      if (plaza.estado !== "disponible") {
+        toast("No puedes eliminar una plaza reservada u ocupada", "rojo");
+        return;
+      }
+      if (!confirm(`¿Eliminar la plaza #${id}?`)) return;
+      plazas = plazas.filter(p => p.id !== id);
+      guardarPlazas(plazas);
+      refrescar();
+    };
+  });
 }
 
 /* ========== TABLA RESERVAS ========== */
+// BUG CORREGIDO: accionLiberar estaba referenciada sin estar definida en este scope
 function renderTablaReservas(buscar = "") {
   const lista = plazas
     .filter(p => p.estado === "reservado" || p.estado === "ocupado")
@@ -990,21 +595,23 @@ function renderTablaReservas(buscar = "") {
   const tbody = document.getElementById("tablaReservasBody");
   tbody.innerHTML = lista.length === 0
     ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No hay reservas activas</td></tr>`
-    : lista.map(p => `
-        <tr>
-          <td><strong>#${p.id}</strong></td>
-          <td>${p.zona}</td>
-          <td style="text-transform:capitalize">${p.tipo}</td>
-          <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
-          <td>${p.fecha || "—"}</td>
-          <td style="font-size:12px;color:#888">${p.reservadoPor || "—"}</td>
-          <td>
-          <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
-          ${accionLiberar}
-          <button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="eliminar">Eliminar</button>
-          </td>
-        </tr>`
-      ).join("");
+    : lista.map(p => {
+        // Definir accionLiberar DENTRO del map para cada plaza
+        const accionLiberar = p.estado === "ocupado"
+          ? `<button class="btn-accion btn-liberar" data-id="${p.id}" data-accion="liberar-reserva">Liberar</button>`
+          : `<button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="cancelar-reserva">Cancelar</button>`;
+
+        return `
+          <tr>
+            <td><strong>#${p.id}</strong></td>
+            <td>${p.zona}</td>
+            <td style="text-transform:capitalize">${p.tipo}</td>
+            <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
+            <td>${p.fecha || "—"}</td>
+            <td style="font-size:12px;color:#888">${p.reservadoPor || "—"}</td>
+            <td>${accionLiberar}</td>
+          </tr>`;
+      }).join("");
 
   tbody.querySelectorAll("[data-accion='cancelar-reserva']").forEach(btn => {
     btn.onclick = () => {
@@ -1014,6 +621,18 @@ function renderTablaReservas(buscar = "") {
       plazas[idx].reservadoPor = null;
       guardarPlazas(plazas);
       toast("Reserva cancelada", "verde");
+      refrescar();
+    };
+  });
+
+  tbody.querySelectorAll("[data-accion='liberar-reserva']").forEach(btn => {
+    btn.onclick = () => {
+      const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
+      plazas[idx].estado = "disponible";
+      plazas[idx].fecha  = null;
+      plazas[idx].reservadoPor = null;
+      guardarPlazas(plazas);
+      toast("Plaza liberada", "verde");
       refrescar();
     };
   });
@@ -1044,16 +663,11 @@ function renderTablaUsuarios(buscar = "") {
         </tr>`
       ).join("");
 
-  // Cambiar rol
   tbody.querySelectorAll("[data-accion='cambiar-rol']").forEach(btn => {
     btn.onclick = () => {
       const arr = JSON.parse(localStorage.getItem("usuarios")) || [];
       const idx = Number(btn.dataset.idx);
-      // No puede quitarse el rol a sí mismo
-      if (arr[idx].email === usuarioActual.email) {
-        toast("No puedes cambiar tu propio rol", "rojo");
-        return;
-      }
+      if (arr[idx].email === usuarioActual.email) { toast("No puedes cambiar tu propio rol", "rojo"); return; }
       arr[idx].rol = arr[idx].rol === "admin" ? "cliente" : "admin";
       localStorage.setItem("usuarios", JSON.stringify(arr));
       toast(`Rol de ${arr[idx].nombre} actualizado a ${arr[idx].rol}`, "verde");
@@ -1062,15 +676,11 @@ function renderTablaUsuarios(buscar = "") {
     };
   });
 
-  // Eliminar usuario
   tbody.querySelectorAll("[data-accion='eliminar-usuario']").forEach(btn => {
     btn.onclick = () => {
       const arr = JSON.parse(localStorage.getItem("usuarios")) || [];
       const idx = Number(btn.dataset.idx);
-      if (arr[idx].email === usuarioActual.email) {
-        toast("No puedes eliminarte a ti mismo", "rojo");
-        return;
-      }
+      if (arr[idx].email === usuarioActual.email) { toast("No puedes eliminarte a ti mismo", "rojo"); return; }
       if (!confirm(`¿Eliminar a ${arr[idx].nombre}?`)) return;
       arr.splice(idx, 1);
       localStorage.setItem("usuarios", JSON.stringify(arr));
@@ -1081,7 +691,7 @@ function renderTablaUsuarios(buscar = "") {
   });
 }
 
-/* ========== TABLA CARACTERÍSTICAS (HU17) ========== */
+/* ========== TABLA CARACTERÍSTICAS ========== */
 function renderTablaCaract(buscar = "") {
   const lista = caracteristicas.filter(c => {
     if (!buscar) return true;
@@ -1093,16 +703,13 @@ function renderTablaCaract(buscar = "") {
   tbody.innerHTML = lista.length === 0
     ? `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px">No hay características</td></tr>`
     : lista.map(c => {
-        // Cuántas plazas tienen esta característica
         const asociadas = plazas.filter(p => (p.caracteristicas || []).includes(c.id)).length;
         return `
           <tr>
             <td><strong>#${c.id}</strong></td>
             <td>${c.nombre}</td>
             <td style="color:#888;font-size:13px">${c.descripcion}</td>
-            <td>
-              <span class="badge badge-admin">${asociadas} plaza${asociadas !== 1 ? "s" : ""}</span>
-            </td>
+            <td><span class="badge badge-admin">${asociadas} plaza${asociadas !== 1 ? "s" : ""}</span></td>
             <td>
               <button class="btn-accion btn-editar" data-id="${c.id}" data-accion="editar-caract">Editar</button>
               <button class="btn-accion btn-eliminar" data-id="${c.id}" data-accion="eliminar-caract">Eliminar</button>
@@ -1120,10 +727,7 @@ function renderTablaCaract(buscar = "") {
       const c  = caracteristicas.find(x => x.id === id);
       if (!confirm(`¿Eliminar característica "${c.nombre}"?`)) return;
       caracteristicas = caracteristicas.filter(x => x.id !== id);
-      // Quitar de plazas
-      plazas.forEach(p => {
-        p.caracteristicas = (p.caracteristicas || []).filter(cid => cid !== id);
-      });
+      plazas.forEach(p => { p.caracteristicas = (p.caracteristicas || []).filter(cid => cid !== id); });
       guardarCaracteristicas();
       guardarPlazas(plazas);
       toast(`Característica "${c.nombre}" eliminada`, "rojo");
@@ -1149,13 +753,8 @@ function configurarModalCaract() {
   document.getElementById("guardarCaract").onclick = () => {
     const nombre = document.getElementById("caractNombre").value.trim();
     const desc   = document.getElementById("caractDesc").value.trim();
-
     if (!nombre) { toast("El nombre es obligatorio", "rojo"); return; }
-
-    // Validar duplicado
-    const existe = caracteristicas.some(c =>
-      c.nombre.toLowerCase() === nombre.toLowerCase() && c.id !== editandoCaractId
-    );
+    const existe = caracteristicas.some(c => c.nombre.toLowerCase() === nombre.toLowerCase() && c.id !== editandoCaractId);
     if (existe) { toast("Ya existe una característica con ese nombre", "rojo"); return; }
 
     if (editandoCaractId !== null) {
@@ -1163,8 +762,7 @@ function configurarModalCaract() {
       caracteristicas[idx] = { ...caracteristicas[idx], nombre, descripcion: desc };
       toast(`Característica "${nombre}" actualizada`, "verde");
     } else {
-      const nuevoId = caracteristicas.length
-        ? Math.max(...caracteristicas.map(c => c.id)) + 1 : 1;
+      const nuevoId = caracteristicas.length ? Math.max(...caracteristicas.map(c => c.id)) + 1 : 1;
       caracteristicas.push({ id: nuevoId, nombre, descripcion: desc });
       toast(`Característica "${nombre}" creada`, "verde");
     }
@@ -1214,10 +812,7 @@ function configurarModalPlaza() {
     const tipo   = document.getElementById("plazaTipo").value;
     const estado = document.getElementById("plazaEstado").value;
 
-     if(!zona || !tipo || !estado){
-     toast("Todos los campos son obligatorios", "rojo");
-     return;
-}
+    if (!zona || !tipo || !estado) { toast("Todos los campos son obligatorios", "rojo"); return; }
 
     const extras = {
       techado:        document.getElementById("extraTechado").checked,
@@ -1226,7 +821,6 @@ function configurarModalPlaza() {
       discapacitados: document.getElementById("extraDiscap").checked,
     };
 
-    // Características seleccionadas
     const selCaracts = Array.from(
       document.querySelectorAll("#plazaCaractList input:checked")
     ).map(cb => Number(cb.value));
@@ -1236,38 +830,17 @@ function configurarModalPlaza() {
       plazas[idx] = { ...plazas[idx], zona, tipo, estado, extras, caracteristicas: selCaracts };
       toast("Plaza #" + editandoPlazaId + " actualizada", "verde");
     } else {
+      const duplicada = plazas.some(p => p.zona === zona && p.tipo === tipo && p.estado === estado);
+      if (duplicada) { toast("Ya existe una plaza con esos datos", "rojo"); return; }
 
-      const duplicada = plazas.some(p =>
-       p.zona === zona &&
-       p.tipo === tipo &&
-       p.estado === estado
-      );
-
-       if(duplicada){
-       toast("Ya existe una plaza con esos datos", "rojo");
-       return;
-      }
-
-      const nuevoId = plazas.length ? Math.max(...plazas.map(p => p.id)) + 1 : 1;
-      // validar máximo plazas por zona
       const maxPlazas = Number(document.getElementById("cfgMaxPlazas").value) || 10;
       const plazasZona = plazas.filter(p => p.zona === zona).length;
+      if (plazasZona >= maxPlazas) { toast("Se alcanzó el máximo de plazas para esta zona", "rojo"); return; }
 
-if (plazasZona >= maxPlazas) {
-  toast("Se alcanzó el máximo de plazas para esta zona", "rojo");
-  return;
-}
-
-plazas.push({
-  id: nuevoId,
-  zona,
-  tipo,
-  estado,
-  extras,
-  fecha: null,
-  caracteristicas: selCaracts
-});
-}
+      const nuevoId = plazas.length ? Math.max(...plazas.map(p => p.id)) + 1 : 1;
+      plazas.push({ id: nuevoId, zona, tipo, estado, extras, fecha: null, caracteristicas: selCaracts });
+      toast("Plaza #" + nuevoId + " creada", "verde");
+    }
 
     cerrarModalPlaza();
     guardarPlazas(plazas);
@@ -1297,10 +870,10 @@ function abrirModalEditarPlaza(id) {
   document.getElementById("plazaZona").value   = p.zona;
   document.getElementById("plazaTipo").value   = p.tipo;
   document.getElementById("plazaEstado").value = p.estado;
-  document.getElementById("extraTechado").checked   = p.extras.techado;
-  document.getElementById("extraCamaras").checked   = p.extras.camaras;
-  document.getElementById("extraIluminado").checked = p.extras.iluminado;
-  document.getElementById("extraDiscap").checked    = p.extras.discapacitados;
+  document.getElementById("extraTechado").checked   = p.extras?.techado   || false;
+  document.getElementById("extraCamaras").checked   = p.extras?.camaras   || false;
+  document.getElementById("extraIluminado").checked = p.extras?.iluminado  || false;
+  document.getElementById("extraDiscap").checked    = p.extras?.discapacitados || false;
   renderCaractCheckList(p.caracteristicas || []);
   document.getElementById("modalPlaza").classList.add("abierto");
 }
@@ -1318,16 +891,12 @@ function renderReportes() {
   document.getElementById("rep-ocupacion").textContent = ocupacion + "%";
 
   const zonas = {};
-  plazas.filter(p => p.estado !== "disponible").forEach(p => {
-    zonas[p.zona] = (zonas[p.zona] || 0) + 1;
-  });
+  plazas.filter(p => p.estado !== "disponible").forEach(p => { zonas[p.zona] = (zonas[p.zona] || 0) + 1; });
   const zonaTop = Object.entries(zonas).sort((a,b) => b[1]-a[1])[0];
   document.getElementById("rep-zona").textContent = zonaTop ? zonaTop[0] : "—";
 
   const tipos = {};
-  plazas.filter(p => p.estado !== "disponible").forEach(p => {
-    tipos[p.tipo] = (tipos[p.tipo] || 0) + 1;
-  });
+  plazas.filter(p => p.estado !== "disponible").forEach(p => { tipos[p.tipo] = (tipos[p.tipo] || 0) + 1; });
   const tipoTop = Object.entries(tipos).sort((a,b) => b[1]-a[1])[0];
   document.getElementById("rep-tipo").textContent = tipoTop
     ? tipoTop[0].charAt(0).toUpperCase() + tipoTop[0].slice(1) : "—";
@@ -1368,15 +937,9 @@ function configurarBusquedas() {
       buscar: e.target.value,
     });
   });
-  document.getElementById("buscarReserva").addEventListener("input", e =>
-    renderTablaReservas(e.target.value)
-  );
-  document.getElementById("buscarUsuario").addEventListener("input", e =>
-    renderTablaUsuarios(e.target.value)
-  );
-  document.getElementById("buscarCaract").addEventListener("input", e =>
-    renderTablaCaract(e.target.value)
-  );
+  document.getElementById("buscarReserva").addEventListener("input", e => renderTablaReservas(e.target.value));
+  document.getElementById("buscarUsuario").addEventListener("input", e => renderTablaUsuarios(e.target.value));
+  document.getElementById("buscarCaract").addEventListener("input",  e => renderTablaCaract(e.target.value));
 }
 
 /* ========== CONFIG ========== */
@@ -1396,6 +959,7 @@ function refrescar() {
     buscar: document.getElementById("buscarPlaza").value,
   });
   renderTablaReservas(document.getElementById("buscarReserva").value);
+  renderTablaUsuarios(document.getElementById("buscarUsuario").value);
   renderTablaCaract(document.getElementById("buscarCaract").value);
   renderReportes();
 }

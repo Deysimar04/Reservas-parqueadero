@@ -18,6 +18,8 @@ export async function obtenerPlazas() {
       zona: zonas[Math.floor(Math.random() * zonas.length)],
       tipo: tipos[Math.floor(Math.random() * tipos.length)],
       estado: estados[Math.floor(Math.random() * estados.length)],
+      reservadoPor: null,
+      fecha: null,
       extras: {
         techado: Math.random() > 0.5,
         camaras: Math.random() > 0.5,

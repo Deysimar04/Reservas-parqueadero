@@ -429,18 +429,30 @@ function mostrarPlazas(){
 
 });
 
-    card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
+card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
 
-      manager.cancelar(plazas[idx].id);
+  const esAdmin = usuarioActual.rol === "admin";
+  const esDueno = plazas[idx].reservadoPor === usuarioActual.email;
 
-      plazas = manager.getPlazas();
+  // Validación de permisos
+  if (!esAdmin && !esDueno) {
+    alert("No puedes cancelar una reserva que no es tuya");
+    return;
+  }
 
-      guardarPlazas(plazas);
+  // Notificación según quién cancela
+if (esAdmin && !esDueno) {
+  const dueno = plazas[idx].reservadoPor || "usuario desconocido";
+  alert(`Reserva de ${dueno} cancelada por el administrador`);
+} else {
+  alert("Tu reserva ha sido cancelada correctamente");
+}
+  manager.cancelar(plazas[idx].id);
+  plazas = manager.getPlazas();
+  guardarPlazas(plazas);
+  render();
 
-      render();
-
-
-    });
+});
 
     card.querySelector(".btn-liberar")?.addEventListener("click", () => {
 
@@ -508,7 +520,7 @@ function renderMisReservas(){
         <p><strong>Plaza #${p.id}</strong></p>
         <p>Zona: ${p.zona}</p>
         <p>Tipo: ${p.tipo}</p>
-        <p>Fecha: ${p.fecha}</p>
+        <p class="reserva-fecha"> ${p.fecha || "Sin fecha asignada"}</p>
       </div>
     `).join("");
 
@@ -693,24 +705,28 @@ document.getElementById("btnLogin").onclick = () => {
   mLogin.style.display = "none";
 };
 
-  document.getElementById("btnHeaderCrear").onclick =
-  () => mCrear.style.display = "flex";
+document.getElementById("btnHeaderCrear").onclick = () => {
+  document.getElementById("nombreCrear").value = "";
+  document.getElementById("emailCrear").value = "";
+  document.getElementById("passCrear").value = "";
+  document.getElementById("rolCrear").value = "usuario";
 
-  document.getElementById("btnHeaderLogin").onclick =
+  mCrear.style.display = "flex";
+};
+document.getElementById("btnHeaderLogin").onclick =
   () => mLogin.style.display = "flex";
 
-  document.querySelectorAll(".cerrar").forEach(btn => {
-
-    btn.onclick = () => {
-
-      mCrear.style.display = "none";
-
-      mLogin.style.display = "none";
-
-    };
-
+document.querySelectorAll(".cerrar").forEach(btn => {
+  btn.addEventListener("click", () => {
+    mCrear.style.display = "none";
+    mLogin.style.display = "none";
   });
+});
 
+window.addEventListener("click", (e) => {
+  if (e.target === mCrear) mCrear.style.display = "none";
+  if (e.target === mLogin) mLogin.style.display = "none";
+});
   document.getElementById("btnLogout").onclick =
   cerrarSesion;
 
