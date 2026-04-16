@@ -933,10 +933,11 @@ function renderTablaPlazas(filtros = {}) {
             <td>${p.fecha || "—"}</td>
             <td><div class="caract-tags">${caractHtml}</div></td>
             <td>
-              <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
-              ${accionLiberar}
+            <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
+            ${accionLiberar}
+            <button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="eliminar">Eliminar</button>
             </td>
-          </tr>`;
+            </tr>`;
       }).join("");
 
   tbody.querySelectorAll("[data-accion='liberar']").forEach(btn => {
@@ -953,6 +954,24 @@ function renderTablaPlazas(filtros = {}) {
   tbody.querySelectorAll("[data-accion='editar']").forEach(btn => {
     btn.onclick = () => abrirModalEditarPlaza(Number(btn.dataset.id));
   });
+
+  tbody.querySelectorAll("[data-accion='eliminar']").forEach(btn => {
+    btn.onclick = () => {
+     const id = Number(btn.dataset.id);
+     const plaza = plazas.find(p => p.id === id);
+      if(plaza.estado !== "disponible"){
+      toast("No puedes eliminar una plaza reservada u ocupada", "rojo");
+      return;
+    }
+
+    if(!confirm(`¿Eliminar la plaza #${id}?`)) return;
+    plazas = plazas.filter(p => p.id !== id);
+    guardarPlazas(plazas);
+    refrescar();
+
+  };
+
+});
 }
 
 /* ========== TABLA RESERVAS ========== */
@@ -980,7 +999,9 @@ function renderTablaReservas(buscar = "") {
           <td>${p.fecha || "—"}</td>
           <td style="font-size:12px;color:#888">${p.reservadoPor || "—"}</td>
           <td>
-            <button class="btn-accion btn-liberar" data-id="${p.id}" data-accion="cancelar-reserva">Cancelar</button>
+          <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
+          ${accionLiberar}
+          <button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="eliminar">Eliminar</button>
           </td>
         </tr>`
       ).join("");
@@ -1192,6 +1213,12 @@ function configurarModalPlaza() {
     const zona   = document.getElementById("plazaZona").value;
     const tipo   = document.getElementById("plazaTipo").value;
     const estado = document.getElementById("plazaEstado").value;
+
+     if(!zona || !tipo || !estado){
+     toast("Todos los campos son obligatorios", "rojo");
+     return;
+}
+
     const extras = {
       techado:        document.getElementById("extraTechado").checked,
       camaras:        document.getElementById("extraCamaras").checked,
@@ -1209,10 +1236,38 @@ function configurarModalPlaza() {
       plazas[idx] = { ...plazas[idx], zona, tipo, estado, extras, caracteristicas: selCaracts };
       toast("Plaza #" + editandoPlazaId + " actualizada", "verde");
     } else {
+
+      const duplicada = plazas.some(p =>
+       p.zona === zona &&
+       p.tipo === tipo &&
+       p.estado === estado
+      );
+
+       if(duplicada){
+       toast("Ya existe una plaza con esos datos", "rojo");
+       return;
+      }
+
       const nuevoId = plazas.length ? Math.max(...plazas.map(p => p.id)) + 1 : 1;
-      plazas.push({ id: nuevoId, zona, tipo, estado, extras, fecha: null, caracteristicas: selCaracts });
-      toast("Plaza #" + nuevoId + " creada", "verde");
-    }
+      // validar máximo plazas por zona
+      const maxPlazas = Number(document.getElementById("cfgMaxPlazas").value) || 10;
+      const plazasZona = plazas.filter(p => p.zona === zona).length;
+
+if (plazasZona >= maxPlazas) {
+  toast("Se alcanzó el máximo de plazas para esta zona", "rojo");
+  return;
+}
+
+plazas.push({
+  id: nuevoId,
+  zona,
+  tipo,
+  estado,
+  extras,
+  fecha: null,
+  caracteristicas: selCaracts
+});
+}
 
     cerrarModalPlaza();
     guardarPlazas(plazas);

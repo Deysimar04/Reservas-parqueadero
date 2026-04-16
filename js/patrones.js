@@ -16,6 +16,7 @@ class PlazaManager {
   setPlazas(plazas) {
     this.plazas = plazas;
     this.notificar("carga");
+    
   }
 
   // Reservar plaza
