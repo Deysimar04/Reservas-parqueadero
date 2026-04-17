@@ -404,6 +404,18 @@ function mostrarPlazas(){
   alert("Esta plaza ya está reservada para esa fecha");
   return;
   }
+  
+  if (usuarioActual.rol !== "admin") {
+  const reservasUsuario = plazas.filter(p =>
+    p.reservadoPor === usuarioActual.email &&
+    p.estado === "reservado"
+  );
+
+  if (reservasUsuario.length >= 2) {
+    alert("Solo puedes tener máximo 2 reservas activas");
+    return;
+  }
+}
 
   //  RESERVAR
   plazas[idx].reservadoPor = usuarioActual.email;
