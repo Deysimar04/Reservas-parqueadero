@@ -27,6 +27,7 @@
       <span id="usuarioActual"></span>
     </div>
     <button class="btn-header" id="btnAdminPanel" style="display:none; background:#8e44ad;">Panel Admin</button>
+    <button class="btn-header" id="btnBandeja">📬 Bandeja</button>
     <button class="btn-header" id="btnLogout">Cerrar sesión</button>
   </div>
 </header>
@@ -294,6 +295,35 @@
     }
   });
 </script>
+
+<!-- ════════════ HU19: NOTIFICACIONES ════════════ -->
+ 
+<!-- Notificación azul: correo enviado (aparece arriba al centro) -->
+<div id="notifCorreo"></div>
+ 
+<!-- Notificación roja: alerta de acción no permitida (abajo a la derecha) -->
+<div id="notifHU19"></div>
+ 
+ 
+<!-- ════════════ HU19: MODAL CONFIRMACIÓN ANTES DE RESERVAR ════════════ -->
+<div id="modalConfirmacion" class="modal">
+  <div class="modal-contenido">
+    <h2>🅿️ Confirmar Reserva</h2>
+ 
+    <!-- Aquí se llena dinámicamente con info de la plaza -->
+    <div id="confirmInfoBox" class="info-confirmacion"></div>
+ 
+    <div style="display:flex; justify-content:center; gap:12px; margin-top:10px;">
+      <button id="btnConfirmarReserva" class="btn-ok">✅ Sí, reservar</button>
+      <button id="btnCancelarConfirmacion" class="btn-no">❌ No, volver</button>
+    </div>
+  </div>
+</div>
+ 
+ 
+<!-- ════════════ HU19: MODAL BANDEJA DE SALIDA FAKE ════════════ -->
+
+<!-- ════════════ HU19: SCRIPT  ════════════ -->
 
 </body>
 </html>
