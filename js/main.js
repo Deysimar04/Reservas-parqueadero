@@ -390,6 +390,7 @@ function mostrarPlazas(){
   }
 
   //  USUARIO YA TIENE RESERVA ESE DÍA
+  
   const yaTiene = plazas.some(p =>
     p.reservadoPor === usuarioActual.email &&
     p.fecha === fecha
@@ -403,7 +404,7 @@ function mostrarPlazas(){
   if(reservaDuplicada(plazas[idx].id, fecha)){
   alert("Esta plaza ya está reservada para esa fecha");
   return;
-  }
+  } 
   
   if (usuarioActual.rol !== "admin") {
   const reservasUsuario = plazas.filter(p =>
@@ -419,7 +420,15 @@ function mostrarPlazas(){
 
   //  RESERVAR
   plazas[idx].reservadoPor = usuarioActual.email;
+const tieneReservaActiva = plazas.some(p =>
+  p.reservadoPor === usuarioActual.email &&
+  p.estado === "reservado"
+);
 
+if (tieneReservaActiva) {
+  alert("Ya tienes una plaza activa. Debes cancelarla antes de reservar otra.");
+  return;
+}
   manager.reservar(plazas[idx].id, fecha);
 
   plazas = manager.getPlazas();
@@ -434,9 +443,6 @@ function mostrarPlazas(){
       manager.reservar(plazas[idx].id, fecha);
 
       plazas = manager.getPlazas();
-
-    
-
       render();
 
 });
