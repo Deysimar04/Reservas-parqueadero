@@ -65,6 +65,62 @@ function validarLogin(email, pass){
   return usuario;
 
 }
+// Función para guardar mensajes
+function guardarNotificacion(asunto, mensaje) {
+  const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+
+  if (!usuario) return;
+
+  let bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
+
+  bandeja.push({
+    id: Date.now(),
+    usuario: usuario.email,
+    asunto,
+    mensaje,
+    fecha: new Date().toLocaleString()
+  });
+
+  localStorage.setItem("bandeja", JSON.stringify(bandeja));
+}
+ // cargar bandeha 
+function cargarBandeja() {
+  const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+  const contenedor = document.getElementById("listaMensajes");
+
+  let bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
+
+  const mensajesUsuario = bandeja.filter(m => m.usuario === usuario.email);
+
+  if (mensajesUsuario.length === 0) {
+    contenedor.innerHTML = "<p>No tienes mensajes</p>";
+    return;
+  }
+
+  contenedor.innerHTML = mensajesUsuario.map(m => `
+    <div class="mensaje-card">
+      <h4>${m.asunto}</h4>
+      <p>${m.mensaje}</p>
+      <small>${m.fecha}</small>
+    </div>
+  `).join("");
+
+}
+
+function limpiarBandeja() {
+  const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+
+  if (!usuario) return;
+
+  let bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
+
+  // eliminar solo los mensajes del usuario actual
+  bandeja = bandeja.filter(m => m.usuario !== usuario.email);
+
+  localStorage.setItem("bandeja", JSON.stringify(bandeja));
+
+  cargarBandeja(); // refresca la vista
+}
 
 function validarFecha(fecha){
 
@@ -412,10 +468,7 @@ function mostrarPlazas(){
     p.estado === "reservado"
   );
 
-  if (reservasUsuario.length >= 2) {
-    alert("Solo puedes tener máximo 2 reservas activas");
-    return;
-  }
+
 }
 
   //  RESERVAR
@@ -430,19 +483,22 @@ if (tieneReservaActiva) {
   return;
 }
   manager.reservar(plazas[idx].id, fecha);
-
   plazas = manager.getPlazas();
+ guardarPlazas(plazas);
+ guardarNotificacion(
+  "Reserva confirmada",
+  `Reservaste la plaza ${plazas[idx].id} para el día ${fecha}`
+);
 
-  guardarPlazas(plazas);
-
+simularEnvioCorreo(usuarioActual, plazas[idx], fecha);
   
 
   // Guardar quien reservó
       plazas[idx].reservadoPor = usuarioActual.email;
-
       manager.reservar(plazas[idx].id, fecha);
-
       plazas = manager.getPlazas();
+  "Reserva confirmada",
+  `Reservaste la plaza ${plazas[idx].id} para el día ${fecha}`
       render();
 
 });
@@ -468,6 +524,18 @@ if (esAdmin && !esDueno) {
   manager.cancelar(plazas[idx].id);
   plazas = manager.getPlazas();
   guardarPlazas(plazas);
+
+  if (esAdmin && !esDueno) {
+  guardarNotificacion(
+    "Reserva cancelada por administrador",
+    `Tu reserva de la plaza ${plazas[idx].id} fue cancelada por un administrador`
+  );
+} else {
+  guardarNotificacion(
+    "Reserva cancelada",
+    `Cancelaste la reserva de la plaza ${plazas[idx].id}`
+  );
+}
   render();
 
 });
@@ -749,5 +817,61 @@ window.addEventListener("click", (e) => {
   cerrarSesion;
 
 }
+
+function simularEnvioCorreo(usuario, plaza, fecha) {
+  const correo = {
+    para: usuario.email,
+    asunto: "Confirmación de reserva - ParkApp",
+    mensaje: `
+Hola ${usuario.nombre},
+
+Tu reserva fue confirmada.
+
+Plaza: ${plaza.id}
+Tipo: ${plaza.tipo}
+Fecha: ${fecha}
+`,
+    fechaEnvio: new Date().toLocaleString()
+  };
+
+  let bandeja = JSON.parse(localStorage.getItem("bandejaSalida")) || [];
+  bandeja.push(correo);
+
+  localStorage.setItem("bandejaSalida", JSON.stringify(bandeja));
+
+  mostrarNotifCorreo("📩 Correo enviado correctamente");
+}
+
+function mostrarNotifCorreo(mensaje) {
+  const notif = document.getElementById("notifCorreo");
+  notif.innerText = mensaje;
+  notif.style.display = "block";
+
+  setTimeout(() => {
+    notif.style.display = "none";
+  }, 3000);
+}
+
+const btnBandeja = document.getElementById("btnBandeja");
+const modalBandeja = document.getElementById("modalBandeja");
+const cerrarBandeja = document.getElementById("cerrarBandeja");
+const btnLimpiarBandeja = document.getElementById("btnLimpiarBandeja");
+
+btnLimpiarBandeja.addEventListener("click", () => {
+  if (confirm("¿Seguro que quieres borrar todos tus mensajes?")) {
+    limpiarBandeja();
+  }
+});
+
+// Abrir bandeja
+btnBandeja.addEventListener("click", () => {
+  modalBandeja.style.display = "flex";
+  cargarBandeja();
+});
+
+// Cerrar bandeja
+cerrarBandeja.addEventListener("click", () => {
+  modalBandeja.style.display = "none";
+});
 
 iniciar();
