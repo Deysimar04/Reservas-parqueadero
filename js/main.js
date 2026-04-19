@@ -157,7 +157,9 @@ async function iniciar() {
   manager.setPlazas(plazas);
   cargarSesion();
   configurarBotonesZona();
-  configurarCategorias();
+
+  renderizarCategoriasHome(); 
+
   configurarLogo();
   configurarBotonVolver();
   configurarModales();
@@ -473,6 +475,27 @@ function configurarCategorias(){
       tipoSeleccionado = card.dataset.tipo;
     };
   });
+}
+// ========== CATEGORÍAS DINÁMICAS HOME ==========
+
+function renderizarCategoriasHome() {
+  const contenedor = document.getElementById("contenedorCategorias");
+  if (!contenedor) return;
+
+  const categoriasDinamicas = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
+    { nombre: "Automóvil", slug: "automovil", icono: "🚗" },
+    { nombre: "Motocicleta", slug: "motocicleta", icono: "🏍️" }
+  ];
+
+  contenedor.innerHTML = categoriasDinamicas.map(cat => `
+    <div class="categoria-card" data-tipo="${cat.slug}">
+      <div style="font-size: 40px; margin-bottom: 10px;">${cat.icono || '🚗'}</div>
+      <h3>${cat.nombre}</h3>
+    </div>
+  `).join("");
+
+  // IMPORTANTE: volver a activar eventos
+  configurarCategorias(); 
 }
 
 // ========== BOTONES ZONA ==========
