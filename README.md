@@ -1,4 +1,4 @@
-# ParkApp - Sistema de Gestión de Estacionamientos (Sprint 2)
+# ParkApp - Sistema de Gestión de reservas de parqueaderos (Sprint 2)
 
 ParkApp es una plataforma integral para la reserva de plazas de estacionamiento. Durante este **Sprint 2**, hemos transformado una interfaz estática en una aplicación web dinámica que simula un ecosistema completo (**Frontend + Backend en memoria**), cumpliendo con estándares del historial de usuario .
 
