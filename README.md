@@ -1,176 +1,96 @@
-# ParkApp — Sistema de Reservas de Parqueadero
+# ParkApp - Sistema de Gestión de Estacionamientos (Sprint 2)
 
-> Plataforma web para reservar plazas de parqueo en tiempo real, con filtros por zona y tipo de vehículo.
-
-
-## Estructura del proyecto
-```
-ParkApp/
-├── index.html
-├── galeria.html
-├── css/
-│   └── styles.css
-├── js/
-│   ├── main.js
-│   └── api.js
-└── img/
-
-## Páginas
-
-| Página | Descripción |
-|---|---|
-| `index.html` | Página principal con header, categorías, zonas, filtros, plazas, galería, características y políticas |
-| `galeria.html` | Galería completa con header interno y botón de regreso |
-
-
-## Archivos JavaScript
-
-### api.js
-
-Genera el mock de datos. Cada plaza tiene esta estructura:
-```json
-{
-  "id": 1,
-  "zona": "Aeropuerto",
-  "tipo": "automovil",
-  "estado": "disponible",
-  "extras": {
-    "techado": true,
-    "camaras": false,
-    "iluminado": true,
-    "discapacitados": false
-  }
-}
-```
-
-- Genera 10 plazas aleatorias al cargar la página
-- Zonas: `Aeropuerto` · `Centro Comercial` · `Centro Ciudad`
-- Tipos: `automovil` · `camioneta` · `moto`
-- Estados: `disponible` · `reservado` · `ocupado`
-- Extras asignados aleatoriamente con `Math.random() > 0.5`
-
-### main.js
-
-Controla toda la lógica de la aplicación.
-
-| Función | Descripción |
-|---|---|
-| `iniciar()` | Carga plazas, sesión y configura todos los eventos |
-| `cargarSesion()` | Lee usuario desde `localStorage` |
-| `guardarSesion()` | Guarda usuario en `localStorage` y actualiza UI |
-| `cerrarSesion()` | Elimina sesión y resetea la vista |
-| `render()` | Redibuja las plazas según filtros activos |
-| `filtrarPlazas()` | Filtra por zona y tipo de vehículo |
-| `mostrarPlazas()` | Genera las tarjetas de plaza en el DOM |
-| `actualizarContador()` | Actualiza el contador de estados |
-| `configurarCategorias()` | Maneja selección de tipo de vehículo |
-| `configurarBotonesZona()` | Maneja selección de zona de parqueo |
-| `configurarModales()` | Maneja login, crear cuenta y logout |
-| `mostrarNotificacion()` | Muestra alertas flotantes temporales |
+ParkApp es una plataforma integral para la reserva de plazas de estacionamiento. Durante este **Sprint 2**, hemos transformado una interfaz estática en una aplicación web dinámica que simula un ecosistema completo (**Frontend + Backend en memoria**), cumpliendo con estándares de arquitectura profesional.
 
 ---
 
-## Flujo de uso
-```
-1. Entrar a la página
-2. Crear cuenta o iniciar sesión
-3. Seleccionar tipo de vehículo  →  Automóvil / Camioneta / Moto
-4. Seleccionar zona              →  Aeropuerto / Centro Comercial / Centro Ciudad
-5. Elegir fecha de reserva       →  Campo obligatorio
-6. Ver plazas filtradas con sus extras
-7. Clic en "Reservar" en una plaza disponible
-8. Cancelar reserva cuando se desee
-```
+##  Equipo y Distribución de Ingeniería
+
+
+| Integrante    | Responsabilidad Técnica   | Aporte al Negocio                                                                 |
+|-------------- |--------------------------|-----------------------------------------------------------------------------------|
+| **Alejandra** | Arquitectura HTML        | Diseñó la base semántica y estructural de las vistas de usuario y administración.  |
+| **Oscar**     | UI/UX & Roles            | Implementó el sistema visual responsive y la lógica de visibilidad basada en permisos. |
+| **Jhon Mario**| Auth & API Mock          | Desarrolló el motor de autenticación, gestión de categorías y la simulación de persistencia. |
+| **Juan Pablo**| Lógica de Catálogo       | Creó el CRUD de plazas, validaciones de integridad y motor de búsqueda de productos. |
+| **Ayder**     | Notificaciones & Flujo   | Programó el sistema de reservas y la bandeja de mensajes (comunicación asíncrona). |
 
 ---
 
-## Funcionalidades implementadas
+## Cumplimiento Técnico de Historias de Usuario (HU)
 
-### Autenticación
-- Crear cuenta con nombre, email y contraseña
-- Iniciar y cerrar sesión
-- Datos guardados en `localStorage`
-- Sin sesión: categorías y zonas deshabilitadas visualmente
+### 1. Gestión de Identidad y Seguridad (Auth)
+- **HU13, HU14 & HU15 (Registro, Login, Logout):**
+	- Implementamos un sistema de autenticación que valida campos obligatorios y formatos (email, fortaleza de contraseña).
+	- La sesión se mantiene mediante localStorage y se invalida de forma segura al cerrar sesión.
+- **HU16 (Roles):**
+	- El sistema distingue entre Cliente y Administrador.
+	- Los permisos están protegidos: un cliente no puede ver el botón ni acceder a la URL del panel administrativo.
 
-### Filtros
-- Por tipo de vehículo (categoría)
-- Por zona de parqueo
-- Validación: no se puede filtrar zona sin seleccionar categoría primero
-- Botón Volver para resetear todos los filtros
+### 2. Panel Administrativo y Catálogo (CRUD)
+- **HU9 & HU10 (Panel y Listado):**
+	- Se creó `/admin.html` que expone una tabla dinámica con todas las plazas del sistema en tiempo real.
+- **HU3 (Registro de Productos):**
+	- Formulario avanzado que incluye validación de duplicados (ID único) y carga simulada de imágenes.
+- **HU12, HU21 & HU29 (Categorización Dinámica):**
+	- El administrador puede crear nuevas categorías (ej. "Camiones").
+	- El sistema bloquea la eliminación de una categoría si tiene plazas asociadas para evitar inconsistencias de datos.
+- **HU17 (Características):**
+	- Implementamos un sistema de "Tags" o características (Vigilancia, Techado) que se vinculan dinámicamente a cada producto en memoria.
 
-### Reservas
-- Fecha obligatoria antes de reservar (`input type="date"`)
-- Error visible si se intenta reservar sin fecha
-- Al reservar: plaza pasa a `reservado` y muestra la fecha elegida
-- Al cancelar: plaza vuelve a `disponible`
-- Plaza `ocupada`: mensaje de error amigable al hacer clic
-
-### Tarjetas de plaza
-Cada tarjeta muestra:
-- Número de plaza, zona y tipo de vehículo
-- Estado con color: DISPONIBLE · RESERVADO · OCUPADO
-- Badges de extras: `Techado` · `Camaras` · `Iluminado` · `Accesible`
-- Fecha de reserva si está reservada
-- Botón de acción según estado
-
-### Galería
-- Vista previa en `index.html`: 1 imagen grande + 4 pequeñas en 2x2
-- Vista completa en `galeria.html`: grid de 3 columnas con 8 imágenes
-- Responsive en móvil
+### 3. Experiencia de Usuario y Mock de Backend
+- **HU19 (Sistema de Notificaciones):**
+	- Al registrarse o reservar, el sistema genera un "Email" simulado.
+	- Esto se visualiza en una Bandeja de Entrada con un punto de notificación rojo en el header que indica mensajes no leídos.
+- **HU23 (Visualización de Disponibilidad):**
+	- Motor de filtrado que permite al usuario elegir una fecha y tipo de vehículo, devolviendo únicamente las plazas libres (Mock de disponibilidad basado en rangos de fecha).
 
 ---
 
-## Estilos CSS
+##  Patrones de Diseño Aplicados
 
-El archivo `styles.css` está organizado por secciones con comentarios:
-```
-AJUSTE GLOBAL → HEADER → CATEGORIAS → ZONAS → CONTADOR
-→ TARJETAS → ESTADOS → GALERIA → CARACTERISTICAS
-→ POLITICAS → FOOTER → NOTIFICACION → MODAL
-→ FECHA RESERVA → EXTRAS → PAGINA INTERNA
-```
-
-Paleta de colores:
-
-| Uso | Color |
-|---|---|
-| Header / fondo oscuro | `#1e2a38` |
-| Azul acento | `#3498db` |
-| Verde disponible | `#27ae60` |
-| Amarillo reservado | `#f1c40f` |
-| Rojo ocupado | `#e74c3c` |
-
----
-
-## Cómo ejecutar
-
-El proyecto usa módulos ES6 y requiere un servidor local. No funciona abriendo el `.html` directamente con doble clic.
-```bash
-# Opción 1 — VS Code
-# Instalar extensión "Live Server" → clic derecho en index.html → Open with Live Server
-
-# Opción 2 — Python
-python -m http.server 5500
-
-# Opción 3 — Node
-npx serve .
-```
-
-Luego abrir `http://localhost:5500` en el navegador.
-
----
-
-## Tecnologías
-
-| Tecnología | Uso |
-|---|---|
-| HTML5 semántico | Estructura de las páginas |
-| CSS3 (Grid + Flexbox) | Diseño y responsive |
-| JavaScript ES6+ | Lógica, módulos, async/await |
-| localStorage | Persistencia de sesión y usuarios |
-
-Sin frameworks ni dependencias externas.
+- **Patrón Observer:**
+	- **¿Cómo funciona?** El PlazaManager actúa como el "Sujeto". Cuando una plaza cambia su estado (ej. de Disponible a Reservada), notifica automáticamente a los "Observadores" (el contador de la página, la bandeja de notificaciones y el mapa de plazas).
+- **Patrón Repository / Manager (Singleton):**
+	- **¿Cómo funciona?** Centralizamos toda la manipulación del localStorage en un solo lugar. Esto permite que si mañana cambiamos de LocalStorage a una API de Firebase o un Backend en Java, solo debamos editar un archivo.
 
 ---
 
 
+## Instrucciones de Ejecución y Pruebas
+
+Para visualizar y testear el sistema correctamente, siga estos pasos:
+
+### 1. Requisitos Previos
+- Navegador web moderno (Chrome, Edge o Firefox).
+- Se recomienda el uso de la extensión **Live Server** (VS Code) para evitar problemas de permisos con módulos de JavaScript (`type="module"`).
+
+### 2. Puesta en Marcha
+- Clonar/Descargar el repositorio en su máquina local.
+- Abrir la carpeta del proyecto en su editor de código.
+- Ejecutar el archivo `index.html` mediante Live Server.
+- El sistema inicializará automáticamente el Backend en Memoria (Local Storage) con los datos pre-sembrados de plazas y categorías.
+
+### 3. Guía de Pruebas por Rol
+#### A. Flujo de Cliente (Usuario Estándar):
+- **Registro:** Vaya a "Crear cuenta" y regístrese con el rol Cliente.
+- **Validación:** Revise la Bandeja de Mensajes (icono superior); debería ver su correo de bienvenida.
+- **Reserva:** Seleccione un tipo de vehículo, una zona de parqueo y una fecha. Elija una plaza disponible y confirme. La burbuja de notificación se actualizará automáticamente.
+
+#### B. Flujo de Administrador:
+- **Acceso:** Regístrese o inicie sesión con una cuenta de rol Administrador.
+- **Gestión:** Notará que aparece el botón "Panel Admin" en el header.
+- **Control Total:** Ingrese al panel para:
+	- **Categorías:** Crear o editar tipos de vehículos (esto actualizará los filtros de la página principal).
+	- **Plazas:** Agregar nuevas plazas de parqueo o liberar plazas ocupadas manualmente.
+	- **Seguridad:** Intente acceder a la URL de administración con una cuenta de Cliente; el sistema debería denegar el acceso o redirigirlo.
+
+### 🛠️ Depuración de Datos
+Si desea reiniciar el sistema a su estado original (limpiar todas las reservas y usuarios creados):
+
+1. Abra la consola del navegador (F12).
+2. Vaya a la pestaña Application -> Local Storage.
+3. Haga clic derecho y elija "Clear".
+4. Refresque la página (F5).
+
+---

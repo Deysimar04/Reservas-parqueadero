@@ -16,7 +16,6 @@ class PlazaManager {
   setPlazas(plazas) {
     this.plazas = plazas;
     this.notificar("carga");
-    
   }
 
   // Reservar plaza
@@ -59,6 +58,19 @@ class PlazaManager {
   }
 
   // ============================================
+  // HU23 — Consultar disponibilidad usando el mock
+  // ============================================
+  async consultarDisponibilidad(zona = "", tipo = "", fecha = "") {
+    const { obtenerDisponibilidad } = await import("./api.js");
+    const respuesta = await obtenerDisponibilidad(zona, tipo, fecha);
+
+    // Notificar a los observers con el resultado
+    this.notificar("disponibilidad", respuesta);
+
+    return respuesta;
+  }
+
+  // ============================================
   // PATRÓN OBSERVER
   // Registrar quién quiere ser notificado
   // ============================================
@@ -98,9 +110,10 @@ class NotificacionObserver {
   actualizar(evento, data) {
     const mensajes = {
       reserva:  `Plaza #${data?.id} reservada`,
-      cancelar: ` Reserva de plaza #${data?.id} cancelada`,
+      cancelar: `Reserva de plaza #${data?.id} cancelada`,
       liberar:  `Plaza #${data?.id} liberada`,
-      carga:    null
+      carga:    null,
+      disponibilidad: null   // HU23: no muestra notif, solo actualiza UI
     };
     const msg = mensajes[evento];
     if (!msg) return;
@@ -121,4 +134,30 @@ class NotificacionObserver {
   }
 }
 
-export { PlazaManager, ContadorObserver, NotificacionObserver };
+// ============================================
+// HU23 — OBSERVER DISPONIBILIDAD
+// Muestra en pantalla el resultado del mock
+// ============================================
+class DisponibilidadObserver {
+  actualizar(evento, data) {
+    if (evento !== "disponibilidad") return;
+
+    const el = document.getElementById("resultadoDisponibilidad");
+    if (!el) return;
+
+    if (!data || data.total === 0) {
+      el.textContent = "Sin plazas disponibles para los filtros seleccionados";
+      el.style.display = "block";
+    } else {
+      el.textContent = `✔ ${data.total} plaza${data.total > 1 ? "s" : ""} disponible${data.total > 1 ? "s" : ""}`;
+      el.style.display = "block";
+    }
+
+    // Ocultar después de 3 segundos
+    setTimeout(() => {
+      el.style.display = "none";
+    }, 3000);
+  }
+}
+
+export { PlazaManager, ContadorObserver, NotificacionObserver, DisponibilidadObserver };

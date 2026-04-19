@@ -36,3 +36,48 @@ export async function obtenerPlazas() {
 export function guardarPlazas(plazas) {
   localStorage.setItem("plazas", JSON.stringify(plazas));
 }
+
+// ============================================
+// HU23 — ENDPOINT MOCK DISPONIBILIDAD
+// Simula un GET /api/disponibilidad?zona=&tipo=&fecha=
+// ============================================
+export async function obtenerDisponibilidad(zona = "", tipo = "", fecha = "") {
+
+  // Simular latencia de red (300ms)
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  const plazas = JSON.parse(localStorage.getItem("plazas")) || [];
+
+  // Excluir plazas ocupadas
+  let resultado = plazas.filter(p => p.estado !== "ocupado");
+
+  // Filtrar por zona
+  if (zona) {
+    resultado = resultado.filter(p =>
+      p.zona.toLowerCase() === zona.toLowerCase()
+    );
+  }
+
+  // Filtrar por tipo de vehículo
+  if (tipo) {
+    resultado = resultado.filter(p =>
+      p.tipo.toLowerCase() === tipo.toLowerCase()
+    );
+  }
+
+  // Filtrar por fecha: excluir plazas ya reservadas para esa fecha
+  if (fecha) {
+    resultado = resultado.filter(p =>
+      !(p.estado === "reservado" && p.fecha === fecha)
+    );
+  }
+
+  // Simular respuesta tipo API REST
+  return {
+    ok: true,
+    status: 200,
+    total: resultado.length,
+    filtros: { zona, tipo, fecha },
+    plazas: resultado
+  };
+}

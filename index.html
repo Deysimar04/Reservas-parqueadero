@@ -21,15 +21,20 @@
     <button class="btn-header" id="btnHeaderLogin">Iniciar sesión</button>
   </div>
 
-  <div class="header-right" id="headerUser" style="display:none;">
+<div class="header-right" id="headerUser" style="display:none;">
     <div id="usuarioInfo">
       <div class="avatar"></div>
       <span id="usuarioActual"></span>
     </div>
     <button class="btn-header" id="btnAdminPanel" style="display:none; background:#8e44ad;">Panel Admin</button>
-    <button class="btn-header" id="btnBandeja">📬 Bandeja</button>
+    
+    <div style="position: relative; display: inline-block;">
+        <button class="btn-header" id="btnBandeja">Bandeja</button>
+        <span id="badge-notif" class="badge-notif" style="display: none;">0</span>
+    </div>
+
     <button class="btn-header" id="btnLogout">Cerrar sesión</button>
-  </div>
+</div>
 </header>
 
 <!-- SECCION DESCRIPCION + CTA VEHICULOS -->
@@ -326,7 +331,7 @@
 <div id="modalBandeja" class="modal">
   <div class="modal-contenido">
     <span class="cerrar" id="cerrarBandeja">&times;</span>
-    <h2>📬 Bandeja de mensajes</h2>
+    <h2> Bandeja de mensajes</h2>
     <button id="btnLimpiarBandeja" class="btn-limpiar">
      Limpiar bandeja
      </button>

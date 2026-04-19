@@ -337,3 +337,34 @@ body{ font-family:Arial; margin:0; background:#f4f6f9; min-height:100vh; }
 .reserva-card p{ margin:0; font-size:14px; color:#555; }
 .reserva-card p strong{ color:#1e2a38; font-size:15px; }
 .reserva-card .reserva-fecha{ margin-top:8px; padding:5px 10px; background:#eaf0fb; color:#2980b9; border-radius:6px; font-size:12px; font-weight:bold; width:fit-content; }
+/* ================= BURBUJA DE NOTIFICACIÓN ================= */
+.badge-notif {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: #e74c3c; /* Rojo para destacar */
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #1e2a38; /* Color del header para que resalte */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  pointer-events: none; /* Para que no estorbe al clickear el botón */
+}
+
+/* Opcional: Estilo para las tarjetas de mensajes dentro del modal */
+.mensaje-card {
+  background: #f8f9fa;
+  border-left: 4px solid #3498db;
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+.mensaje-card h4 { margin: 0 0 5px 0; font-size: 14px; }
+.mensaje-card p { margin: 0; font-size: 13px; color: #555; }
+.mensaje-card small { color: #888; display: block; margin-top: 5px; }
