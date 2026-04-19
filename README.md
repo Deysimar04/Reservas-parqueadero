@@ -7,7 +7,7 @@ ParkApp es una plataforma integral para la reserva de plazas de estacionamiento.
 ##  Equipo y Distribución de Ingeniería
 
 
-| Integrante    | Responsabilidad Técnica   | Aporte al Negocio                                                                 |
+| Integrante    | Responsabilidad Técnica   | Aporte                                                              |
 |-------------- |--------------------------|-----------------------------------------------------------------------------------|
 | **Alejandra** | Arquitectura HTML        | Diseñó la base semántica y estructural de las vistas de usuario y administración.  |
 | **Oscar**     | UI/UX & Roles            | Implementó el sistema visual responsive y la lógica de visibilidad basada en permisos. |
