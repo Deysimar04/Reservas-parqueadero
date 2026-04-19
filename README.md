@@ -85,7 +85,7 @@ Para visualizar y testear el sistema correctamente, siga estos pasos:
 	- **Plazas:** Agregar nuevas plazas de parqueo o liberar plazas ocupadas manualmente.
 	- **Seguridad:** Intente acceder a la URL de administración con una cuenta de Cliente; el sistema debería denegar el acceso o redirigirlo.
 
-### 🛠️ Depuración de Datos
+###  Depuración de Datos
 Si desea reiniciar el sistema a su estado original (limpiar todas las reservas y usuarios creados):
 
 1. Abra la consola del navegador (F12).
