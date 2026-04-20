@@ -1,7 +1,7 @@
-package com.reservas.Parqueaderos.service;
+package com.reservas.parqueaderos.service;
 
-import com.reservas.Parqueaderos.model.Product;
-import com.reservas.Parqueaderos.repository.ProductRepository;
+import com.reservas.parqueaderos.model.Product;
+import com.reservas.parqueaderos.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.List;

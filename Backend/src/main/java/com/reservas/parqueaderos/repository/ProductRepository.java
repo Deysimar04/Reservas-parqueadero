@@ -1,6 +1,6 @@
-package com.reservas.Parqueaderos.repository;
+package com.reservas.parqueaderos.repository;
 
-import com.reservas.Parqueaderos.model.Product;
+import com.reservas.parqueaderos.model.Product;
 import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;

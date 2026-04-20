@@ -1,4 +1,4 @@
-package com.reservas.Parqueaderos;
+package com.reservas.parqueaderos;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

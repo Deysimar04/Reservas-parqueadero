@@ -1,7 +1,7 @@
-package com.reservas.Parqueaderos.controller;
+package com.reservas.parqueaderos.controller;
 
-import com.reservas.Parqueaderos.model.Product;
-import com.reservas.Parqueaderos.service.ProductService;
+import com.reservas.parqueaderos.model.Product;
+import com.reservas.parqueaderos.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
