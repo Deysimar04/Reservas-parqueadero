@@ -1,6 +1,5 @@
 package com.reservas.parqueaderos.controller;
 
-import com.reservas.parqueaderos.model.User;
 import com.reservas.parqueaderos.repository.UserRepository;
 import com.reservas.parqueaderos.security.JwtUtil;
 import lombok.RequiredArgsConstructor;

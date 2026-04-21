@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final JwtUtil jwtUtil;
+    private final com.reservas.parqueaderos.security.JwtUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
