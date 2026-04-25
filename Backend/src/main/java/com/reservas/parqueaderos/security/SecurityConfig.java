@@ -1,12 +1,11 @@
 package com.reservas.parqueaderos.security;
 
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,68 +19,56 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
-@RequiredArgsConstructor
-@EnableMethodSecurity
+@EnableWebSecurity
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
 
+    // Constructor manual para no depender de Lombok y evitar errores rojos
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                // 1. Habilitar CORS y Deshabilitar CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .csrf(csrf -> csrf.disable())
-
-                // 2. Gestión de sesión sin estado (Stateless)
-                .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-
-                // 3. Reglas de Autorización
+                .csrf(csrf -> csrf.disable()) // Desactivar CSRF es vital para Postman
+                .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Públicos
+                        // PERMITIR TODO LO QUE ESTÉ EN AUTH (Login y Registro)
                         .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
 
-                        // Solo ADMIN
-                        .requestMatchers(HttpMethod.POST, "/productos/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.PUT, "/productos/**").hasRole("ADMIN")
-                        .requestMatchers(HttpMethod.DELETE, "/productos/**").hasRole("ADMIN")
-                        .requestMatchers("/api/auth/usuarios/*/rol").hasRole("ADMIN")
+                        // Permitir ver productos sin estar logueado
+                        .requestMatchers(HttpMethod.GET, "/api/productos/**", "/productos/**").permitAll()
 
-                        // Solo Usuarios Autenticados
-                        .requestMatchers("/api/reservas/**").authenticated()
+                        // Permitir peticiones de control del navegador
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
+                        // Todo lo demás requiere login
                         .anyRequest().authenticated()
                 )
-
-                // 4. Manejo de Errores (403 Forbidden)
-                .exceptionHandling(ex -> ex
-                        .accessDeniedHandler((request, response, e) -> {
-                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            response.setContentType("application/json");
-                            response.getWriter().write(
-                                    "{\"error\":\"Acceso denegado\", \"message\":\"No tienes permisos (Rol insuficiente)\"}"
-                            );
-                        })
-                )
-
-                // 5. Filtro JWT
+                // IMPORTANTE: Manejo de error para saber si es por falta de permisos
+                .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setCharacterEncoding("UTF-8");
+                    response.setContentType("application/json");
+                    response.getWriter().write("{\"error\": \"No autorizado\", \"detalles\": \"" + authException.getMessage() + "\"}");
+                }))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
 
-    // Configuración detallada de CORS para conectar con el Frontend
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*")); // En desarrollo puedes usar "*"
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
-        configuration.setExposedHeaders(List.of("Authorization"));
-
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(List.of("*")); // Permite cualquier origen en desarrollo
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
+        config.setAllowCredentials(true);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
+        source.registerCorsConfiguration("/**", config);
         return source;
     }
 
