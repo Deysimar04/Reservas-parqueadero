@@ -5,13 +5,15 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 
 @Component
 public class JwtUtil {
 
-    private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
-    private final long EXPIRATION = 86400000; // 24 horas
+    private static final String SECRET = "cGFya2FwcC1zZWNyZXQta2V5LXBhcmthcHAtc2VjcmV0LWtleS0yMDI2";
+    private final Key key = Keys.hmacShaKeyFor(Base64.getDecoder().decode(SECRET));
+    private final long EXPIRATION = 86400000;
 
     public String generateToken(String username, String role) {
         return Jwts.builder()
