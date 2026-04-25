@@ -1,96 +1,175 @@
-# ParkApp - Sistema de Gestión de reservas de parqueaderos (Sprint 2)
+ParkApp - Sistema de Gestión de Reservas de Parqueaderos (Sprint 2)
+ParkApp es una plataforma integral para la reserva de plazas de estacionamiento. Durante este Sprint 2, hemos construido un ecosistema completo con Frontend estático (HTML/CSS/JS) y un Backend real en Java con Spring Boot, cumpliendo con los estándares definidos en las historias de usuario.
 
-ParkApp es una plataforma integral para la reserva de plazas de estacionamiento. Durante este **Sprint 2**, hemos transformado una interfaz estática en una aplicación web dinámica que simula un ecosistema completo (**Frontend + Backend en memoria**), cumpliendo con estándares del historial de usuario .
+Equipo y Distribución de Ingeniería
+IntegranteResponsabilidad TécnicaAporteAlejandraArquitectura HTML & Backend SecurityDiseñó la base semántica de las vistas y configuró Spring Security con JWT para control de acceso por roles.OscarUI/UX & RolesImplementó el sistema visual y la lógica de visibilidad basada en permisos en el frontend.Jhon MarioAuth & API BackendDesarrolló los endpoints de autenticación (registro, login, logout), gestión de categorías y la capa de seguridad JWT.Juan PabloLógica de CatálogoCreó el CRUD de productos, validaciones de integridad, motor de búsqueda y el endpoint de características.AyderNotificaciones & Flujo de ReservasProgramó el sistema de reservas, la bandeja de mensajes simulada y la validación de cancelación por usuario.
 
----
+Arquitectura del Sistema
+┌─────────────────────┐         HTTP/REST         ┌──────────────────────────┐
+│   Frontend          │ ◄─────────────────────►   │   Backend Java           │
+│   HTML + CSS + JS   │      JSON Responses        │   Spring Boot 3.2        │
+│   LocalStorage      │                            │   Spring Security + JWT  │
+└─────────────────────┘                            └──────────────────────────┘
+El frontend consume los endpoints REST del backend. La autenticación se maneja con tokens JWT que el frontend guarda en localStorage y envía en cada petición con el header Authorization: Bearer <token>.
 
-##  Equipo y Distribución de Ingeniería
+Cumplimiento Técnico de Historias de Usuario (HU)
+1. Gestión de Identidad y Seguridad (Auth)
+HU13 — Registrar usuario
+
+Endpoint: POST /api/auth/registro
+Valida campos obligatorios: username, email y contraseña.
+Detecta emails duplicados y retorna error claro.
+Simula envío de correo de bienvenida via System.out.println (HU19).
+
+HU14 — Login
+
+Endpoint: POST /api/auth/login
+Retorna token JWT con rol embebido (ADMIN o USER).
+Maneja errores: usuario no encontrado (401) y contraseña incorrecta (401).
+
+HU15 — Cerrar sesión
+
+Endpoint: POST /api/auth/logout
+El frontend elimina el token de localStorage.
+El backend confirma con respuesta 200.
+
+HU16 — Identificar administrador
+
+Endpoint: PUT /api/auth/usuarios/{id}/rol
+Permite asignar o quitar el rol ADMIN a cualquier usuario.
+Protegido por Spring Security: solo accesible con token válido.
+El frontend oculta el botón "Panel Admin" si el rol no es ADMIN.
+
+2. Panel Administrativo y Catálogo (CRUD)
+HU9 — Panel de administración
+
+Ruta frontend: /admin.html
+El backend protege todas las rutas de escritura con hasRole("ADMIN").
+Responde con 403 Forbidden en JSON si un usuario sin permisos intenta acceder.
+
+HU10 — Listar productos
+
+Endpoint: GET /productos
+Devuelve todos los productos en memoria.
+Público: no requiere token.
+
+HU3 — Registrar producto
+
+Endpoint: POST /productos
+Requiere token de ADMIN.
+Valida que el nombre no esté vacío y que no exista un producto duplicado.
+Retorna error descriptivo si hay duplicado.
+
+HU12 — Categorizar productos
+
+Endpoint: GET /productos/categorias
+Categorías pre-sembradas en memoria: Cubierto, Descubierto, Motos, Bicicletas, Discapacitados.
+El campo category del producto se asigna al crear o editar.
+
+HU17 — Administrar características de producto
+
+Endpoint: GET /productos/caracteristicas
+Características pre-sembradas: Seguridad 24h (shield), Techado (roof).
+Gestionadas por ProductFeatureRepository con soporte para agregar nuevas.
+
+3. Reservas y Disponibilidad
+HU19 — Notificación de registro
+
+Al registrarse, AuthService imprime en consola:
+LOG: Enviando correo de bienvenida a <email>
+Simula una cola de notificaciones asíncrona lista para conectar a un servicio real en Sprint 3.
+
+HU23 — Visualizar disponibilidad
+
+Endpoint: GET /productos/{id}/disponibilidad
+Implementado con el patrón Strategy (AvailabilityStrategy).
+MockAvailabilityService devuelve rangos de disponibilidad simulados por producto.
 
 
-| Integrante    | Responsabilidad Técnica   | Aporte                                                              |
-|-------------- |--------------------------|-----------------------------------------------------------------------------------|
-| **Alejandra** | Arquitectura HTML        | Diseñó la base semántica y estructural de las vistas de usuario y administración.  |
-| **Oscar**     | UI/UX & Roles            | Implementó el sistema visual responsive y la lógica de visibilidad basada en permisos. |
-| **Jhon Mario**| Auth & API Mock          | Desarrolló el motor de autenticación, gestión de categorías y la simulación de persistencia. |
-| **Juan Pablo**| Lógica de Catálogo       | Creó el CRUD de plazas, validaciones de integridad y motor de búsqueda de productos. |
-| **Ayder**     | Notificaciones & Flujo   | Programó el sistema de reservas y la bandeja de mensajes (comunicación asíncrona). |
+Patrones de Diseño Aplicados
+Patrón Strategy — Disponibilidad
 
----
+La interfaz AvailabilityStrategy define el contrato de verificación.
+MockAvailabilityService implementa la lógica simulada para Sprint 2.
+En Sprint 3 se reemplazará por una implementación real con base de datos sin tocar el Controller.
 
-## Cumplimiento Técnico de Historias de Usuario (HU)
+Patrón Repository — Persistencia en memoria
 
-### 1. Gestión de Identidad y Seguridad (Auth)
-- **HU13, HU14 & HU15 (Registro, Login, Logout):**
-	- Implementamos un sistema de autenticación que valida campos obligatorios y formatos (email, fortaleza de contraseña).
-	- La sesión se mantiene mediante localStorage y se invalida de forma segura al cerrar sesión.
-- **HU16 (Roles):**
-	- El sistema distingue entre Cliente y Administrador.
-	- Los permisos están protegidos: un cliente no puede ver el botón ni acceder a la URL del panel administrativo.
+Cada entidad tiene su propio Repository (ProductRepository, UserRepository, ReservaRepository, CategoryRepository, ProductFeatureRepository).
+Toda la manipulación de datos pasa por el Repository, lo que permite migrar a SQL/NoSQL en Sprint 3 editando solo esa capa.
 
-### 2. Panel Administrativo y Catálogo (CRUD)
-- **HU9 & HU10 (Panel y Listado):**
-	- Se creó `/admin.html` que expone una tabla dinámica con todas las plazas del sistema en tiempo real.
-- **HU3 (Registro de Productos):**
-	- Formulario avanzado que incluye validación de duplicados (ID único) y carga simulada de imágenes.
-- **HU12, HU21 & HU29 (Categorización Dinámica):**
-	- El administrador puede crear nuevas categorías (ej. "Camiones").
-	- El sistema bloquea la eliminación de una categoría si tiene plazas asociadas para evitar inconsistencias de datos.
-- **HU17 (Características):**
-	- Implementamos un sistema de "Tags" o características (Vigilancia, Techado) que se vinculan dinámicamente a cada producto en memoria.
+Patrón Filter (Spring Security) — JWT
 
-### 3. Experiencia de Usuario y Mock de Backend
-- **HU19 (Sistema de Notificaciones):**
-	- Al registrarse o reservar, el sistema genera un "Email" simulado.
-	- Esto se visualiza en una Bandeja de Entrada con un punto de notificación rojo en el header que indica mensajes no leídos.
-- **HU23 (Visualización de Disponibilidad):**
-	- Motor de filtrado que permite al usuario elegir una fecha y tipo de vehículo, devolviendo únicamente las plazas libres (Mock de disponibilidad basado en rangos de fecha).
-
----
-
-##  Patrones de Diseño Aplicados
-
-- **Patrón Observer:**
-	- **¿Cómo funciona?** El PlazaManager actúa como el "Sujeto". Cuando una plaza cambia su estado (ej. de Disponible a Reservada), notifica automáticamente a los "Observadores" (el contador de la página, la bandeja de notificaciones y el mapa de plazas).
-- **Patrón Repository / Manager (Singleton):**
-	- **¿Cómo funciona?** Centralizamos toda la manipulación del localStorage en un solo lugar. Esto permite que si mañana cambiamos de LocalStorage a una API de Firebase o un Backend en Java, solo debamos editar un archivo.
-
----
+JwtFilter intercepta cada petición antes de llegar al Controller.
+Extrae y valida el token, inyecta el usuario y su rol en el contexto de seguridad.
+SecurityConfig define qué rutas son públicas y cuáles requieren rol ADMIN.
 
 
-## Instrucciones de Ejecución y Pruebas
+Endpoints del Backend
+MétodoRutaAccesoDescripciónPOST/api/auth/registroPúblicoRegistrar nuevo usuarioPOST/api/auth/loginPúblicoLogin, retorna JWTPOST/api/auth/logoutPúblicoCerrar sesiónPUT/api/auth/usuarios/{id}/rolAutenticadoCambiar rol de usuarioGET/productosPúblicoListar todos los productosPOST/productosADMINRegistrar nuevo productoGET/productos/categoriasPúblicoListar categoríasGET/productos/caracteristicasPúblicoListar característicasGET/productos/{id}/disponibilidadPúblicoDisponibilidad mockGET/api/reservas/mis-reservasAutenticadoVer mis reservasPUT/api/reservas/{id}/cancelarAutenticadoCancelar reserva propia
 
-Para visualizar y testear el sistema correctamente, siga estos pasos:
+Instrucciones de Ejecución
+Requisitos Previos
 
-### 1. Requisitos Previos
-- Navegador web moderno (Chrome, Edge o Firefox).
-- Se recomienda el uso de la extensión **Live Server** (VS Code) para evitar problemas de permisos con módulos de JavaScript (`type="module"`).
+Java 21
+Maven
+IntelliJ IDEA (recomendado)
+Postman (para probar el backend)
+Navegador moderno con extensión Live Server (para el frontend)
 
-### 2. Puesta en Marcha
-- Clonar/Descargar el repositorio en su máquina local.
-- Abrir la carpeta del proyecto en su editor de código.
-- Ejecutar el archivo `index.html` mediante Live Server.
-- El sistema inicializará automáticamente el Backend en Memoria (Local Storage) con los datos pre-sembrados de plazas y categorías.
+Puesta en Marcha del Backend
 
-### 3. Guía de Pruebas por Rol
-#### A. Flujo de Cliente (Usuario Estándar):
-- **Registro:** Vaya a "Crear cuenta" y regístrese con el rol Cliente.
-- **Validación:** Revise la Bandeja de Mensajes (icono superior); debería ver su correo de bienvenida.
-- **Reserva:** Seleccione un tipo de vehículo, una zona de parqueo y una fecha. Elija una plaza disponible y confirme. La burbuja de notificación se actualizará automáticamente.
+Abrir la carpeta Backend en IntelliJ IDEA.
+Esperar a que Maven descargue las dependencias.
+Ejecutar ParqueaderosApplication.java con el botón Run.
+Verificar en consola: Started ParqueaderosApplication in X seconds.
+El backend queda disponible en http://localhost:8080.
 
-#### B. Flujo de Administrador:
-- **Acceso:** Regístrese o inicie sesión con una cuenta de rol Administrador.
-- **Gestión:** Notará que aparece el botón "Panel Admin" en el header.
-- **Control Total:** Ingrese al panel para:
-	- **Categorías:** Crear o editar tipos de vehículos (esto actualizará los filtros de la página principal).
-	- **Plazas:** Agregar nuevas plazas de parqueo o liberar plazas ocupadas manualmente.
-	- **Seguridad:** Intente acceder a la URL de administración con una cuenta de Cliente; el sistema debería denegar el acceso o redirigirlo.
+Puesta en Marcha del Frontend
 
-###  Depuración de Datos
-Si desea reiniciar el sistema a su estado original (limpiar todas las reservas y usuarios creados):
+Abrir la carpeta del frontend en VS Code.
+Ejecutar index.html con la extensión Live Server.
+El frontend se conecta automáticamente al backend en http://localhost:8080.
 
-1. Abra la consola del navegador (F12).
-2. Vaya a la pestaña Application -> Local Storage.
-3. Haga clic derecho y elija "Clear".
-4. Refresque la página (F5).
 
----
+Guía de Pruebas
+Con Postman (Backend)
+Login como ADMIN:
+POST http://localhost:8080/api/auth/login
+Body: { "username": "admin", "password": "admin123" }
+Copia el token de la respuesta y úsalo en las siguientes peticiones con:
+Authorization: Bearer <token>
+Registrar usuario:
+POST http://localhost:8080/api/auth/registro
+Body: { "username": "maria", "email": "maria@gmail.com", "password": "123456" }
+Crear producto (requiere token ADMIN):
+POST http://localhost:8080/productos
+Authorization: Bearer <token>
+Body: { "name": "Parqueadero Norte", "description": "Cubierto", "category": "Cubierto" }
+Cambiar rol de usuario:
+PUT http://localhost:8080/api/auth/usuarios/2/rol
+Authorization: Bearer <token>
+Body: { "role": "ADMIN" }
+Con el Navegador (Frontend)
+Flujo Cliente:
+
+Ir a index.html y crear una cuenta con rol Cliente.
+Revisar la bandeja de mensajes para ver el correo de bienvenida simulado.
+Seleccionar fecha, tipo de vehículo y confirmar una reserva.
+
+Flujo Administrador:
+
+Iniciar sesión con rol Administrador.
+Verificar que aparece el botón "Panel Admin" en el header.
+Desde el panel: crear categorías, agregar plazas y gestionar usuarios.
+Intentar acceder a /admin.html con cuenta de Cliente — el sistema debe denegar el acceso.
+
+Depuración de Datos
+Para reiniciar el frontend a su estado original:
+
+Abrir consola del navegador (F12).
+Ir a Application → Local Storage.
+Clic derecho → Clear.
+Refrescar la página (F5).
+
+Para reiniciar el backend simplemente detén y vuelve a ejecutar la aplicación en IntelliJ — los datos en memoria se limpian automáticamente.
