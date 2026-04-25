@@ -1,96 +1,176 @@
-# ParkApp - Sistema de Gestión de reservas de parqueaderos (Sprint 2)
+# ParkApp - Sistema de Gestión de Reservas de Parqueaderos (Sprint 2)
 
-ParkApp es una plataforma integral para la reserva de plazas de estacionamiento. Durante este **Sprint 2**, hemos transformado una interfaz estática en una aplicación web dinámica que simula un ecosistema completo (**Frontend + Backend en memoria**), cumpliendo con estándares del historial de usuario .
-
----
-
-##  Equipo y Distribución de Ingeniería
-
-
-| Integrante    | Responsabilidad Técnica   | Aporte                                                              |
-|-------------- |--------------------------|-----------------------------------------------------------------------------------|
-| **Alejandra** | Arquitectura HTML        | Diseñó la base semántica y estructural de las vistas de usuario y administración.  |
-| **Oscar**     | UI/UX & Roles            | Implementó el sistema visual responsive y la lógica de visibilidad basada en permisos. |
-| **Jhon Mario**| Auth & API Mock          | Desarrolló el motor de autenticación, gestión de categorías y la simulación de persistencia. |
-| **Juan Pablo**| Lógica de Catálogo       | Creó el CRUD de plazas, validaciones de integridad y motor de búsqueda de productos. |
-| **Ayder**     | Notificaciones & Flujo   | Programó el sistema de reservas y la bandeja de mensajes (comunicación asíncrona). |
+ParkApp es una plataforma integral para la reserva de plazas de estacionamiento.  
+Durante este Sprint 2, se implementó una arquitectura completa con Frontend (HTML, CSS, JS) y Backend en Java con Spring Boot, incluyendo autenticación con JWT y control de roles.
 
 ---
 
-## Cumplimiento Técnico de Historias de Usuario (HU)
+## Equipo y Distribución de Ingeniería
 
-### 1. Gestión de Identidad y Seguridad (Auth)
-- **HU13, HU14 & HU15 (Registro, Login, Logout):**
-	- Implementamos un sistema de autenticación que valida campos obligatorios y formatos (email, fortaleza de contraseña).
-	- La sesión se mantiene mediante localStorage y se invalida de forma segura al cerrar sesión.
-- **HU16 (Roles):**
-	- El sistema distingue entre Cliente y Administrador.
-	- Los permisos están protegidos: un cliente no puede ver el botón ni acceder a la URL del panel administrativo.
-
-### 2. Panel Administrativo y Catálogo (CRUD)
-- **HU9 & HU10 (Panel y Listado):**
-	- Se creó `/admin.html` que expone una tabla dinámica con todas las plazas del sistema en tiempo real.
-- **HU3 (Registro de Productos):**
-	- Formulario avanzado que incluye validación de duplicados (ID único) y carga simulada de imágenes.
-- **HU12, HU21 & HU29 (Categorización Dinámica):**
-	- El administrador puede crear nuevas categorías (ej. "Camiones").
-	- El sistema bloquea la eliminación de una categoría si tiene plazas asociadas para evitar inconsistencias de datos.
-- **HU17 (Características):**
-	- Implementamos un sistema de "Tags" o características (Vigilancia, Techado) que se vinculan dinámicamente a cada producto en memoria.
-
-### 3. Experiencia de Usuario y Mock de Backend
-- **HU19 (Sistema de Notificaciones):**
-	- Al registrarse o reservar, el sistema genera un "Email" simulado.
-	- Esto se visualiza en una Bandeja de Entrada con un punto de notificación rojo en el header que indica mensajes no leídos.
-- **HU23 (Visualización de Disponibilidad):**
-	- Motor de filtrado que permite al usuario elegir una fecha y tipo de vehículo, devolviendo únicamente las plazas libres (Mock de disponibilidad basado en rangos de fecha).
+| Integrante     | Responsabilidad Técnica        | Aporte                                                                 |
+|----------------|------------------------------|------------------------------------------------------------------------|
+| **Alejandra**  | Arquitectura HTML & Seguridad | Diseñó la estructura del frontend y configuró Spring Security con JWT. |
+| **Oscar**      | UI/UX & Roles                | Implementó la interfaz visual y control de permisos en el frontend.   |
+| **Jhon Mario** | Auth & API Backend           | Desarrolló login, registro y sistema de autenticación JWT.            |
+| **Juan Pablo** | Lógica de Catálogo           | Implementó CRUD de productos y validaciones.                          |
+| **Ayder**      | Reservas & Notificaciones    | Programó flujo de reservas y sistema de notificaciones.               |
 
 ---
 
-##  Patrones de Diseño Aplicados
+## Arquitectura del Sistema
+┌─────────────────────┐ HTTP/REST ┌──────────────────────────┐
+│ Frontend │ <-------------------> │ Backend │
+│ HTML + CSS + JS │ JSON │ Spring Boot │
+│ LocalStorage │ │ Security + JWT │
+└─────────────────────┘ └──────────────────────────┘
 
-- **Patrón Observer:**
-	- **¿Cómo funciona?** El PlazaManager actúa como el "Sujeto". Cuando una plaza cambia su estado (ej. de Disponible a Reservada), notifica automáticamente a los "Observadores" (el contador de la página, la bandeja de notificaciones y el mapa de plazas).
-- **Patrón Repository / Manager (Singleton):**
-	- **¿Cómo funciona?** Centralizamos toda la manipulación del localStorage en un solo lugar. Esto permite que si mañana cambiamos de LocalStorage a una API de Firebase o un Backend en Java, solo debamos editar un archivo.
+---
+
+## Endpoints del Backend
+
+| Método | Ruta | Acceso | Descripción |
+|--------|------|--------|------------|
+| POST | /api/auth/registro | Público | Registrar usuario |
+| POST | /api/auth/login | Público | Login y obtención de JWT |
+| POST | /api/auth/logout | Público | Cerrar sesión |
+| PUT | /api/auth/usuarios/{id}/rol | Autenticado | Cambiar rol |
+| GET | /productos | Público | Listar productos |
+| POST | /productos | ADMIN | Crear producto |
+| GET | /productos/categorias | Público | Listar categorías |
+| GET | /productos/caracteristicas | Público | Listar características |
+| GET | /productos/{id}/disponibilidad | Público | Ver disponibilidad |
+| GET | /api/reservas/mis-reservas | Autenticado | Ver reservas |
+| PUT | /api/reservas/{id}/cancelar | Autenticado | Cancelar reserva |
 
 ---
 
+## Gestión de Identidad y Seguridad
 
-## Instrucciones de Ejecución y Pruebas
+### Registro
+- Endpoint: POST /api/auth/registro  
+- Valida username, email y contraseña  
+- Detecta correos duplicados  
 
-Para visualizar y testear el sistema correctamente, siga estos pasos:
+### Login
+- Endpoint: POST /api/auth/login  
+- Retorna token JWT con rol  
 
-### 1. Requisitos Previos
-- Navegador web moderno (Chrome, Edge o Firefox).
-- Se recomienda el uso de la extensión **Live Server** (VS Code) para evitar problemas de permisos con módulos de JavaScript (`type="module"`).
+### Logout
+- El frontend elimina el token del localStorage  
 
-### 2. Puesta en Marcha
-- Clonar/Descargar el repositorio en su máquina local.
-- Abrir la carpeta del proyecto en su editor de código.
-- Ejecutar el archivo `index.html` mediante Live Server.
-- El sistema inicializará automáticamente el Backend en Memoria (Local Storage) con los datos pre-sembrados de plazas y categorías.
-
-### 3. Guía de Pruebas por Rol
-#### A. Flujo de Cliente (Usuario Estándar):
-- **Registro:** Vaya a "Crear cuenta" y regístrese con el rol Cliente.
-- **Validación:** Revise la Bandeja de Mensajes (icono superior); debería ver su correo de bienvenida.
-- **Reserva:** Seleccione un tipo de vehículo, una zona de parqueo y una fecha. Elija una plaza disponible y confirme. La burbuja de notificación se actualizará automáticamente.
-
-#### B. Flujo de Administrador:
-- **Acceso:** Regístrese o inicie sesión con una cuenta de rol Administrador.
-- **Gestión:** Notará que aparece el botón "Panel Admin" en el header.
-- **Control Total:** Ingrese al panel para:
-	- **Categorías:** Crear o editar tipos de vehículos (esto actualizará los filtros de la página principal).
-	- **Plazas:** Agregar nuevas plazas de parqueo o liberar plazas ocupadas manualmente.
-	- **Seguridad:** Intente acceder a la URL de administración con una cuenta de Cliente; el sistema debería denegar el acceso o redirigirlo.
-
-###  Depuración de Datos
-Si desea reiniciar el sistema a su estado original (limpiar todas las reservas y usuarios creados):
-
-1. Abra la consola del navegador (F12).
-2. Vaya a la pestaña Application -> Local Storage.
-3. Haga clic derecho y elija "Clear".
-4. Refresque la página (F5).
+### Roles
+- ADMIN y USER  
+- Controlados con Spring Security  
 
 ---
+
+## Panel Administrativo y Catálogo
+
+### Panel Admin
+- Ruta: /admin.html  
+- Protegido con hasRole("ADMIN")  
+
+### Listar productos
+- Endpoint: GET /productos  
+
+### Crear producto
+- Endpoint: POST /productos  
+- Valida campos obligatorios y duplicados  
+
+### Categorías
+- Cubierto  
+- Descubierto  
+- Motos  
+- Bicicletas  
+- Discapacitados  
+
+### Características
+- Seguridad 24h  
+- Techado  
+
+---
+
+## Reservas y Disponibilidad
+
+### Notificaciones
+Simulación en consola:
+LOG: Enviando correo de bienvenida
+
+### Disponibilidad
+- Endpoint: GET /productos/{id}/disponibilidad  
+- Implementado con patrón Strategy  
+
+---
+
+## Patrones de Diseño
+
+| Patrón | Uso |
+|--------|-----|
+| Strategy | Manejo de disponibilidad |
+| Repository | Persistencia en memoria |
+| Filter (JWT) | Seguridad en cada request |
+
+---
+
+## Instrucciones de Ejecución
+
+### Backend
+
+1. Abrir en IntelliJ  
+2. Ejecutar:
+3. ParqueaderosApplication.java
+4. 3. Acceder a:
+   http://localhost:8080
+
+
+---
+
+### Frontend
+
+1. Abrir en VS Code  
+2. Ejecutar con Live Server  
+3. Abrir:
+   index.html
+   
+## Pruebas con Postman
+
+### Login ADMIN
+
+POST http://localhost:8080/api/auth/login
+
+Body:
+json
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### registrar usuario
+
+POST http://localhost:8080/api/auth/registro
+
+### Crear producto
+
+POST http://localhost:8080/productos
+
+Header:
+Authorization: Bearer TOKEN
+
+### Cambiar rol
+
+PUT http://localhost:8080/api/auth/usuarios/2/rol
+
+### Pruebas en el Frontend
+Usuario
+Registro
+Ver disponibilidad
+Reservar
+Administrador
+Acceso al panel
+CRUD de productos
+Gestión de usuarios
+Depuración de Datos
+Abrir consola del navegador (F12)
+Ir a Application → Local Storage
+Click derecho → Clear
+Refrescar la página
