@@ -132,28 +132,35 @@ LOG: Enviando correo de bienvenida
 3. Abrir:
    index.html
    
----
-
 ## Pruebas con Postman
 
 ### Login ADMIN
+
 POST http://localhost:8080/api/auth/login
 
 Body:
-```json
+json
 {
   "username": "admin",
   "password": "admin123"
 }
 
-Registrar usuario
+### registrar usuario
+
 POST http://localhost:8080/api/auth/registro
-Crear producto
+
+### Crear producto
+
 POST http://localhost:8080/productos
+
+Header:
 Authorization: Bearer TOKEN
- Cambiar rol
+
+### Cambiar rol
+
 PUT http://localhost:8080/api/auth/usuarios/2/rol
-Pruebas en el Frontend
+
+### Pruebas en el Frontend
 Usuario
 Registro
 Ver disponibilidad
@@ -163,7 +170,7 @@ Acceso al panel
 CRUD de productos
 Gestión de usuarios
 Depuración de Datos
-Abrir consola del navegador
+Abrir consola del navegador (F12)
 Ir a Application → Local Storage
 Click derecho → Clear
 Refrescar la página
