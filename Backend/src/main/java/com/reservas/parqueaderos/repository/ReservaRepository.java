@@ -12,7 +12,17 @@ import java.util.stream.Collectors;
 public class ReservaRepository {
 
     private final List<Reserva> reservas = new ArrayList<>();
-    private Long nextId = 1L;
+    private Long nextId = 2L;
+
+    // Reserva de prueba pre-cargada
+    public ReservaRepository() {
+        Reserva r = new Reserva();
+        r.setId(1L);
+        r.setUserId(2L);
+        r.setProductId(1L);
+        r.setEstado("ACTIVA");
+        reservas.add(r);
+    }
 
     public List<Reserva> findByUserId(Long userId) {
         return reservas.stream()
@@ -20,7 +30,12 @@ public class ReservaRepository {
                 .collect(Collectors.toList());
     }
 
-    //  HU9: Busca reserva solo si pertenece al usuario
+    public Optional<Reserva> findById(Long id) {
+        return reservas.stream()
+                .filter(r -> r.getId().equals(id))
+                .findFirst();
+    }
+
     public Optional<Reserva> findByIdAndUserId(Long id, Long userId) {
         return reservas.stream()
                 .filter(r -> r.getId().equals(id) && r.getUserId().equals(userId))
@@ -35,6 +50,6 @@ public class ReservaRepository {
     }
 
     public void update(Reserva reserva) {
-        // como es en memoria, el objeto ya está modificado en la lista
+        // En memoria el objeto ya está modificado en la lista
     }
 }

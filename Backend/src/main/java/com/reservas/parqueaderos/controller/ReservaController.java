@@ -24,17 +24,15 @@ public class ReservaController {
         if (auth == null) {
             return ResponseEntity.status(401).body("No autenticado");
         }
-        System.out.println(">>> Auth name: " + auth.getName());
+
         Long userId = userRepository.findByUsername(auth.getName())
-                .map(u -> {
-                    System.out.println(">>> Usuario encontrado: " + u.getId());
-                    return u.getId();
-                })
+                .map(u -> u.getId())
                 .orElse(null);
 
         if (userId == null) {
             return ResponseEntity.status(404).body("Usuario no encontrado");
         }
+
         List<Reserva> reservas = reservaService.getReservasByUser(userId);
         return ResponseEntity.ok(reservas);
     }
@@ -44,7 +42,7 @@ public class ReservaController {
         if (auth == null) {
             return ResponseEntity.status(401).body("No autenticado");
         }
-        System.out.println(">>> Auth name cancelar: " + auth.getName());
+
         Long userId = userRepository.findByUsername(auth.getName())
                 .map(u -> u.getId())
                 .orElse(null);
@@ -52,7 +50,14 @@ public class ReservaController {
         if (userId == null) {
             return ResponseEntity.status(404).body("Usuario no encontrado");
         }
-        reservaService.cancelarReserva(id, userId);
+
+        // Extraer rol del token
+        String role = auth.getAuthorities().stream()
+                .findFirst()
+                .map(a -> a.getAuthority().replace("ROLE_", ""))
+                .orElse("USER");
+
+        reservaService.cancelarReserva(id, userId, role);
         return ResponseEntity.ok("Reserva cancelada exitosamente");
     }
 }
