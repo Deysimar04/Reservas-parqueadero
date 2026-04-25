@@ -1,65 +1,63 @@
- ParkApp - Sistema de Gestión de Reservas de Parqueaderos (Sprint 2)
+🚗 ParkApp - Sistema de Reservas de Parqueaderos (Sprint 2)
 
-ParkApp es una plataforma para la reserva de plazas de estacionamiento.
+ParkApp es una plataforma para gestionar reservas de parqueaderos con frontend y backend desacoplados.
 
-En este Sprint 2 se implementó:
+👥 Equipo de Trabajo
+Integrante	Rol	Aporte
+Alejandra	Arquitectura & Seguridad	Configuración de Spring Security y JWT
+Oscar	UI/UX	Diseño visual y control de roles en frontend
+Jhon Mario	Backend Auth	Endpoints de login, registro y seguridad
+Juan Pablo	Catálogo	CRUD de productos y validaciones
+Ayder	Reservas	Flujo de reservas y cancelaciones
+🏗️ Arquitectura del Sistema
 
 Frontend (HTML, CSS, JS)
-Backend con Spring Boot
-Seguridad con JWT
-Arquitectura basada en patrones
- Equipo
-Integrante	Rol	Aporte
-Alejandra	Arquitectura & Seguridad	JWT y estructura backend
-Oscar	UI/UX	Interfaz y control de roles
-Jhon Mario	Backend Auth	Login, registro y seguridad
-Juan Pablo	Catálogo	CRUD productos
-Ayder	Reservas	Flujo de reservas
- Arquitectura
-Frontend (HTML/JS)
-        ↓
-     HTTP/JSON
-        ↓
+⬇️
+HTTP / JSON
+⬇️
 Backend (Spring Boot + JWT)
- Autenticación
-Función	Endpoint	Método
-Registro	/api/auth/registro	POST
-Login	/api/auth/login	POST
-Logout	/api/auth/logout	POST
-Cambiar rol	/api/auth/usuarios/{id}/rol	PUT
-🛠️ Productos
-Función	Endpoint	Método	Acceso
-Listar	/productos	GET	Público
-Crear	/productos	POST	ADMIN
-Categorías	/productos/categorias	GET	Público
-Características	/productos/caracteristicas	GET	Público
- Reservas
-Función	Endpoint	Método
-Mis reservas	/api/reservas/mis-reservas	GET
-Cancelar	/api/reservas/{id}/cancelar	PUT
-Disponibilidad	/productos/{id}/disponibilidad	GET
- Patrones
+
+🔐 Autenticación
+Funcionalidad	Método	Endpoint
+Registrar usuario	POST	/api/auth/registro
+Login	POST	/api/auth/login
+Logout	POST	/api/auth/logout
+Cambiar rol	PUT	/api/auth/usuarios/{id}/rol
+🛠️ Gestión de Productos
+Funcionalidad	Método	Endpoint	Acceso
+Listar productos	GET	/productos	Público
+Crear producto	POST	/productos	ADMIN
+Categorías	GET	/productos/categorias	Público
+Características	GET	/productos/caracteristicas	Público
+📅 Reservas
+Funcionalidad	Método	Endpoint
+Ver mis reservas	GET	/api/reservas/mis-reservas
+Cancelar reserva	PUT	/api/reservas/{id}/cancelar
+Ver disponibilidad	GET	/productos/{id}/disponibilidad
+🧠 Patrones de Diseño
 Strategy → disponibilidad
-Repository → datos en memoria
-Filter → JWT
- Ejecutar Backend
+Repository → manejo de datos
+Filter → seguridad JWT
+⚙️ Ejecución del Backend
 cd Backend
 .\mvnw.cmd clean install
 java -jar target/Parqueaderos-0.0.1-SNAPSHOT.jar
 
- URL:
+Servidor disponible en:
+👉 http://localhost:8080
 
-http://localhost:8080
 🌐 Frontend
-Abrir index.html con Live Server
- Pruebas en Postman
-Login
+
+Abrir index.html con Live Server en VS Code.
+
+🧪 Pruebas con Postman
+🔐 Login
 POST http://localhost:8080/api/auth/login
 {
   "username": "admin",
   "password": "admin123"
 }
-Crear producto
+🚗 Crear producto (ADMIN)
 POST http://localhost:8080/productos
 Authorization: Bearer TOKEN
 {
@@ -67,16 +65,16 @@ Authorization: Bearer TOKEN
   "description": "Cubierto",
   "category": "Cubierto"
 }
- Reset
+🧹 Reinicio de datos
 
 Frontend:
 F12 → Application → LocalStorage → Clear
 
 Backend:
-Reiniciar app
+Reiniciar aplicación
 
- Estado
+🚀 Estado del Proyecto
 Backend funcional ✅
-JWT funcionando ✅
+Seguridad con JWT ✅
 CRUD completo ✅
 Frontend conectado ✅
