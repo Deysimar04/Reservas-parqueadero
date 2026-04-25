@@ -18,7 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
-    private final com.reservas.parqueaderos.security.JwtUtil jwtUtil;
+    private final JwtUtil jwtUtil;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -26,13 +26,26 @@ public class JwtFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        System.out.println(">>> MÉTODO: " + request.getMethod());
+        System.out.println(">>> URI: " + request.getRequestURI());
+
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String header = request.getHeader("Authorization");
+        System.out.println(">>> Header: " + header);
 
         if (header != null && header.startsWith("Bearer ")) {
-            String token = header.substring(7);
-            if (jwtUtil.isTokenValid(token)) {
+            String token = header.substring(7).trim();
+            boolean valido = jwtUtil.isTokenValid(token);
+            System.out.println(">>> Token válido: " + valido);
+
+            if (valido) {
                 String username = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token);
+                System.out.println(">>> Username: " + username + " Role: " + role);
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(
@@ -40,8 +53,12 @@ public class JwtFilter extends OncePerRequestFilter {
                                 List.of(new SimpleGrantedAuthority("ROLE_" + role))
                         );
                 SecurityContextHolder.getContext().setAuthentication(auth);
+                System.out.println(">>> Autenticación seteada correctamente");
             }
+        } else {
+            System.out.println(">>> No hay token o formato incorrecto");
         }
+
         filterChain.doFilter(request, response);
     }
 }

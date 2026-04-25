@@ -1,7 +1,6 @@
 package com.reservas.parqueaderos.controller;
 
 import com.reservas.parqueaderos.model.Reserva;
-import com.reservas.parqueaderos.model.User;
 import com.reservas.parqueaderos.repository.UserRepository;
 import com.reservas.parqueaderos.service.ReservaService;
 import lombok.RequiredArgsConstructor;
@@ -21,22 +20,39 @@ public class ReservaController {
     private final UserRepository userRepository;
 
     @GetMapping("/mis-reservas")
-    public ResponseEntity<List<Reserva>> getMisReservas(Authentication auth) {
-        Long userId = getIdFromAuth(auth);
-        return ResponseEntity.ok(reservaService.getReservasByUser(userId));
+    public ResponseEntity<?> getMisReservas(Authentication auth) {
+        if (auth == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+        System.out.println(">>> Auth name: " + auth.getName());
+        Long userId = userRepository.findByUsername(auth.getName())
+                .map(u -> {
+                    System.out.println(">>> Usuario encontrado: " + u.getId());
+                    return u.getId();
+                })
+                .orElse(null);
+
+        if (userId == null) {
+            return ResponseEntity.status(404).body("Usuario no encontrado");
+        }
+        List<Reserva> reservas = reservaService.getReservasByUser(userId);
+        return ResponseEntity.ok(reservas);
     }
 
-    //  HU9: Cancelación con validación de userId
     @PutMapping("/{id}/cancelar")
-    public ResponseEntity<String> cancelar(@PathVariable Long id, Authentication auth) {
-        Long userId = getIdFromAuth(auth);
+    public ResponseEntity<?> cancelar(@PathVariable Long id, Authentication auth) {
+        if (auth == null) {
+            return ResponseEntity.status(401).body("No autenticado");
+        }
+        System.out.println(">>> Auth name cancelar: " + auth.getName());
+        Long userId = userRepository.findByUsername(auth.getName())
+                .map(u -> u.getId())
+                .orElse(null);
+
+        if (userId == null) {
+            return ResponseEntity.status(404).body("Usuario no encontrado");
+        }
         reservaService.cancelarReserva(id, userId);
         return ResponseEntity.ok("Reserva cancelada exitosamente");
-    }
-
-    private Long getIdFromAuth(Authentication auth) {
-        return userRepository.findByUsername(auth.getName())
-                .map(User::getId)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 }
