@@ -10,12 +10,6 @@ public class Product {
     private String description;
     private String category;
     private List<String> images;
-    private List<String> features;
-import java.util.List;
-
-
-
-// ... dentro de la clase Product
 
     private List<Feature> features;
 }

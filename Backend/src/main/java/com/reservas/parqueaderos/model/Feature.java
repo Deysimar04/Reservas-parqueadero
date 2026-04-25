@@ -1,4 +1,4 @@
-package com.reservas.Parqueaderos.model;
+package com.reservas.parqueaderos.model;
 
 
 

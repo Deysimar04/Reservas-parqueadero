@@ -1,7 +1,9 @@
 package com.reservas.parqueaderos.controller;
 
+import com.reservas.parqueaderos.model.User;
 import com.reservas.parqueaderos.repository.UserRepository;
 import com.reservas.parqueaderos.security.JwtUtil;
+import com.reservas.parqueaderos.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,7 +20,9 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService; // ← NUEVO
 
+    // HU14: Login
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
@@ -26,20 +30,59 @@ public class AuthController {
 
         return userRepository.findByUsername(username)
                 .map(user -> {
-                    // Para pruebas rápidas comparamos texto plano
-                    // En producción usarías: passwordEncoder.matches(password, user.getPassword())
                     if (password.equals("admin123") && user.getRole().equals("ADMIN") ||
-                            password.equals("user123")  && user.getRole().equals("USER")) {
+                            password.equals("user123") && user.getRole().equals("USER")) {
 
                         String token = jwtUtil.generateToken(user.getUsername(), user.getRole());
                         return ResponseEntity.ok(Map.of(
                                 "token", token,
-                                "role",  user.getRole(),
+                                "role", user.getRole(),
                                 "username", user.getUsername()
                         ));
                     }
                     return ResponseEntity.status(401).body(Map.of("error", "Contraseña incorrecta"));
                 })
                 .orElse(ResponseEntity.status(401).body(Map.of("error", "Usuario no encontrado")));
+    }
+
+    // HU13: Registrar usuario
+    @PostMapping("/registro")
+    public ResponseEntity<?> registro(@RequestBody User user) {
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El username es obligatorio"));
+        }
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "El email es obligatorio"));
+        }
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "La contraseña es obligatoria"));
+        }
+        user.setRole("USER");
+        String resultado = authService.registrar(user);
+        if (resultado.startsWith("Error")) {
+            return ResponseEntity.badRequest().body(Map.of("error", resultado));
+        }
+        return ResponseEntity.ok(Map.of("mensaje", resultado));
+    }
+
+    // HU15: Cerrar sesión
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        return ResponseEntity.ok(Map.of("mensaje", "Sesión cerrada correctamente"));
+    }
+
+    // HU16: Cambiar rol de usuario
+    @PutMapping("/usuarios/{id}/rol")
+    public ResponseEntity<?> cambiarRol(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        String nuevoRol = body.get("role");
+        if (!nuevoRol.equals("ADMIN") && !nuevoRol.equals("USER")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Rol inválido. Usa ADMIN o USER"));
+        }
+        return userRepository.findById(id)
+                .map(user -> {
+                    user.setRole(nuevoRol);
+                    return ResponseEntity.ok(Map.of("mensaje", "Rol actualizado a " + nuevoRol));
+                })
+                .orElse(ResponseEntity.status(404).body(Map.of("error", "Usuario no encontrado")));
     }
 }
