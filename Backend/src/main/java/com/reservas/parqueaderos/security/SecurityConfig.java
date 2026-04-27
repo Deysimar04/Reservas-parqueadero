@@ -12,9 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.cors.*;
 
 import java.util.Arrays;
 import java.util.List;
@@ -38,42 +36,27 @@ public class SecurityConfig {
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
 
-                        // Auth: público
                         .requestMatchers("/api/auth/**").permitAll()
-
-                        // OPTIONS: siempre permitir
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // GET productos: público
                         .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
 
-                        // POST, PUT, DELETE productos: solo ADMIN
                         .requestMatchers(HttpMethod.POST, "/productos/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/productos/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/productos/**").hasAuthority("ROLE_ADMIN")
 
-                        // Reservas: autenticado
                         .requestMatchers("/api/reservas/**").authenticated()
-
-                        // Todo lo demás: autenticado
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, authException) -> {
                             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                            response.setCharacterEncoding("UTF-8");
                             response.setContentType("application/json");
-                            response.getWriter().write(
-                                    "{\"error\": \"No autenticado\", \"detalles\": \"" + authException.getMessage() + "\"}"
-                            );
+                            response.getWriter().write("{\"error\": \"No autenticado\"}");
                         })
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
                             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-                            response.setCharacterEncoding("UTF-8");
                             response.setContentType("application/json");
-                            response.getWriter().write(
-                                    "{\"error\": \"Acceso denegado\", \"detalles\": \"No tienes permisos para esta acción\"}"
-                            );
+                            response.getWriter().write("{\"error\": \"Acceso denegado\"}");
                         })
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -81,15 +64,19 @@ public class SecurityConfig {
         return http.build();
     }
 
+    // CORS CORREGIDO
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOriginPatterns(List.of("*"));
+
+        config.setAllowedOrigins(List.of("http://127.0.0.1:5500")); // ← CAMBIO CLAVE
         config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Cache-Control"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
         config.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
+
         return source;
     }
 
