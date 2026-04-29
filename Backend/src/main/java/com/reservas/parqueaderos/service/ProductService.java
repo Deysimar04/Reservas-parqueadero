@@ -6,6 +6,7 @@ import com.reservas.parqueaderos.repository.ProductFeatureRepository;
 import com.reservas.parqueaderos.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 
 @Service
@@ -36,5 +37,29 @@ public class ProductService {
     // HU17: Listar características
     public List<Feature> listarTodasLasCaracteristicas() {
         return featureRepository.findAll();
+    }
+
+    // HU17: Agregar característica
+    public String agregarCaracteristica(Feature feature) {
+        if (feature.getName() == null || feature.getName().isBlank()) {
+            return "Error: El nombre es obligatorio";
+        }
+        featureRepository.save(feature);
+        return "ok";
+    }
+
+    // HU17: Editar característica
+    public String editarCaracteristica(Long id, Feature feature) {
+        if (feature.getName() == null || feature.getName().isBlank()) {
+            return "Error: El nombre es obligatorio";
+        }
+        boolean actualizado = featureRepository.update(id, feature);
+        return actualizado ? "ok" : "Error: Característica no encontrada";
+    }
+
+    // HU17: Eliminar característica
+    public String eliminarCaracteristica(Long id) {
+        boolean eliminado = featureRepository.delete(id);
+        return eliminado ? "ok" : "Error: Característica no encontrada";
     }
 }

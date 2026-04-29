@@ -10,10 +10,13 @@ import java.util.Optional;
 @Repository
 public class UserRepository {
 
-    // Usuarios precargados en memoria
     private final List<User> users = new ArrayList<>(List.of(
-            new User(1L, "admin",  "$2a$10$7QJ9v1HMtSBEjNYbX1z1/.placeholder", "admin@parqueadero.com",  "ADMIN"),
-            new User(2L, "usuario","$2a$10$7QJ9v1HMtSBEjNYbX1z1/.placeholder", "usuario@parqueadero.com", "USER")
+            new User(1L, "admin",
+                    "$2a$10$O5JxO29dGyv/E9A4kDUFlebejMboGjwZm7NVT4zPBbreN99j8OzqK",
+                    "admin@parqueadero.com", "ADMIN"),
+            new User(2L, "usuario",
+                    "$2a$10$Fvyt6YTfCWO3FyU1Sto.ieBVCroxcCb1AjuPOc4POKcEm6es6bzIi",
+                    "usuario@parqueadero.com", "USER")
     ));
 
     public Optional<User> findByUsername(String username) {
@@ -32,6 +35,10 @@ public class UserRepository {
         return users.stream()
                 .filter(u -> u.getId().equals(id))
                 .findFirst();
+    }
+
+    public List<User> findAll() {
+        return new ArrayList<>(users);
     }
 
     public void save(User user) {

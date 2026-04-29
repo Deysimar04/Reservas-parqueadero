@@ -35,16 +35,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(sess -> sess.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-
                         .requestMatchers("/api/auth/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/productos/admin/usuarios").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
-
+                        .requestMatchers(HttpMethod.POST, "/productos/caracteristicas").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/productos/caracteristicas/**").hasAuthority("ROLE_ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/productos/caracteristicas/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.POST, "/productos/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/productos/**").hasAuthority("ROLE_ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/productos/**").hasAuthority("ROLE_ADMIN")
-
-                        .requestMatchers("/api/reservas/**").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/reservas/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/reservas/**").authenticated()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
