@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParkApp</title>
+<link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <h1 class="logo">ParkApp</h1>
+    <p class="lema">Reserva tu plaza fácilmente</p>
+  </div>
+
+  <div class="header-right" id="headerBtns">
+    <button class="btn-header" id="btnHeaderCrear">Crear cuenta</button>
+    <button class="btn-header" id="btnHeaderLogin">Iniciar sesión</button>
+  </div>
+
+  <div class="header-right" id="headerUser" style="display:none;">
+    <span id="usuarioActual"></span>
+    <button class="btn-header" id="btnLogout">Cerrar sesión</button>
+  </div>
+</header>
+
+<!-- CATEGORIAS -->
+<section class="categorias">
+  <h2>Categorías de vehículos</h2>
+  <div class="categoria-container">
+    <div class="categoria-card" data-tipo="automovil">
+      <img src="img/automovil.png">
+      <p>Automóvil</p>
+    </div>
+    <div class="categoria-card" data-tipo="camioneta">
+      <img src="img/camioneta.png">
+      <p>Camioneta</p>
+    </div>
+    <div class="categoria-card" data-tipo="moto">
+      <img src="img/moto.png">
+      <p>Moto</p>
+    </div>
+  </div>
+</section>
+
+<!-- ZONAS -->
+<section class="zonas">
+  <h2 class="titulo-zonas">Zonas de parqueo</h2>
+  <div class="zonas-container">
+    <div class="zona-card">
+      <h3>Aeropuerto</h3>
+      <div class="zona-img">
+        <img class="zona-img" src="img/airport.jpg" alt="Aeropuerto">
+      </div>
+      <p>Parking 24/7 cerca del aeropuerto</p>
+      <button class="btn-zona">Ver plazas</button>
+    </div>
+    <div class="zona-card">
+      <h3>Centro Comercial</h3>
+      <div class="zona-img">
+        <img class="zona-img" src="img/mall.jpg" alt="Aeropuerto">
+      </div>
+      <p>Parking cubierto para visitantes</p>
+      <button class="btn-zona">Ver plazas</button>
+    </div>
+    <div class="zona-card">
+      <h3>Centro Ciudad</h3>
+      <div class="zona-img">
+        <img class="zona-img" src="img/central.jpg" alt="Aeropuerto">
+      </div>
+      <p>Parking público en zona urbana</p>
+      <button class="btn-zona">Ver plazas</button>
+    </div>
+  </div>
+</section>
+
+<!-- FECHA DE RESERVA -->
+<div id="fechaReservaContainer" style="display:none;">
+  <div class="fecha-wrapper">
+    <label for="fechaReserva">Fecha de reserva:</label>
+    <input type="date" id="fechaReserva">
+    <span id="fechaError" class="fecha-error">Debes seleccionar una fecha antes de reservar</span>
+  </div>
+</div>
+
+<!-- CONTADOR -->
+<h2 class="titulo-plazas">Plazas disponibles</h2>
+<button id="btnVolver" class="btn-volver">← Volver a ver todas las plazas</button>
+<section class="contador">
+  <p>Total: <span id="totalPlazas">0</span></p>
+  <p>Disponibles: <span id="plazasLibres">0</span></p>
+  <p>Reservadas: <span id="plazasReservadas">0</span></p>
+  <p>Ocupadas: <span id="plazasOcupadas">0</span></p>
+</section>
+
+<!-- PLAZAS -->
+<section id="parkingContainer"></section>
+
+<!-- GALERIA -->
+<section class="galeria">
+  <h2>Galería de parqueaderos</h2>
+  <div class="galeria-grid">
+    <img class="galeria-principal" src="img/gallery/parking1.jpg" alt="Parqueadero principal">
+    <img src="img/gallery/parking2.jpg" alt="Parqueadero 2">
+    <img src="img/gallery/parking3.jpg" alt="Parqueadero 3">
+    <img src="img/gallery/parking4.jpg" alt="Parqueadero 4">
+    <img src="img/gallery/parking5.jpg" alt="Parqueadero 5">
+  </div>
+  <br>
+  <a href="galeria.html"><button class="btn-galeria">Ver más</button></a>
+</section>
+
+<!-- CARACTERISTICAS -->
+<section class="caracteristicas">
+  <h2>Características del sistema</h2>
+  <div class="caracteristicas-container">
+    <div class="caracteristica">
+      <img src="img/reserva.png" alt="Reserva">
+      <h3>Reservas rápidas</h3>
+      <p>Reserva tu plaza de parqueo en segundos desde la plataforma.</p>
+    </div>
+    <div class="caracteristica">
+      <img src="img/seguridad.png" alt="Seguridad">
+      <h3>Alta seguridad</h3>
+      <p>Los parqueaderos cuentan con vigilancia y monitoreo constante.</p>
+    </div>
+    <div class="caracteristica">
+      <img src="img/tiempo-real.png" alt="Disponibilidad">
+      <h3>Disponibilidad en tiempo real</h3>
+      <p>Consulta plazas libres y ocupadas de forma dinámica.</p>
+    </div>
+  </div>
+</section>
+
+<!-- POLITICAS -->
+<section class="politicas">
+  <h2>Políticas</h2>
+  <div class="politicas-container">
+    <div class="politica">
+      <h3>Seguridad</h3>
+      <p>Vigilancia 24/7 con cámaras.</p>
+    </div>
+    <div class="politica">
+      <h3>Horarios</h3>
+      <p>Disponible las 24 horas.</p>
+    </div>
+    <div class="politica">
+      <h3>Pagos</h3>
+      <p>Múltiples métodos seguros.</p>
+    </div>
+  </div>
+</section>
+
+<!-- NOTIFICACION -->
+<div id="notificacion"></div>
+
+<!-- MODAL CREAR CUENTA -->
+<div id="modalCrear" class="modal">
+  <div class="modal-contenido">
+    <span class="cerrar" data-modal="modalCrear">&times;</span>
+    <h2>Crear Cuenta</h2>
+    <input type="text" id="nombreCrear" placeholder="Nombre">
+    <input type="email" id="emailCrear" placeholder="Email">
+    <input type="password" id="passCrear" placeholder="Contraseña">
+    <button id="btnCrearCuenta">Crear Cuenta</button>
+  </div>
+</div>
+
+<!-- MODAL INICIAR SESIÓN -->
+<div id="modalLogin" class="modal">
+  <div class="modal-contenido">
+    <span class="cerrar" data-modal="modalLogin">&times;</span>
+    <h2>Iniciar Sesión</h2>
+    <input type="email" id="emailLogin" placeholder="Email">
+    <input type="password" id="passLogin" placeholder="Contraseña">
+    <button id="btnLogin">Iniciar Sesión</button>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>© 2026 ParkApp</p>
+  <p>Sistema inteligente de reservas de parqueaderos</p>
+</footer>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

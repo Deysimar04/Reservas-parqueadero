@@ -1,4 +1,8 @@
-import { obtenerPlazas, guardarPlazas, obtenerDisponibilidad } from "./api.js";
+import {
+  obtenerPlazas, guardarPlazas, obtenerDisponibilidad,
+  registrarUsuario, loginUsuario, logoutUsuario,
+  obtenerCategorias, obtenerCaracteristicas
+} from "./api.js";
 import { PlazaManager, ContadorObserver, NotificacionObserver, DisponibilidadObserver } from "./patrones.js";
 
 // ========== VALIDACIONES ==========
@@ -46,28 +50,21 @@ function validarLogin(email, pass){
 
 // ========== NOTIFICACIONES / BANDEJA ==========
 
-// HU: Quitar segundos y mostrar burbuja
 function guardarNotificacion(asunto, mensaje) {
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
   if (!usuario) return;
-  
+
   let bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
-  
-  // Formateo para mostrar solo hora y minutos
+
   const fechaLimpia = new Date().toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: true
   });
 
   bandeja.push({
     id: Date.now(),
     usuario: usuario.email,
-    asunto,
-    mensaje,
+    asunto, mensaje,
     fecha: fechaLimpia
   });
 
@@ -75,7 +72,6 @@ function guardarNotificacion(asunto, mensaje) {
   actualizarBurbujaBandeja();
 }
 
-// Lógica de la burbuja roja
 function actualizarBurbujaBandeja() {
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
   const burbuja = document.getElementById("badge-notif");
@@ -157,9 +153,7 @@ async function iniciar() {
   manager.setPlazas(plazas);
   cargarSesion();
   configurarBotonesZona();
-
-  renderizarCategoriasHome(); 
-
+  await renderizarCategoriasHome();
   configurarLogo();
   configurarBotonVolver();
   configurarModales();
@@ -174,7 +168,7 @@ function cargarSesion(){
   if(user){
     usuarioActual = JSON.parse(user);
     mostrarHeaderUsuario();
-    actualizarBurbujaBandeja(); // Actualizar burbuja al cargar
+    actualizarBurbujaBandeja();
   }else{
     mostrarHeaderLogin();
   }
@@ -185,21 +179,18 @@ function guardarSesion(user){
   usuarioActual = user;
   mostrarHeaderUsuario();
   actualizarEstadoUI();
-  actualizarBurbujaBandeja(); // Actualizar burbuja al entrar
+  actualizarBurbujaBandeja();
   render();
   renderMisReservas();
 }
 
-function cerrarSesion(){
-  localStorage.removeItem("usuarioActual");
+async function cerrarSesion(){
+  await logoutUsuario(); // llama al backend y limpia token
   usuarioActual = null;
   mostrarHeaderLogin();
   actualizarEstadoUI();
-  
-  // Ocultar burbuja al salir
   const burbuja = document.getElementById("badge-notif");
   if(burbuja) burbuja.style.display = "none";
-  
   render();
 }
 
@@ -263,11 +254,8 @@ async function render(){
 
 async function filtrarPlazas(){
   const fecha = obtenerFecha();
-
   const respuesta = await manager.consultarDisponibilidad(
-    zonaSeleccionada,
-    tipoSeleccionado,
-    fecha
+    zonaSeleccionada, tipoSeleccionado, fecha
   );
 
   if (respuesta.ok) {
@@ -432,10 +420,10 @@ function mostrarPlazas(){
 }
 
 function actualizarContador(){
-  document.getElementById("totalPlazas").textContent     = plazas.length;
-  document.getElementById("plazasLibres").textContent   = plazas.filter(p => p.estado === "disponible").length;
+  document.getElementById("totalPlazas").textContent       = plazas.length;
+  document.getElementById("plazasLibres").textContent     = plazas.filter(p => p.estado === "disponible").length;
   document.getElementById("plazasReservadas").textContent = plazas.filter(p => p.estado === "reservado").length;
-  document.getElementById("plazasOcupadas").textContent = plazas.filter(p => p.estado === "ocupado").length;
+  document.getElementById("plazasOcupadas").textContent   = plazas.filter(p => p.estado === "ocupado").length;
 }
 
 // ========== MIS RESERVAS ==========
@@ -476,26 +464,45 @@ function configurarCategorias(){
     };
   });
 }
-// ========== CATEGORÍAS DINÁMICAS HOME ==========
 
-function renderizarCategoriasHome() {
+// ========== CATEGORÍAS DINÁMICAS HOME — ahora desde backend ==========
+
+async function renderizarCategoriasHome() {
   const contenedor = document.getElementById("contenedorCategorias");
   if (!contenedor) return;
 
-  const categoriasDinamicas = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
-    { nombre: "Automóvil", slug: "automovil", icono: "🚗" },
-    { nombre: "Motocicleta", slug: "motocicleta", icono: "🏍️" }
-  ];
+  // Intenta traer categorías del backend Java
+  let categorias = await obtenerCategorias();
 
-  contenedor.innerHTML = categoriasDinamicas.map(cat => `
-    <div class="categoria-card" data-tipo="${cat.slug}">
-      <div style="font-size: 40px; margin-bottom: 10px;">${cat.icono || '🚗'}</div>
-      <h3>${cat.nombre}</h3>
-    </div>
-  `).join("");
+  // Si el backend falla, usa localStorage como fallback
+  if (!categorias || categorias.length === 0) {
+    categorias = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
+      { nombre: "automovil", label: "Automóvil", icono: "🚗" },
+      { nombre: "moto",      label: "Moto",       icono: "🏍️" }
+    ];
+    contenedor.innerHTML = categorias.map(cat => `
+      <div class="categoria-card" data-tipo="${cat.nombre}">
+        <div style="font-size:40px;margin-bottom:10px">${cat.icono || "🚗"}</div>
+        <h3>${cat.label || cat.nombre}</h3>
+      </div>
+    `).join("");
+  } else {
+    // Backend devuelve strings simples como ["Cubierto","Motos",...]
+    contenedor.innerHTML = categorias.map(cat => {
+      const iconos = {
+        "Cubierto": "🏠", "Descubierto": "☀️",
+        "Motos": "🏍️", "Bicicletas": "🚲", "Discapacitados": "♿"
+      };
+      return `
+        <div class="categoria-card" data-tipo="${cat.toLowerCase()}">
+          <div style="font-size:40px;margin-bottom:10px">${iconos[cat] || "🚗"}</div>
+          <h3>${cat}</h3>
+        </div>
+      `;
+    }).join("");
+  }
 
-  // IMPORTANTE: volver a activar eventos
-  configurarCategorias(); 
+  configurarCategorias();
 }
 
 // ========== BOTONES ZONA ==========
@@ -539,57 +546,53 @@ function configurarBotonVolver(){
   };
 }
 
-// ========== MODALES ==========
+//modales
 
 function configurarModales(){
   const mCrear  = document.getElementById("modalCrear");
   const mLogin  = document.getElementById("modalLogin");
 
-  document.getElementById("btnCrearCuenta").onclick = () => {
+  // HU13: Registro
+  document.getElementById("btnCrearCuenta").onclick = async () => {
     const nombre = document.getElementById("nombreCrear").value.trim();
     const email  = document.getElementById("emailCrear").value.trim();
     const pass   = document.getElementById("passCrear").value.trim();
-    const rol    = document.getElementById("rolCrear").value;
 
-    if(!nombre || !email || !pass){
+    if (!nombre || !email || !pass) {
       alert("Todos los campos son obligatorios");
       return;
     }
-    if(pass.length < 4){
-      alert("La contraseña debe tener al menos 4 caracteres");
+
+    const resultado = await registrarUsuario(nombre, email, pass);
+    if (!resultado.ok) {
+      alert("Error: " + resultado.error);
       return;
     }
 
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const existe = usuarios.find(u => u.email === email);
-    if(existe){
-      alert("Este correo ya está registrado");
-      return;
-    }
-
-    const nuevoUsuario = { nombre, email, pass, rol };
-    usuarios.push(nuevoUsuario);
-    localStorage.setItem("usuarios", JSON.stringify(usuarios));
-    simularCorreoBienvenida(nuevoUsuario);
     alert("Cuenta creada correctamente");
     mCrear.style.display = "none";
   };
 
-  document.getElementById("btnLogin").onclick = () => {
-    const email = document.getElementById("emailLogin").value.trim();
+
+  document.getElementById("btnLogin").onclick = async () => {
+    const username = document.getElementById("emailLogin").value.trim(); // ← CAMBIO
     const pass  = document.getElementById("passLogin").value.trim();
-    if(!email || !pass){
+
+    if (!username || !pass) {
       alert("Completa todos los campos");
       return;
     }
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const usuario = usuarios.find(u => u.email === email && u.pass === pass);
-    if(!usuario){
-      alert("Correo o contraseña incorrectos");
+
+    const resultado = await loginUsuario(username, pass); // ← CAMBIO
+
+    if (resultado.ok) {
+      const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+      guardarSesion(usuario);
+      mLogin.style.display = "none";
       return;
     }
-    guardarSesion(usuario);
-    mLogin.style.display = "none";
+
+    alert(resultado.error || "Credenciales incorrectas");
   };
 
   document.getElementById("btnHeaderCrear").onclick = () => {
@@ -607,8 +610,7 @@ function configurarModales(){
 
   document.getElementById("btnLogout").onclick = cerrarSesion;
 }
-
-// ========== CORREOS SIMULADOS ==========
+// ========== CORREOS SIMULADOS — HU19 ==========
 
 function simularCorreoBienvenida(usuario) {
   const bandejaInterna = JSON.parse(localStorage.getItem("bandeja")) || [];
@@ -617,7 +619,7 @@ function simularCorreoBienvenida(usuario) {
     usuario: usuario.email,
     asunto: "Bienvenido a ParkApp",
     mensaje: `Tu cuenta fue creada correctamente. Rol: ${usuario.rol}`,
-    fecha: new Date().toLocaleString("es-CO", { hour: '2-digit', minute: '2-digit', hour12: true })
+    fecha: new Date().toLocaleString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: true })
   });
   localStorage.setItem("bandeja", JSON.stringify(bandejaInterna));
   mostrarNotifCorreo("Correo de bienvenida enviado");
@@ -646,9 +648,9 @@ function mostrarNotifCorreo(mensaje) {
 
 // ========== BANDEJA EVENTOS ==========
 
-const btnBandeja      = document.getElementById("btnBandeja");
-const modalBandeja    = document.getElementById("modalBandeja");
-const cerrarBandeja   = document.getElementById("cerrarBandeja");
+const btnBandeja       = document.getElementById("btnBandeja");
+const modalBandeja     = document.getElementById("modalBandeja");
+const cerrarBandeja    = document.getElementById("cerrarBandeja");
 const btnLimpiarBandeja = document.getElementById("btnLimpiarBandeja");
 
 btnLimpiarBandeja.addEventListener("click", () => {
