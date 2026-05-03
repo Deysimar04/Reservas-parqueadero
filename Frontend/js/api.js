@@ -9,12 +9,17 @@ const BASE_URL = "http://localhost:8080";
 // ============================================================
 
 // HU13: Registrar usuario en el backend
-export async function registrarUsuario(username, email, password) {
+export async function registrarUsuario(username, email, password, rol = "cliente") {
   try {
     const res = await fetch(`${BASE_URL}/api/auth/registro`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, password })
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+        role: rol === "admin" ? "ADMIN" : "USER" // ← enviar rol
+      })
     });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Error al registrar");
@@ -23,7 +28,6 @@ export async function registrarUsuario(username, email, password) {
     return { ok: false, error: e.message };
   }
 }
-
 // HU14: Login — guarda token y rol en localStorage
 export async function loginUsuario(username, password) {
   try {
@@ -38,11 +42,12 @@ export async function loginUsuario(username, password) {
     // Guardar token y sesión
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuarioActual", JSON.stringify({
-      nombre:   data.username,
-      email:    username,
-      rol:      data.role === "ADMIN" ? "admin" : "cliente",
-      username: data.username
-    }));
+    nombre:   data.username,
+    email:    username,
+    rol:      data.role === "ADMIN" ? "admin" : "cliente",
+    username: data.username
+}));
+
     return { ok: true, usuario: data };
   } catch (e) {
     return { ok: false, error: e.message };
@@ -152,23 +157,16 @@ export function guardarPlazas(plazas) {
 // ============================================================
 export async function obtenerDisponibilidad(zona = "", tipo = "", fecha = "") {
   try {
-    // Intenta primero el backend
-    const res = await fetch(`${BASE_URL}/productos/${encodeURIComponent(zona || "1")}/disponibilidad`);
-    if (res.ok) {
-      const data = await res.json();
-      return { ok: true, status: 200, total: 1, plazas: [], backendData: data };
-    }
-  } catch (_) {}
-
-  // Fallback a localStorage
-  await new Promise(r => setTimeout(r, 300));
-  const plazas = JSON.parse(localStorage.getItem("plazas")) || [];
-  let resultado = plazas.filter(p => p.estado !== "ocupado");
-  if (zona)  resultado = resultado.filter(p => p.zona.toLowerCase() === zona.toLowerCase());
-  if (tipo)  resultado = resultado.filter(p => p.tipo.toLowerCase() === tipo.toLowerCase());
-  if (fecha) resultado = resultado.filter(p => !(p.estado === "reservado" && p.fecha === fecha));
-
-  return { ok: true, status: 200, total: resultado.length, filtros: { zona, tipo, fecha }, plazas: resultado };
+    await new Promise(r => setTimeout(r, 300));
+    const plazas = JSON.parse(localStorage.getItem("plazas")) || [];
+    let resultado = plazas.filter(p => p.estado !== "ocupado");
+    if (zona)  resultado = resultado.filter(p => p.zona.toLowerCase() === zona.toLowerCase());
+    if (tipo)  resultado = resultado.filter(p => p.tipo.toLowerCase() === tipo.toLowerCase());
+    if (fecha) resultado = resultado.filter(p => !(p.estado === "reservado" && p.fecha === fecha));
+    return { ok: true, status: 200, total: resultado.length, filtros: { zona, tipo, fecha }, plazas: resultado };
+  } catch (_) {
+    return { ok: false, plazas: [] };
+  }
 }
 
 // ============================================================

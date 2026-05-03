@@ -53,21 +53,17 @@ function validarLogin(email, pass){
 function guardarNotificacion(asunto, mensaje) {
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
   if (!usuario) return;
-
   let bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
-
   const fechaLimpia = new Date().toLocaleString("es-CO", {
     day: "2-digit", month: "2-digit", year: "numeric",
     hour: "2-digit", minute: "2-digit", hour12: true
   });
-
   bandeja.push({
     id: Date.now(),
     usuario: usuario.email,
     asunto, mensaje,
     fecha: fechaLimpia
   });
-
   localStorage.setItem("bandeja", JSON.stringify(bandeja));
   actualizarBurbujaBandeja();
 }
@@ -76,10 +72,8 @@ function actualizarBurbujaBandeja() {
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
   const burbuja = document.getElementById("badge-notif");
   if (!usuario || !burbuja) return;
-
   const bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
   const mensajesUsuario = bandeja.filter(m => m.usuario === usuario.email);
-
   if (mensajesUsuario.length > 0) {
     burbuja.style.display = "flex";
     burbuja.textContent = mensajesUsuario.length;
@@ -93,7 +87,6 @@ function cargarBandeja() {
   const contenedor = document.getElementById("listaMensajes");
   let bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
   const mensajesUsuario = bandeja.filter(m => m.usuario === usuario.email);
-
   if (mensajesUsuario.length === 0) {
     contenedor.innerHTML = "<p>No tienes mensajes</p>";
     return;
@@ -185,7 +178,7 @@ function guardarSesion(user){
 }
 
 async function cerrarSesion(){
-  await logoutUsuario(); // llama al backend y limpia token
+  await logoutUsuario();
   usuarioActual = null;
   mostrarHeaderLogin();
   actualizarEstadoUI();
@@ -198,11 +191,11 @@ function mostrarHeaderUsuario(){
   document.getElementById("headerBtns").style.display = "none";
   const headerUser = document.getElementById("headerUser");
   headerUser.style.display = "flex";
-  const nombre = usuarioActual.nombre;
+  const nombre = usuarioActual.nombre || usuarioActual.username || "U";
   const iniciales = nombre.split(" ").map(n => n[0]).join("").toUpperCase();
   document.querySelector(".avatar").textContent = iniciales;
   document.getElementById("usuarioActual").textContent =
-    `Hola, ${usuarioActual.nombre} (${usuarioActual.rol})`;
+    `Hola, ${nombre} (${usuarioActual.rol})`;
   const btnAdmin = document.getElementById("btnAdminPanel");
   if(usuarioActual.rol === "admin"){
     btnAdmin.style.display = "inline-block";
@@ -257,7 +250,6 @@ async function filtrarPlazas(){
   const respuesta = await manager.consultarDisponibilidad(
     zonaSeleccionada, tipoSeleccionado, fecha
   );
-
   if (respuesta.ok) {
     const idsDisponibles = new Set(respuesta.plazas.map(p => p.id));
     plazasFiltradas = plazas.filter(p => {
@@ -282,12 +274,10 @@ async function filtrarPlazas(){
 function mostrarPlazas(){
   const cont = document.getElementById("parkingContainer");
   cont.innerHTML = "";
-
   if(plazasFiltradas.length === 0){
     cont.innerHTML = `<p>No hay plazas disponibles con estos filtros.</p>`;
     return;
   }
-
   plazasFiltradas.forEach(p => {
     const idx = plazas.findIndex(pl => pl.id === p.id);
     if(
@@ -297,14 +287,11 @@ function mostrarPlazas(){
     ){
       return;
     }
-
     const card = document.createElement("div");
     card.className = `tarjeta ${plazas[idx].estado}`;
-
     const fechaTexto = plazas[idx].fecha
       ? `<p class="plaza-fecha">Reservado para: ${plazas[idx].fecha}</p>`
       : "";
-
     let btnHtml = "";
     if(plazas[idx].estado === "disponible"){
       btnHtml = `<button class="btn-reservar">Reservar</button>`;
@@ -317,7 +304,6 @@ function mostrarPlazas(){
         btnHtml = `<button class="btn-ocupada">Plaza ocupada</button>`;
       }
     }
-
     card.innerHTML = `
       <h3>Plaza ${plazas[idx].id}</h3>
       <p>Zona: ${plazas[idx].zona}</p>
@@ -326,18 +312,15 @@ function mostrarPlazas(){
       ${fechaTexto}
       ${btnHtml}
     `;
-
     card.querySelector(".btn-reservar")?.addEventListener("click", () => {
       const fecha = obtenerFecha();
       const errorSpan = document.getElementById("fechaError");
-
       if(!fecha){
         errorSpan.classList.add("visible");
         document.getElementById("fechaReserva").focus();
         return;
       }
       errorSpan.classList.remove("visible");
-
       const hoy = new Date().toISOString().split("T")[0];
       if(fecha < hoy){
         alert("No puedes reservar en una fecha pasada");
@@ -347,7 +330,6 @@ function mostrarPlazas(){
         alert("Esta plaza ya fue reservada");
         return;
       }
-
       const yaTiene = plazas.some(p =>
         p.reservadoPor === usuarioActual.email && p.fecha === fecha
       );
@@ -359,7 +341,6 @@ function mostrarPlazas(){
         alert("Esta plaza ya está reservada para esa fecha");
         return;
       }
-
       const tieneReservaActiva = plazas.some(p =>
         p.reservadoPor === usuarioActual.email && p.estado === "reservado"
       );
@@ -367,7 +348,6 @@ function mostrarPlazas(){
         alert("Ya tienes una plaza activa. Debes cancelarla antes de reservar otra.");
         return;
       }
-
       plazas[idx].reservadoPor = usuarioActual.email;
       manager.reservar(plazas[idx].id, fecha);
       plazas = manager.getPlazas();
@@ -379,20 +359,16 @@ function mostrarPlazas(){
       simularEnvioCorreo(usuarioActual, plazas[idx], fecha);
       render();
     });
-
     card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
       const esAdmin = usuarioActual.rol === "admin";
       const esDueno = plazas[idx].reservadoPor === usuarioActual.email;
-
       if (!esAdmin && !esDueno) {
         alert("No puedes cancelar una reserva que no es tuya");
         return;
       }
-
       manager.cancelar(plazas[idx].id);
       plazas = manager.getPlazas();
       guardarPlazas(plazas);
-
       if (esAdmin && !esDueno) {
         guardarNotificacion(
           "Reserva cancelada por administrador",
@@ -406,7 +382,6 @@ function mostrarPlazas(){
       }
       render();
     });
-
     card.querySelector(".btn-liberar")?.addEventListener("click", () => {
       if(usuarioActual.rol !== "admin") return;
       manager.liberar(plazas[idx].id);
@@ -414,7 +389,6 @@ function mostrarPlazas(){
       guardarPlazas(plazas);
       render();
     });
-
     cont.appendChild(card);
   });
 }
@@ -435,7 +409,6 @@ function renderMisReservas(){
   const cont = document.getElementById("misReservas");
   const section = document.getElementById("misReservasSection");
   if(!cont || !section) return;
-
   if(reservas.length === 0){
     cont.innerHTML = "<p>No tienes reservas</p>";
   }else{
@@ -465,42 +438,25 @@ function configurarCategorias(){
   });
 }
 
-// ========== CATEGORÍAS DINÁMICAS HOME — ahora desde backend ==========
+// ========== CATEGORÍAS DINÁMICAS HOME ==========
 
 async function renderizarCategoriasHome() {
   const contenedor = document.getElementById("contenedorCategorias");
   if (!contenedor) return;
 
-  // Intenta traer categorías del backend Java
-  let categorias = await obtenerCategorias();
+  // Categorías de vehículos — siempre desde localStorage (no del backend)
+  const categoriasVehiculo = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
+    { nombre: "automovil",  label: "Automóvil",  icono: "🚗" },
+    { nombre: "camioneta",  label: "Camioneta",  icono: "🚙" },
+    { nombre: "moto",       label: "Moto",       icono: "🏍️" }
+  ];
 
-  // Si el backend falla, usa localStorage como fallback
-  if (!categorias || categorias.length === 0) {
-    categorias = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
-      { nombre: "automovil", label: "Automóvil", icono: "🚗" },
-      { nombre: "moto",      label: "Moto",       icono: "🏍️" }
-    ];
-    contenedor.innerHTML = categorias.map(cat => `
-      <div class="categoria-card" data-tipo="${cat.nombre}">
-        <div style="font-size:40px;margin-bottom:10px">${cat.icono || "🚗"}</div>
-        <h3>${cat.label || cat.nombre}</h3>
-      </div>
-    `).join("");
-  } else {
-    // Backend devuelve strings simples como ["Cubierto","Motos",...]
-    contenedor.innerHTML = categorias.map(cat => {
-      const iconos = {
-        "Cubierto": "🏠", "Descubierto": "☀️",
-        "Motos": "🏍️", "Bicicletas": "🚲", "Discapacitados": "♿"
-      };
-      return `
-        <div class="categoria-card" data-tipo="${cat.toLowerCase()}">
-          <div style="font-size:40px;margin-bottom:10px">${iconos[cat] || "🚗"}</div>
-          <h3>${cat}</h3>
-        </div>
-      `;
-    }).join("");
-  }
+  contenedor.innerHTML = categoriasVehiculo.map(cat => `
+    <div class="categoria-card" data-tipo="${cat.nombre}">
+      <div style="font-size:40px;margin-bottom:10px">${cat.icono}</div>
+      <h3>${cat.label}</h3>
+    </div>
+  `).join("");
 
   configurarCategorias();
 }
@@ -546,45 +502,50 @@ function configurarBotonVolver(){
   };
 }
 
-//modales
+// ========== MODALES ==========
 
 function configurarModales(){
-  const mCrear  = document.getElementById("modalCrear");
-  const mLogin  = document.getElementById("modalLogin");
+  const mCrear = document.getElementById("modalCrear");
+  const mLogin = document.getElementById("modalLogin");
 
   // HU13: Registro
   document.getElementById("btnCrearCuenta").onclick = async () => {
     const nombre = document.getElementById("nombreCrear").value.trim();
     const email  = document.getElementById("emailCrear").value.trim();
     const pass   = document.getElementById("passCrear").value.trim();
+    const rol    = document.getElementById("rolCrear").value; // ← agregar esto
 
     if (!nombre || !email || !pass) {
       alert("Todos los campos son obligatorios");
       return;
     }
 
-    const resultado = await registrarUsuario(nombre, email, pass);
+    const resultado = await registrarUsuario(nombre, email, pass, rol); // ← pasar rol
     if (!resultado.ok) {
       alert("Error: " + resultado.error);
       return;
     }
 
+    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    usuarios.push({ nombre, email, pass, rol });
+    localStorage.setItem("usuarios", JSON.stringify(usuarios));
+
+    simularCorreoBienvenida({ nombre, email, rol });
     alert("Cuenta creada correctamente");
     mCrear.style.display = "none";
   };
 
-
+  // HU14: Login
   document.getElementById("btnLogin").onclick = async () => {
-    const username = document.getElementById("emailLogin").value.trim(); // ← CAMBIO
-    const pass  = document.getElementById("passLogin").value.trim();
+    const username = document.getElementById("emailLogin").value.trim();
+    const pass     = document.getElementById("passLogin").value.trim();
 
     if (!username || !pass) {
       alert("Completa todos los campos");
       return;
     }
 
-    const resultado = await loginUsuario(username, pass); // ← CAMBIO
-
+    const resultado = await loginUsuario(username, pass);
     if (resultado.ok) {
       const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
       guardarSesion(usuario);
@@ -599,7 +560,9 @@ function configurarModales(){
     mCrear.style.display = "flex";
   };
 
-  document.getElementById("btnHeaderLogin").onclick = () => mLogin.style.display = "flex";
+  document.getElementById("btnHeaderLogin").onclick = () => {
+    mLogin.style.display = "flex";
+  };
 
   document.querySelectorAll(".cerrar").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -608,8 +571,8 @@ function configurarModales(){
     });
   });
 
-  document.getElementById("btnLogout").onclick = cerrarSesion;
-}
+  document.getElementById("btnLogout").onclick = cerrarSesion;}
+
 // ========== CORREOS SIMULADOS — HU19 ==========
 
 function simularCorreoBienvenida(usuario) {
@@ -648,9 +611,9 @@ function mostrarNotifCorreo(mensaje) {
 
 // ========== BANDEJA EVENTOS ==========
 
-const btnBandeja       = document.getElementById("btnBandeja");
-const modalBandeja     = document.getElementById("modalBandeja");
-const cerrarBandeja    = document.getElementById("cerrarBandeja");
+const btnBandeja        = document.getElementById("btnBandeja");
+const modalBandeja      = document.getElementById("modalBandeja");
+const cerrarBandeja     = document.getElementById("cerrarBandeja");
 const btnLimpiarBandeja = document.getElementById("btnLimpiarBandeja");
 
 btnLimpiarBandeja.addEventListener("click", () => {
