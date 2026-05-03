@@ -66,15 +66,22 @@ public class SecurityConfig {
         return http.build();
     }
 
-    // CORS CORREGIDO
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("http://127.0.0.1:5500")); // ← CAMBIO CLAVE
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        // ✅ CORRECCIÓN: Live Server usa 127.0.0.1:5500 Y localhost:5500
+        // Se usa allowedOriginPatterns para soportar credenciales con wildcard de puertos
+        config.setAllowedOriginPatterns(List.of(
+                "http://127.0.0.1:*",
+                "http://localhost:*"
+        ));
+
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+        config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin"));
+        config.setExposedHeaders(List.of("Authorization"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // cachea el preflight por 1 hora
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
