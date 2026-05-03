@@ -1206,3 +1206,27 @@ right:40px;
   transform: scale(1.05);
   background: #eef6ff;
 }
+.vehiculos-cta {
+  position: relative;
+  padding: 60px 20px;
+  overflow: hidden;
+}
+
+.vehiculos-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background-image: url("../img/descripcion.png"); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  opacity: 0.25;
+  z-index: 0;
+}
+
+.vehiculos-cta-inner {
+  position: relative;
+  z-index: 1;
+}
