@@ -11,12 +11,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class User {
 
-    @JsonIgnore // No mostrar id en respuestas
+    @JsonIgnore
     private Long id;
 
     private String username;
 
-    @JsonIgnore // Nunca mostrar password
+    // WRITE_ONLY: acepta password en requests pero no lo devuelve en responses
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     private String email;

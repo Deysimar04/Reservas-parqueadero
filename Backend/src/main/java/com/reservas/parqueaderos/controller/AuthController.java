@@ -61,7 +61,12 @@ public class AuthController {
         if (user.getPassword() == null || user.getPassword().isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("error", "La contraseña es obligatoria"));
         }
-        user.setRole("USER");
+
+        // Respetar el rol que llega, si no viene usar USER por defecto
+        if (user.getRole() == null || user.getRole().isBlank()) {
+            user.setRole("USER");
+        }
+
         String resultado = authService.registrar(user);
         if (resultado.startsWith("Error")) {
             return ResponseEntity.badRequest().body(Map.of("error", resultado));
