@@ -1230,3 +1230,46 @@ right:40px;
   position: relative;
   z-index: 1;
 }
+.categoria-card img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.categoria-dims {
+  font-size: 11px;
+  color: #888;
+  line-height: 1.6;
+  margin: 8px 0 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+/* ── Agregar al FINAL de styles.css ── */
+
+/* Imagen dentro de la tarjeta de categoría */
+.categoria-card img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+/* Emoji de respaldo (cuando no hay imagen) */
+.cat-emoji {
+  font-size: 44px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Dimensiones debajo del nombre */
+.categoria-dims {
+  font-size: 11px;
+  color: #888;
+  line-height: 1.6;
+  margin: 8px 0 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}

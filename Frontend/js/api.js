@@ -9,16 +9,18 @@ const BASE_URL = "http://localhost:8080";
 // ============================================================
 
 // HU13: Registrar usuario en el backend
-export async function registrarUsuario(username, email, password, rol = "cliente") {
+// CORRECCIÓN: rol por defecto cambiado de "cliente" → "USER"
+export async function registrarUsuario(username, email, password, rol = "USER") {
   try {
     const res = await fetch(`${BASE_URL}/api/auth/registro`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      // CORRECCIÓN: normalización robusta del rol
       body: JSON.stringify({
         username,
         email,
         password,
-        role: rol === "admin" ? "ADMIN" : "USER" // ← enviar rol
+        role: ["admin", "ADMIN"].includes(rol) ? "ADMIN" : "USER"
       })
     });
     const data = await res.json();
@@ -28,6 +30,7 @@ export async function registrarUsuario(username, email, password, rol = "cliente
     return { ok: false, error: e.message };
   }
 }
+
 // HU14: Login — guarda token y rol en localStorage
 export async function loginUsuario(username, password) {
   try {
@@ -42,11 +45,11 @@ export async function loginUsuario(username, password) {
     // Guardar token y sesión
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuarioActual", JSON.stringify({
-    nombre:   data.username,
-    email:    username,
-    rol:      data.role === "ADMIN" ? "admin" : "cliente",
-    username: data.username
-}));
+      nombre:   data.username,
+      email:    username,
+      rol:      data.role === "ADMIN" ? "admin" : "cliente",
+      username: data.username
+    }));
 
     return { ok: true, usuario: data };
   } catch (e) {
