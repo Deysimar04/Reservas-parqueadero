@@ -22,7 +22,6 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
-
     // ✅ LOGIN CORREGIDO
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {

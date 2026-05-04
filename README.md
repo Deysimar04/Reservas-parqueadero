@@ -132,28 +132,188 @@ LOG: Enviando correo de bienvenida
 3. Abrir:
    index.html
    
----
-
 ## Pruebas con Postman
 
-### Login ADMIN
-POST http://localhost:8080/api/auth/login
+1. HU13 — Registrar usuario
 
-Body:
-```json
-{
+Método: POST
+URL: http://localhost:8080/api/auth/registro
+Body → raw → JSON:
+
+json{
+  "username": "maria",
+  "email": "maria@gmail.com",
+  "password": "123456"
+}
+
+Respuesta esperada:
+
+json{"mensaje": "Usuario registrado con éxito"}
+
+2. HU14 — Login
+
+Método: POST
+URL: http://localhost:8080/api/auth/login
+Body → raw → JSON:
+
+json{
   "username": "admin",
   "password": "admin123"
 }
 
-Registrar usuario
-POST http://localhost:8080/api/auth/registro
-Crear producto
-POST http://localhost:8080/productos
-Authorization: Bearer TOKEN
- Cambiar rol
-PUT http://localhost:8080/api/auth/usuarios/2/rol
-Pruebas en el Frontend
+Respuesta esperada:
+
+json{
+  "token": "eyJhbGc...",
+  "role": "ADMIN",
+  "username": "admin"
+}
+⚠️ Copia el token, lo necesitas para las pruebas siguientes
+
+3. HU16 — Cambiar rol
+
+Método: PUT
+URL: http://localhost:8080/api/auth/usuarios/2/rol
+Headers:
+
+Authorization    Bearer <token>
+
+Body → raw → JSON:
+
+json{
+  "role": "ADMIN"
+}
+
+Respuesta esperada:
+
+json{"mensaje": "Rol actualizado a ADMIN"}
+
+4. HU15 — Logout
+
+Método: POST
+URL: http://localhost:8080/api/auth/logout
+No necesita body ni token
+Respuesta esperada:
+
+json{"mensaje": "Sesión cerrada correctamente"}
+
+5. HU3 — Crear producto
+
+Método: POST
+URL: http://localhost:8080/productos
+Headers:
+
+Authorization    Bearer <token>
+
+Body → raw → JSON:
+
+json{
+  "name": "Parqueadero Norte",
+  "description": "Parqueadero cubierto",
+  "category": "Cubierto",
+  "images": [],
+  "features": []
+}
+
+Respuesta esperada:
+
+json{"mensaje": "Producto registrado con éxito"}
+
+6. HU3 — Validar duplicado
+
+Mismo método y URL que el anterior
+Envía el mismo nombre de nuevo:
+
+json{
+  "name": "Parqueadero Norte",
+  "description": "Otro",
+  "category": "Motos",
+  "images": [],
+  "features": []
+}
+
+Respuesta esperada:
+
+json{"error": "Error: Ya existe un producto con ese nombre"}
+
+7. HU10 — Listar productos
+
+Método: GET
+URL: http://localhost:8080/productos
+No necesita token ni body
+Respuesta esperada:
+
+json[
+  {
+    "id": 1,
+    "name": "Parqueadero Norte",
+    "description": "Parqueadero cubierto",
+    "category": "Cubierto",
+    "images": [],
+    "features": []
+  }
+]
+
+8. HU12 — Listar categorías
+
+Método: GET
+URL: http://localhost:8080/productos/categorias
+No necesita token
+Respuesta esperada:
+
+json["Cubierto","Descubierto","Motos","Bicicletas","Discapacitados"]
+
+9. HU17 — Listar características
+
+Método: GET
+URL: http://localhost:8080/productos/caracteristicas
+No necesita token
+Respuesta esperada:
+
+json[
+  {"id": 1, "name": "Seguridad 24h", "icon": "shield"},
+  {"id": 2, "name": "Techado", "icon": "roof"}
+]
+
+10. HU23 — Disponibilidad mock
+
+Método: GET
+URL: http://localhost:8080/productos/1/disponibilidad
+No necesita token
+Respuesta esperada:
+
+json{
+  "productId": 1,
+  "disponible": true,
+  "rangosOcupados": []
+}
+
+11. HU9 — Ver mis reservas
+
+Método: GET
+URL: http://localhost:8080/api/reservas/mis-reservas
+Headers:
+
+Authorization    Bearer <token>
+
+Respuesta esperada:
+
+json[]
+
+12. HU9 — Cancelar reserva (validación de seguridad)
+
+Método: PUT
+URL: http://localhost:8080/api/reservas/1/cancelar
+Headers:
+
+Authorization    Bearer <token>
+
+Respuesta esperada si la reserva no es tuya:
+
+json{"error": "No tienes permiso para cancelar esta reserva"}
+
+
+### Pruebas en el Frontend
 Usuario
 Registro
 Ver disponibilidad
@@ -163,7 +323,7 @@ Acceso al panel
 CRUD de productos
 Gestión de usuarios
 Depuración de Datos
-Abrir consola del navegador
+Abrir consola del navegador (F12)
 Ir a Application → Local Storage
 Click derecho → Clear
 Refrescar la página

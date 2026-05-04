@@ -1,27 +1,19 @@
-import { obtenerPlazas, guardarPlazas, obtenerDisponibilidad } from "./api.js";
+import {
+  obtenerPlazas, guardarPlazas, obtenerDisponibilidad,
+  registrarUsuario, loginUsuario, logoutUsuario,
+  obtenerCategorias, obtenerCaracteristicas
+} from "./api.js";
 import { PlazaManager, ContadorObserver, NotificacionObserver, DisponibilidadObserver } from "./patrones.js";
 
 // ========== VALIDACIONES ==========
 
 function validarRegistro(nombre, email, pass){
-  if(!nombre || !email || !pass){
-    alert("Todos los campos son obligatorios");
-    return false;
-  }
-  if(nombre.length < 3){
-    alert("El nombre debe tener al menos 3 caracteres");
-    return false;
-  }
+  if(!nombre || !email || !pass){ alert("Todos los campos son obligatorios"); return false; }
+  if(nombre.length < 3){ alert("El nombre debe tener al menos 3 caracteres"); return false; }
   const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if(!regexEmail.test(email)){
-    alert("Email inválido");
-    return false;
-  }
+  if(!regexEmail.test(email)){ alert("Email inválido"); return false; }
   const regexPass = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
-  if(!regexPass.test(pass)){
-    alert("La contraseña debe tener mínimo 6 caracteres y un número");
-    return false;
-  }
+  if(!regexPass.test(pass)){ alert("La contraseña debe tener mínimo 6 caracteres y un número"); return false; }
   return true;
 }
 
@@ -31,59 +23,34 @@ function usuarioExiste(email){
 }
 
 function validarLogin(email, pass){
-  if(!email || !pass){
-    alert("Completa todos los campos");
-    return null;
-  }
+  if(!email || !pass){ alert("Completa todos los campos"); return null; }
   const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
   const usuario = usuarios.find(u => u.email === email && u.pass === pass);
-  if(!usuario){
-    alert("Credenciales incorrectas");
-    return null;
-  }
+  if(!usuario){ alert("Credenciales incorrectas"); return null; }
   return usuario;
 }
 
 // ========== NOTIFICACIONES / BANDEJA ==========
 
-// HU: Quitar segundos y mostrar burbuja
 function guardarNotificacion(asunto, mensaje) {
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
   if (!usuario) return;
-  
   let bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
-  
-  // Formateo para mostrar solo hora y minutos
   const fechaLimpia = new Date().toLocaleString("es-CO", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: true
+    day: "2-digit", month: "2-digit", year: "numeric",
+    hour: "2-digit", minute: "2-digit", hour12: true
   });
-
-  bandeja.push({
-    id: Date.now(),
-    usuario: usuario.email,
-    asunto,
-    mensaje,
-    fecha: fechaLimpia
-  });
-
+  bandeja.push({ id: Date.now(), usuario: usuario.email, asunto, mensaje, fecha: fechaLimpia });
   localStorage.setItem("bandeja", JSON.stringify(bandeja));
   actualizarBurbujaBandeja();
 }
 
-// Lógica de la burbuja roja
 function actualizarBurbujaBandeja() {
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
   const burbuja = document.getElementById("badge-notif");
   if (!usuario || !burbuja) return;
-
   const bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
   const mensajesUsuario = bandeja.filter(m => m.usuario === usuario.email);
-
   if (mensajesUsuario.length > 0) {
     burbuja.style.display = "flex";
     burbuja.textContent = mensajesUsuario.length;
@@ -97,11 +64,7 @@ function cargarBandeja() {
   const contenedor = document.getElementById("listaMensajes");
   let bandeja = JSON.parse(localStorage.getItem("bandeja")) || [];
   const mensajesUsuario = bandeja.filter(m => m.usuario === usuario.email);
-
-  if (mensajesUsuario.length === 0) {
-    contenedor.innerHTML = "<p>No tienes mensajes</p>";
-    return;
-  }
+  if (mensajesUsuario.length === 0) { contenedor.innerHTML = "<p>No tienes mensajes</p>"; return; }
   contenedor.innerHTML = mensajesUsuario.map(m => `
     <div class="mensaje-card">
       <h4>${m.asunto}</h4>
@@ -124,19 +87,12 @@ function limpiarBandeja() {
 function validarFecha(fecha){
   if(!fecha) return false;
   const hoy = new Date().toISOString().split("T")[0];
-  if(fecha < hoy){
-    alert("No puedes usar fechas pasadas");
-    return false;
-  }
+  if(fecha < hoy){ alert("No puedes usar fechas pasadas"); return false; }
   return true;
 }
 
 function reservaDuplicada(plazaId, fecha){
-  return plazas.some(p =>
-    p.id === plazaId &&
-    p.fecha === fecha &&
-    p.estado === "reservado"
-  );
+  return plazas.some(p => p.id === plazaId && p.fecha === fecha && p.estado === "reservado");
 }
 
 // ========== VARIABLES ==========
@@ -148,8 +104,52 @@ let usuarioActual = null;
 
 const manager = new PlazaManager();
 
+// ========== CATEGORÍAS — se leen del localStorage (creadas por el admin) ==========
+// Valores por defecto si el admin no ha creado ninguna todavía
+const CATEGORIAS_DEFAULT = [
+  { id: 1, nombre: "automovil", label: "Automóvil", icono: "🚗", largo: "4.5 – 5.0", ancho: "2.2 – 2.5", altura: "2.0" },
+  { id: 2, nombre: "camioneta", label: "Camioneta", icono: "🚙", largo: "5.0 – 5.5", ancho: "2.5 – 2.8", altura: "2.5" },
+  { id: 3, nombre: "moto",      label: "Moto",      icono: "🏍️", largo: "2.0 – 2.5", ancho: "1.0 – 1.2", altura: "1.5" },
+];
+
+// Lee las categorías del localStorage (admin las gestiona desde el panel)
+// Si no hay ninguna guardada, usa los valores por defecto y los guarda
+function obtenerCategoriasLocales() {
+  const guardadas = localStorage.getItem("categoriasVehiculo");
+  if (guardadas) {
+    try {
+      const parsed = JSON.parse(guardadas);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    } catch (_) {}
+  }
+  // No había nada guardado: sembrar los defaults y guardarlos
+  localStorage.setItem("categoriasVehiculo", JSON.stringify(CATEGORIAS_DEFAULT));
+  return CATEGORIAS_DEFAULT;
+}
+
+// Convierte una categoría del formato admin al formato que necesita la tarjeta
+// Admin: { nombre, label, icono, largo, ancho, altura }
+// Tarjeta: necesita icono (emoji) y dims (string legible)
+function categoriaToDims(cat) {
+  const largo  = cat.largo  ? `Largo: ${cat.largo} m`  : "";
+  const ancho  = cat.ancho  ? `Ancho: ${cat.ancho} m`  : "";
+  const altura = cat.altura ? `Alto: ${cat.altura} m`  : "";
+  return [largo, ancho, altura].filter(Boolean).join(" | ");
+}
+
+// ========== IMÁGENES por nombre de categoría (opcional) ==========
+// Si tienes imágenes en img/, se usan; si no, se muestra el emoji del admin
+const ICONOS_IMG = {
+  automovil: "img/automovil.png",
+  camioneta: "img/camioneta.png",
+  moto:      "img/moto.png",
+};
+
 // ========== INIT ==========
 async function iniciar() {
+  // ✅ NO borrar categoriasVehiculo del localStorage
+  // El admin las gestiona desde el panel y aquí solo las leemos
+
   plazas = await obtenerPlazas();
   manager.suscribir(new ContadorObserver());
   manager.suscribir(new NotificacionObserver());
@@ -157,9 +157,7 @@ async function iniciar() {
   manager.setPlazas(plazas);
   cargarSesion();
   configurarBotonesZona();
-
-  renderizarCategoriasHome(); 
-
+  await renderizarCategoriasHome();
   configurarLogo();
   configurarBotonVolver();
   configurarModales();
@@ -174,7 +172,7 @@ function cargarSesion(){
   if(user){
     usuarioActual = JSON.parse(user);
     mostrarHeaderUsuario();
-    actualizarBurbujaBandeja(); // Actualizar burbuja al cargar
+    actualizarBurbujaBandeja();
   }else{
     mostrarHeaderLogin();
   }
@@ -185,21 +183,18 @@ function guardarSesion(user){
   usuarioActual = user;
   mostrarHeaderUsuario();
   actualizarEstadoUI();
-  actualizarBurbujaBandeja(); // Actualizar burbuja al entrar
+  actualizarBurbujaBandeja();
   render();
   renderMisReservas();
 }
 
-function cerrarSesion(){
-  localStorage.removeItem("usuarioActual");
+async function cerrarSesion(){
+  await logoutUsuario();
   usuarioActual = null;
   mostrarHeaderLogin();
   actualizarEstadoUI();
-  
-  // Ocultar burbuja al salir
   const burbuja = document.getElementById("badge-notif");
   if(burbuja) burbuja.style.display = "none";
-  
   render();
 }
 
@@ -207,11 +202,10 @@ function mostrarHeaderUsuario(){
   document.getElementById("headerBtns").style.display = "none";
   const headerUser = document.getElementById("headerUser");
   headerUser.style.display = "flex";
-  const nombre = usuarioActual.nombre;
+  const nombre = usuarioActual.nombre || usuarioActual.username || "U";
   const iniciales = nombre.split(" ").map(n => n[0]).join("").toUpperCase();
   document.querySelector(".avatar").textContent = iniciales;
-  document.getElementById("usuarioActual").textContent =
-    `Hola, ${usuarioActual.nombre} (${usuarioActual.rol})`;
+  document.getElementById("usuarioActual").textContent = `Hola, ${nombre} (${usuarioActual.rol})`;
   const btnAdmin = document.getElementById("btnAdminPanel");
   if(usuarioActual.rol === "admin"){
     btnAdmin.style.display = "inline-block";
@@ -241,7 +235,6 @@ function actualizarEstadoUI(){
 }
 
 // ========== FECHA ==========
-
 function obtenerFecha(){
   return document.getElementById("fechaReserva").value;
 }
@@ -251,8 +244,7 @@ function obtenerFecha(){
 async function render(){
   const cont = document.getElementById("parkingContainer");
   if(!usuarioActual){
-    cont.innerHTML =
-      "<div class='aviso-login'>Inicia sesión para ver y reservar plazas</div>";
+    cont.innerHTML = "<div class='aviso-login'>Inicia sesión para ver y reservar plazas</div>";
     return;
   }
   await filtrarPlazas();
@@ -263,13 +255,7 @@ async function render(){
 
 async function filtrarPlazas(){
   const fecha = obtenerFecha();
-
-  const respuesta = await manager.consultarDisponibilidad(
-    zonaSeleccionada,
-    tipoSeleccionado,
-    fecha
-  );
-
+  const respuesta = await manager.consultarDisponibilidad(zonaSeleccionada, tipoSeleccionado, fecha);
   if (respuesta.ok) {
     const idsDisponibles = new Set(respuesta.plazas.map(p => p.id));
     plazasFiltradas = plazas.filter(p => {
@@ -278,58 +264,34 @@ async function filtrarPlazas(){
     });
   } else {
     plazasFiltradas = [...plazas];
-    if (zonaSeleccionada !== "") {
-      plazasFiltradas = plazasFiltradas.filter(p =>
-        p.zona.toLowerCase() === zonaSeleccionada.toLowerCase()
-      );
-    }
-    if (tipoSeleccionado !== "") {
-      plazasFiltradas = plazasFiltradas.filter(p =>
-        p.tipo.toLowerCase() === tipoSeleccionado.toLowerCase()
-      );
-    }
+    if (zonaSeleccionada !== "")
+      plazasFiltradas = plazasFiltradas.filter(p => p.zona.toLowerCase() === zonaSeleccionada.toLowerCase());
+    if (tipoSeleccionado !== "")
+      plazasFiltradas = plazasFiltradas.filter(p => p.tipo.toLowerCase() === tipoSeleccionado.toLowerCase());
   }
 }
 
 function mostrarPlazas(){
   const cont = document.getElementById("parkingContainer");
   cont.innerHTML = "";
-
   if(plazasFiltradas.length === 0){
     cont.innerHTML = `<p>No hay plazas disponibles con estos filtros.</p>`;
     return;
   }
-
   plazasFiltradas.forEach(p => {
     const idx = plazas.findIndex(pl => pl.id === p.id);
-    if(
-      usuarioActual.rol !== "admin" &&
-      plazas[idx].estado === "reservado" &&
-      plazas[idx].reservadoPor !== usuarioActual.email
-    ){
-      return;
-    }
-
+    if(usuarioActual.rol !== "admin" && plazas[idx].estado === "reservado" && plazas[idx].reservadoPor !== usuarioActual.email) return;
     const card = document.createElement("div");
     card.className = `tarjeta ${plazas[idx].estado}`;
-
-    const fechaTexto = plazas[idx].fecha
-      ? `<p class="plaza-fecha">Reservado para: ${plazas[idx].fecha}</p>`
-      : "";
-
+    const fechaTexto = plazas[idx].fecha ? `<p class="plaza-fecha">Reservado para: ${plazas[idx].fecha}</p>` : "";
     let btnHtml = "";
-    if(plazas[idx].estado === "disponible"){
-      btnHtml = `<button class="btn-reservar">Reservar</button>`;
-    }else if(plazas[idx].estado === "reservado"){
-      btnHtml = `<button class="btn-cancelar">Cancelar</button>`;
-    }else if(plazas[idx].estado === "ocupado"){
-      if(usuarioActual.rol === "admin"){
-        btnHtml = `<button class="btn-liberar">Liberar plaza</button>`;
-      }else{
-        btnHtml = `<button class="btn-ocupada">Plaza ocupada</button>`;
-      }
+    if(plazas[idx].estado === "disponible") btnHtml = `<button class="btn-reservar">Reservar</button>`;
+    else if(plazas[idx].estado === "reservado") btnHtml = `<button class="btn-cancelar">Cancelar</button>`;
+    else if(plazas[idx].estado === "ocupado"){
+      btnHtml = usuarioActual.rol === "admin"
+        ? `<button class="btn-liberar">Liberar plaza</button>`
+        : `<button class="btn-ocupada">Plaza ocupada</button>`;
     }
-
     card.innerHTML = `
       <h3>Plaza ${plazas[idx].id}</h3>
       <p>Zona: ${plazas[idx].zona}</p>
@@ -338,87 +300,40 @@ function mostrarPlazas(){
       ${fechaTexto}
       ${btnHtml}
     `;
-
     card.querySelector(".btn-reservar")?.addEventListener("click", () => {
       const fecha = obtenerFecha();
       const errorSpan = document.getElementById("fechaError");
-
-      if(!fecha){
-        errorSpan.classList.add("visible");
-        document.getElementById("fechaReserva").focus();
-        return;
-      }
+      if(!fecha){ errorSpan.classList.add("visible"); document.getElementById("fechaReserva").focus(); return; }
       errorSpan.classList.remove("visible");
-
       const hoy = new Date().toISOString().split("T")[0];
-      if(fecha < hoy){
-        alert("No puedes reservar en una fecha pasada");
-        return;
-      }
-      if(plazas[idx].estado !== "disponible"){
-        alert("Esta plaza ya fue reservada");
-        return;
-      }
-
-      const yaTiene = plazas.some(p =>
-        p.reservadoPor === usuarioActual.email && p.fecha === fecha
-      );
-      if(yaTiene){
-        alert("Ya tienes una reserva para esa fecha");
-        return;
-      }
-      if(reservaDuplicada(plazas[idx].id, fecha)){
-        alert("Esta plaza ya está reservada para esa fecha");
-        return;
-      }
-
-      const tieneReservaActiva = plazas.some(p =>
-        p.reservadoPor === usuarioActual.email && p.estado === "reservado"
-      );
-      if (tieneReservaActiva) {
-        alert("Ya tienes una plaza activa. Debes cancelarla antes de reservar otra.");
-        return;
-      }
-
+      if(fecha < hoy){ alert("No puedes reservar en una fecha pasada"); return; }
+      if(plazas[idx].estado !== "disponible"){ alert("Esta plaza ya fue reservada"); return; }
+      const yaTiene = plazas.some(p => p.reservadoPor === usuarioActual.email && p.fecha === fecha);
+      if(yaTiene){ alert("Ya tienes una reserva para esa fecha"); return; }
+      if(reservaDuplicada(plazas[idx].id, fecha)){ alert("Esta plaza ya está reservada para esa fecha"); return; }
+      const tieneReservaActiva = plazas.some(p => p.reservadoPor === usuarioActual.email && p.estado === "reservado");
+      if(tieneReservaActiva){ alert("Ya tienes una plaza activa. Debes cancelarla antes de reservar otra."); return; }
       plazas[idx].reservadoPor = usuarioActual.email;
       manager.reservar(plazas[idx].id, fecha);
       plazas = manager.getPlazas();
       guardarPlazas(plazas);
-      guardarNotificacion(
-        "Reserva confirmada",
-        `Reservaste la plaza ${plazas[idx].id} para el día ${fecha}`
-      );
+      guardarNotificacion("Reserva confirmada", `Reservaste la plaza ${plazas[idx].id} para el día ${fecha}`);
       simularEnvioCorreo(usuarioActual, plazas[idx], fecha);
       render();
     });
-
     card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
       const esAdmin = usuarioActual.rol === "admin";
       const esDueno = plazas[idx].reservadoPor === usuarioActual.email;
-
-      if (!esAdmin && !esDueno) {
-        alert("No puedes cancelar una reserva que no es tuya");
-        return;
-      }
-
+      if (!esAdmin && !esDueno){ alert("No puedes cancelar una reserva que no es tuya"); return; }
       manager.cancelar(plazas[idx].id);
       plazas = manager.getPlazas();
       guardarPlazas(plazas);
-
-      if (esAdmin && !esDueno) {
-        guardarNotificacion(
-          "Reserva cancelada por administrador",
-          `Tu reserva de la plaza ${plazas[idx].id} fue cancelada por un administrador`
-        );
-      } else {
-        guardarNotificacion(
-          "Reserva cancelada",
-          `Cancelaste la reserva de la plaza ${plazas[idx].id}`
-        );
-      }
+      guardarNotificacion(
+        esAdmin && !esDueno ? "Reserva cancelada por administrador" : "Reserva cancelada",
+        `${esAdmin && !esDueno ? "Tu reserva de la" : "Cancelaste la reserva de la"} plaza ${plazas[idx].id}`
+      );
       render();
     });
-
     card.querySelector(".btn-liberar")?.addEventListener("click", () => {
       if(usuarioActual.rol !== "admin") return;
       manager.liberar(plazas[idx].id);
@@ -426,16 +341,15 @@ function mostrarPlazas(){
       guardarPlazas(plazas);
       render();
     });
-
     cont.appendChild(card);
   });
 }
 
 function actualizarContador(){
-  document.getElementById("totalPlazas").textContent     = plazas.length;
-  document.getElementById("plazasLibres").textContent   = plazas.filter(p => p.estado === "disponible").length;
+  document.getElementById("totalPlazas").textContent       = plazas.length;
+  document.getElementById("plazasLibres").textContent     = plazas.filter(p => p.estado === "disponible").length;
   document.getElementById("plazasReservadas").textContent = plazas.filter(p => p.estado === "reservado").length;
-  document.getElementById("plazasOcupadas").textContent = plazas.filter(p => p.estado === "ocupado").length;
+  document.getElementById("plazasOcupadas").textContent   = plazas.filter(p => p.estado === "ocupado").length;
 }
 
 // ========== MIS RESERVAS ==========
@@ -447,19 +361,16 @@ function renderMisReservas(){
   const cont = document.getElementById("misReservas");
   const section = document.getElementById("misReservasSection");
   if(!cont || !section) return;
-
-  if(reservas.length === 0){
-    cont.innerHTML = "<p>No tienes reservas</p>";
-  }else{
-    cont.innerHTML = reservas.map(p => `
-      <div class="reserva-card">
-        <p><strong>Plaza #${p.id}</strong></p>
-        <p>Zona: ${p.zona}</p>
-        <p>Tipo: ${p.tipo}</p>
-        <p class="reserva-fecha">${p.fecha || "Sin fecha asignada"}</p>
-      </div>
-    `).join("");
-  }
+  cont.innerHTML = reservas.length === 0
+    ? "<p>No tienes reservas</p>"
+    : reservas.map(p => `
+        <div class="reserva-card">
+          <p><strong>Plaza #${p.id}</strong></p>
+          <p>Zona: ${p.zona}</p>
+          <p>Tipo: ${p.tipo}</p>
+          <p class="reserva-fecha">${p.fecha || "Sin fecha asignada"}</p>
+        </div>
+      `).join("");
   section.style.display = "block";
 }
 
@@ -476,26 +387,37 @@ function configurarCategorias(){
     };
   });
 }
+
 // ========== CATEGORÍAS DINÁMICAS HOME ==========
 
-function renderizarCategoriasHome() {
+async function renderizarCategoriasHome() {
   const contenedor = document.getElementById("contenedorCategorias");
   if (!contenedor) return;
 
-  const categoriasDinamicas = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
-    { nombre: "Automóvil", slug: "automovil", icono: "🚗" },
-    { nombre: "Motocicleta", slug: "motocicleta", icono: "🏍️" }
-  ];
+  // ✅ Lee del localStorage (donde el admin las guarda)
+  // Si no hay nada, siembra los defaults sin borrar lo que ya haya
+  const cats = obtenerCategoriasLocales();
 
-  contenedor.innerHTML = categoriasDinamicas.map(cat => `
-    <div class="categoria-card" data-tipo="${cat.slug}">
-      <div style="font-size: 40px; margin-bottom: 10px;">${cat.icono || '🚗'}</div>
-      <h3>${cat.nombre}</h3>
-    </div>
-  `).join("");
+  contenedor.innerHTML = cats.map(cat => {
+    // Intenta usar imagen de archivo; si no existe o no hay, muestra el emoji del admin
+    const imgSrc = ICONOS_IMG[cat.nombre];
+    const iconoHtml = imgSrc
+      ? `<img src="${imgSrc}" alt="${cat.label}" onerror="this.style.display='none';this.nextSibling.style.display='block'">`
+      : "";
+    const emojiHtml = `<span class="cat-emoji" style="${imgSrc ? "display:none" : ""}">${cat.icono || "🚘"}</span>`;
+    const dims = categoriaToDims(cat);
 
-  // IMPORTANTE: volver a activar eventos
-  configurarCategorias(); 
+    return `
+      <div class="categoria-card" data-tipo="${cat.nombre}">
+        ${iconoHtml}
+        ${emojiHtml}
+        <h3>${cat.label}</h3>
+        ${dims ? `<p class="categoria-dims">${dims}</p>` : ""}
+      </div>
+    `;
+  }).join("");
+
+  configurarCategorias();
 }
 
 // ========== BOTONES ZONA ==========
@@ -504,10 +426,7 @@ function configurarBotonesZona(){
   document.querySelectorAll(".btn-zona").forEach(btn => {
     btn.onclick = () => {
       if(!usuarioActual) return;
-      if(tipoSeleccionado === ""){
-        alert("Primero selecciona un tipo de vehículo");
-        return;
-      }
+      if(tipoSeleccionado === ""){ alert("Primero selecciona un tipo de vehículo"); return; }
       zonaSeleccionada = btn.closest(".zona-card").querySelector("h3").textContent;
       document.getElementById("fechaReservaContainer").style.display = "block";
       document.getElementById("btnVolver").style.display = "block";
@@ -518,13 +437,11 @@ function configurarBotonesZona(){
 }
 
 // ========== LOGO ==========
-
 function configurarLogo(){
   document.querySelector(".logo").onclick = () => location.reload();
 }
 
 // ========== BOTON VOLVER ==========
-
 function configurarBotonVolver(){
   document.getElementById("btnVolver").onclick = () => {
     zonaSeleccionada = "";
@@ -542,61 +459,41 @@ function configurarBotonVolver(){
 // ========== MODALES ==========
 
 function configurarModales(){
-  const mCrear  = document.getElementById("modalCrear");
-  const mLogin  = document.getElementById("modalLogin");
+  const mCrear = document.getElementById("modalCrear");
+  const mLogin = document.getElementById("modalLogin");
 
-  document.getElementById("btnCrearCuenta").onclick = () => {
+  document.getElementById("btnCrearCuenta").onclick = async () => {
     const nombre = document.getElementById("nombreCrear").value.trim();
     const email  = document.getElementById("emailCrear").value.trim();
     const pass   = document.getElementById("passCrear").value.trim();
     const rol    = document.getElementById("rolCrear").value;
-
-    if(!nombre || !email || !pass){
-      alert("Todos los campos son obligatorios");
-      return;
-    }
-    if(pass.length < 4){
-      alert("La contraseña debe tener al menos 4 caracteres");
-      return;
-    }
-
+    if (!nombre || !email || !pass){ alert("Todos los campos son obligatorios"); return; }
+    const resultado = await registrarUsuario(nombre, email, pass, rol);
+    if (!resultado.ok){ alert("Error: " + resultado.error); return; }
     let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const existe = usuarios.find(u => u.email === email);
-    if(existe){
-      alert("Este correo ya está registrado");
-      return;
-    }
-
-    const nuevoUsuario = { nombre, email, pass, rol };
-    usuarios.push(nuevoUsuario);
+    usuarios.push({ nombre, email, pass, rol });
     localStorage.setItem("usuarios", JSON.stringify(usuarios));
-    simularCorreoBienvenida(nuevoUsuario);
+    simularCorreoBienvenida({ nombre, email, rol });
     alert("Cuenta creada correctamente");
     mCrear.style.display = "none";
   };
 
-  document.getElementById("btnLogin").onclick = () => {
-    const email = document.getElementById("emailLogin").value.trim();
-    const pass  = document.getElementById("passLogin").value.trim();
-    if(!email || !pass){
-      alert("Completa todos los campos");
+  document.getElementById("btnLogin").onclick = async () => {
+    const username = document.getElementById("emailLogin").value.trim();
+    const pass     = document.getElementById("passLogin").value.trim();
+    if (!username || !pass){ alert("Completa todos los campos"); return; }
+    const resultado = await loginUsuario(username, pass);
+    if (resultado.ok){
+      const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
+      guardarSesion(usuario);
+      mLogin.style.display = "none";
       return;
     }
-    let usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-    const usuario = usuarios.find(u => u.email === email && u.pass === pass);
-    if(!usuario){
-      alert("Correo o contraseña incorrectos");
-      return;
-    }
-    guardarSesion(usuario);
-    mLogin.style.display = "none";
+    alert(resultado.error || "Credenciales incorrectas");
   };
 
-  document.getElementById("btnHeaderCrear").onclick = () => {
-    mCrear.style.display = "flex";
-  };
-
-  document.getElementById("btnHeaderLogin").onclick = () => mLogin.style.display = "flex";
+  document.getElementById("btnHeaderCrear").onclick = () => { mCrear.style.display = "flex"; };
+  document.getElementById("btnHeaderLogin").onclick = () => { mLogin.style.display = "flex"; };
 
   document.querySelectorAll(".cerrar").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -617,21 +514,20 @@ function simularCorreoBienvenida(usuario) {
     usuario: usuario.email,
     asunto: "Bienvenido a ParkApp",
     mensaje: `Tu cuenta fue creada correctamente. Rol: ${usuario.rol}`,
-    fecha: new Date().toLocaleString("es-CO", { hour: '2-digit', minute: '2-digit', hour12: true })
+    fecha: new Date().toLocaleString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: true })
   });
   localStorage.setItem("bandeja", JSON.stringify(bandejaInterna));
   mostrarNotifCorreo("Correo de bienvenida enviado");
 }
 
 function simularEnvioCorreo(usuario, plaza, fecha) {
-  const correo = {
+  let bandeja = JSON.parse(localStorage.getItem("bandejaSalida")) || [];
+  bandeja.push({
     para: usuario.email,
     asunto: "Confirmación de reserva - ParkApp",
     mensaje: `Hola ${usuario.nombre}, tu reserva fue confirmada. Plaza: ${plaza.id} | Fecha: ${fecha}`,
     fechaEnvio: new Date().toLocaleString()
-  };
-  let bandeja = JSON.parse(localStorage.getItem("bandejaSalida")) || [];
-  bandeja.push(correo);
+  });
   localStorage.setItem("bandejaSalida", JSON.stringify(bandeja));
   mostrarNotifCorreo("Correo enviado correctamente");
 }
@@ -646,15 +542,13 @@ function mostrarNotifCorreo(mensaje) {
 
 // ========== BANDEJA EVENTOS ==========
 
-const btnBandeja      = document.getElementById("btnBandeja");
-const modalBandeja    = document.getElementById("modalBandeja");
-const cerrarBandeja   = document.getElementById("cerrarBandeja");
+const btnBandeja        = document.getElementById("btnBandeja");
+const modalBandeja      = document.getElementById("modalBandeja");
+const cerrarBandeja     = document.getElementById("cerrarBandeja");
 const btnLimpiarBandeja = document.getElementById("btnLimpiarBandeja");
 
 btnLimpiarBandeja.addEventListener("click", () => {
-  if (confirm("¿Seguro que quieres borrar todos tus mensajes?")) {
-    limpiarBandeja();
-  }
+  if (confirm("¿Seguro que quieres borrar todos tus mensajes?")) limpiarBandeja();
 });
 
 btnBandeja.addEventListener("click", () => {
