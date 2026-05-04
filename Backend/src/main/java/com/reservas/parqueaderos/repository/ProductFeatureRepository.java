@@ -1,29 +1,15 @@
 package com.reservas.parqueaderos.repository;
 
 import com.reservas.parqueaderos.model.Feature;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
-public class ProductFeatureRepository {
+public interface ProductFeatureRepository extends JpaRepository<Feature, Long> {
 
-    private List<Feature> features = new ArrayList<>();
-    private Long nextId = 1L;
+    // Obtener features por producto
+    List<Feature> findByProductId(Long productId);
 
-    public ProductFeatureRepository() {
-        // Datos iniciales
-        features.add(new Feature(nextId++, "Seguridad 24h", "shield"));
-        features.add(new Feature(nextId++, "Techado", "roof"));
-    }
-
-    public List<Feature> findAll() {
-        return features;
-    }
-
-    public void save(Feature feature) {
-        feature.setId(nextId++);
-        features.add(feature);
-    }
 }

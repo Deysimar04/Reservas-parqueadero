@@ -1,27 +1,22 @@
 package com.reservas.parqueaderos.model;
 
-
-
-import lombok.AllArgsConstructor;
-
+import jakarta.persistence.*;
 import lombok.Data;
-
-import lombok.NoArgsConstructor;
-
-
+import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Data
-
-@AllArgsConstructor
-
-@NoArgsConstructor
-
+@Entity
+@Table(name = "features")
 public class Feature {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
 
-    private String icon; // Ejemplo: "shield", "roof"
-
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    @JsonBackReference
+    private Product product;
 }

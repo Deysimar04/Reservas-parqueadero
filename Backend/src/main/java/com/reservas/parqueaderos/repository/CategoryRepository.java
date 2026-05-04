@@ -1,27 +1,21 @@
 package com.reservas.parqueaderos.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.ArrayList;
+import com.reservas.parqueaderos.model.Category;
+
+import java.util.Optional;
 import java.util.List;
 
 @Repository
-public class CategoryRepository {
+public interface CategoryRepository extends JpaRepository<Category, Long> {
 
-    // HU12: Categorías pre-sembradas en memoria
-    private final List<String> categories = new ArrayList<>(List.of(
-            "Cubierto",
-            "Descubierto",
-            "Motos",
-            "Bicicletas",
-            "Discapacitados"
-    ));
+    // Buscar categoría por nombre (útil para validar duplicados)
+    Optional<Category> findByName(String name);
 
-    public List<String> findAll() {
-        return categories;
-    }
+    // Verificar si ya existe una categoría
+    boolean existsByName(String name);
 
-    // HU21 opcional: Agregar nueva categoría
-    public void save(String category) {
-        categories.add(category);
-    }
+    // Búsqueda por coincidencia parcial (opcional, útil en frontend)
+    List<Category> findByNameContainingIgnoreCase(String name);
 }

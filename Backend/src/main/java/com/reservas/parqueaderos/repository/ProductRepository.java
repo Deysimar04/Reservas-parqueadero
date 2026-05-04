@@ -1,28 +1,16 @@
 package com.reservas.parqueaderos.repository;
 
 import com.reservas.parqueaderos.model.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import java.util.ArrayList;
+
 import java.util.List;
 
+
 @Repository
-public class ProductRepository {
+public interface ProductRepository extends JpaRepository<Product, Long> {
 
-    private List<Product> products = new ArrayList<>();
-    private Long nextId = 1L;
+    boolean existsByNameIgnoreCase(String name);
 
-    public List<Product> findAll() {
-        return products;
-    }
-
-    // HU3: Verificar duplicados por nombre
-    public boolean existsByName(String name) {
-        return products.stream()
-                .anyMatch(p -> p.getName().equalsIgnoreCase(name));
-    }
-
-    public void save(Product product) {
-        product.setId(nextId++);
-        products.add(product);
-    }
+    List<Product> findByCategory_Id(Long categoryId);
 }

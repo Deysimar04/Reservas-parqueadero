@@ -1,13 +1,24 @@
 package com.reservas.parqueaderos.model;
 
-import lombok.AllArgsConstructor;
+import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDate;
-import java.util.List;
+import java.time.LocalDateTime;
 
 @Data
-@AllArgsConstructor
+@Entity
+@Table(name = "availability")
 public class Availability {
-    private List<LocalDate> occupiedDates;
-    private List<LocalDate> availableDates;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    private LocalDateTime startTime;
+    private LocalDateTime endTime;
+
+    private boolean available;
+
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;
 }
