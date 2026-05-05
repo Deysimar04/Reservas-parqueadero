@@ -31,6 +31,13 @@ public class ReservaService {
                     "Debe especificar fecha de inicio y fin"
             );
         }
+     // Evita reservas de 0 minutos
+        if (nuevaReserva.getStartTime().isEqual(nuevaReserva.getEndTime())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La reserva debe tener una duración válida"
+            );
+        }
 
         if (nuevaReserva.getEndTime().isBefore(nuevaReserva.getStartTime())) {
             throw new ResponseStatusException(
@@ -40,18 +47,18 @@ public class ReservaService {
         }
 
         // 🔥 VALIDACIÓN CLAVE: evitar doble reserva
-        List<Reserva> conflictos = reservaRepository
-                .findByProductIdAndStartTimeLessThanAndEndTimeGreaterThan(
-                        nuevaReserva.getProduct().getId(),
-                        nuevaReserva.getEndTime(),
-                        nuevaReserva.getStartTime()
-                );
+        boolean disponible = estaDisponible(
+                nuevaReserva.getProduct().getId(),
+                nuevaReserva.getStartTime(),
+                nuevaReserva.getEndTime()
+        );
 
-        if (!conflictos.isEmpty()) {
+        if (!disponible) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "El parqueadero ya está reservado en ese horario"
             );
+
         }
 
         // Estado inicial
@@ -80,5 +87,24 @@ public class ReservaService {
 
         // 🔥 CORRECTO en JPA
         reservaRepository.save(reserva);
+    }
+    public boolean estaDisponible(Long productId, LocalDateTime startTime, LocalDateTime endTime) {
+
+        List<Reserva> conflictos = reservaRepository
+                .findByProductIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                        productId,
+                        endTime,
+                        startTime
+                );
+
+        return conflictos.isEmpty();
+    }
+
+    public Reserva getReservaById(Long reservaId) {
+        return reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Reserva no encontrada"
+                ));
     }
 }

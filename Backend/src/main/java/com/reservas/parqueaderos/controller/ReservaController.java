@@ -55,8 +55,68 @@ public class ReservaController {
 
     // 🔐 Obtener ID del usuario autenticado
     private Long getIdFromAuth(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
+
         return userRepository.findByUsername(auth.getName())
                 .map(Users::getId)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+    }
+
+    //  Validar disponibilidad (HU30 + HU23)
+    @GetMapping("/disponibilidad")
+    public ResponseEntity<?> validarDisponibilidad(
+            @RequestParam Long productId,
+            @RequestParam String startTime,
+            @RequestParam String endTime
+    ) {
+        try {
+            boolean disponible = reservaService.estaDisponible(
+                    productId,
+                    java.time.LocalDateTime.parse(startTime),
+                    java.time.LocalDateTime.parse(endTime)
+            );
+
+            return ResponseEntity.ok(Map.of("disponible", disponible));
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    //  Crear reserva (HU32)
+    @PostMapping
+    public ResponseEntity<?> crearReserva(@RequestBody Reserva reserva, Authentication auth) {
+        try {
+            Long userId = getIdFromAuth(auth);
+
+            // Asignar usuario automáticamente
+            Users user = new Users();
+            user.setId(userId);
+            reserva.setUser(user);
+
+            Reserva nueva = reservaService.crearReserva(reserva);
+
+            return ResponseEntity.ok(nueva);
+
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Detalle de Rerserva (HU31)
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getReserva(@PathVariable Long id) {
+        try {
+            Reserva reserva = reservaService.getReservaById(id);
+            return ResponseEntity.ok(reserva);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(404)
+                    .body(Map.of("error", e.getMessage()));
+        }
     }
 }
