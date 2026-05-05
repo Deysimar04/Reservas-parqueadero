@@ -16,12 +16,12 @@ public class ReservaService {
 
     private final ReservaRepository reservaRepository;
 
-    // ✅ Obtener reservas por usuario
+    // Obtener reservas por usuario
     public List<Reserva> getReservasByUser(Long userId) {
         return reservaRepository.findByUserId(userId);
     }
 
-    // ✅ Crear reserva con validación REAL
+    //  Crear reserva con validación REAL
     public Reserva crearReserva(Reserva nuevaReserva) {
 
         // Validaciones básicas
@@ -29,6 +29,13 @@ public class ReservaService {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Debe especificar fecha de inicio y fin"
+            );
+        }
+        // Evita reservas de 0 minutos
+        if (nuevaReserva.getStartTime().isEqual(nuevaReserva.getEndTime())) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "La reserva debe tener una duración válida"
             );
         }
 
@@ -39,19 +46,19 @@ public class ReservaService {
             );
         }
 
-        // 🔥 VALIDACIÓN CLAVE: evitar doble reserva
-        List<Reserva> conflictos = reservaRepository
-                .findByProductIdAndStartTimeLessThanAndEndTimeGreaterThan(
-                        nuevaReserva.getProduct().getId(),
-                        nuevaReserva.getEndTime(),
-                        nuevaReserva.getStartTime()
-                );
+        // VALIDACIÓN CLAVE: evitar doble reserva
+        boolean disponible = estaDisponible(
+                nuevaReserva.getProduct().getId(),
+                nuevaReserva.getStartTime(),
+                nuevaReserva.getEndTime()
+        );
 
-        if (!conflictos.isEmpty()) {
+        if (!disponible) {
             throw new ResponseStatusException(
                     HttpStatus.CONFLICT,
                     "El parqueadero ya está reservado en ese horario"
             );
+
         }
 
         // Estado inicial
@@ -60,7 +67,7 @@ public class ReservaService {
         return reservaRepository.save(nuevaReserva);
     }
 
-    // ✅ Cancelar reserva con validación de usuario
+    // Cancelar reserva con validación de usuario
     public void cancelarReserva(Long reservaId, Long userId) {
 
         Reserva reserva = reservaRepository.findByIdAndUserId(reservaId, userId)
@@ -78,7 +85,26 @@ public class ReservaService {
 
         reserva.setEstado("CANCELADA");
 
-        // 🔥 CORRECTO en JPA
+        //  CORRECTO en JPA
         reservaRepository.save(reserva);
+    }
+    public boolean estaDisponible(Long productId, LocalDateTime startTime, LocalDateTime endTime) {
+
+        List<Reserva> conflictos = reservaRepository
+                .findByProductIdAndStartTimeLessThanAndEndTimeGreaterThan(
+                        productId,
+                        endTime,
+                        startTime
+                );
+
+        return conflictos.isEmpty();
+    }
+
+    public Reserva getReservaById(Long reservaId) {
+        return reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Reserva no encontrada"
+                ));
     }
 }

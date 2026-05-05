@@ -17,7 +17,7 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     // HU9: Buscar reserva solo si pertenece al usuario
     Optional<Reserva> findByIdAndUserId(Long id, Long userId);
 
-    // 🔥 CLAVE: detectar conflictos de horario (evitar doble reserva)
+    // CLAVE: detectar conflictos de horario (evitar doble reserva)
     List<Reserva> findByProductIdAndStartTimeLessThanAndEndTimeGreaterThan(
             Long productId,
             LocalDateTime endTime,
