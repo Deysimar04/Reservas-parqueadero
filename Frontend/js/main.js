@@ -226,29 +226,15 @@ async function render(){
 }
 
 async function filtrarPlazas(){
-  const fecha = obtenerFecha();
-  const respuesta = await manager.consultarDisponibilidad(
-    zonaSeleccionada, tipoSeleccionado, fecha
-  );
-  if (respuesta.ok) {
-    const idsDisponibles = new Set(respuesta.plazas.map(p => p.id));
-    plazasFiltradas = plazas.filter(p => {
-      if (p.reservadoPor === usuarioActual?.email) return true;
-      return idsDisponibles.has(p.id);
-    });
-  } else {
-    plazasFiltradas = [...plazas];
-    if (zonaSeleccionada !== "") {
-      plazasFiltradas = plazasFiltradas.filter(p =>
-        p.zona.toLowerCase() === zonaSeleccionada.toLowerCase()
-      );
-    }
-    if (tipoSeleccionado !== "") {
-      plazasFiltradas = plazasFiltradas.filter(p =>
-        p.tipo.toLowerCase() === tipoSeleccionado.toLowerCase()
-      );
-    }
-  }
+  = zonaSeleccionada === "" || p.zona === zonaSeleccionada;
+  = tipoSeleccionado === "" || p.tipo === tipoSeleccionado;
+  plazasFiltradas = plazas.filter(p => {
+  const zona0k
+  const tipo0k
+  const disponible = p.estado === "disponible" 11
+  p.reservadoPor === usuarioActual ?. email;
+  return zona0k && tipo0k && disponible;
+  });
 }
 
 function mostrarPlazas(){

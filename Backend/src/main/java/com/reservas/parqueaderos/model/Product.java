@@ -17,6 +17,9 @@ public class Product {
     private String name;
     private String description;
 
+    @Column(name = "zona")
+    private String zona;
+
     // 🔥 RELACIÓN CORRECTA
     @ManyToOne
     @JoinColumn(name = "category_id")

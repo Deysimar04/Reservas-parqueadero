@@ -133,9 +133,9 @@ export async function obtenerPlazas() {
       reservadoPor: null,
       fecha:       null,
       extras: {
-        techado:        false,
+        techado:        p.category?.name === "Cubierto",
         camaras:        false,
-        iluminado:      false,
+        iluminado:      true,
         discapacitados: p.category?.name === "Discapacitados"
       }
     }));
