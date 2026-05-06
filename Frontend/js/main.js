@@ -388,12 +388,12 @@ function renderTablaReservas(buscar = "") {
                 (r.user ?. username || "").toLowerCase().includes(q) ||
                 (r.product ?. zona || "").toLowerCase().includes(q);
 
-    }):
+    });
     const tbody = document.getElementById("tablaReservasBody");
     tbody.innerHTML = lista.length === 0
-        ? '<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">
-            No hay reservas activas</td></tr>
-    : lista.map(r =>
+        ?`{<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">
+            No hay reservas activas</td></tr>`
+    : lista.map(r =>`
         <tr>
             <td><strong>#${r.product ?. id || "-"}</strong></td>
             <td>${r.product ?. zona || "-"}</td>
@@ -411,7 +411,7 @@ function renderTablaReservas(buscar = "") {
                 Cancelar
                 </button>
             </td>
-            </tr>*
+            </tr>`
         ).join("");
 
     tbody.querySelectorAll("[data-accion='cancelar-reserva']"). forEach(btn => {

@@ -29,14 +29,14 @@ export async function registrarUsuario(username, email, password, rol = "USER") 
 }
 export async function obtenerTodasLasReservas() {
     try {
-        const res = await fetch('${BASE_URL}/api/reservas/todas', {
+        const res = await fetch(`${BASE_URL}/api/reservas/todas`, {
         headers: authHeaders()
     });
     if (!res.ok) throw new Error("Error al obtener reservas");
         return await res.json();
     } catch (e) {
         console.error("Error obteniendo reservas:", e.message);
-    return [];
+        return [];
     }
   }
 export async function loginUsuario(username, password) {
