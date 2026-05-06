@@ -3,9 +3,7 @@ package com.reservas.parqueaderos.service;
 import com.reservas.parqueaderos.model.Reserva;
 import com.reservas.parqueaderos.repository.ReservaRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,95 +14,81 @@ public class ReservaService {
 
     private final ReservaRepository reservaRepository;
 
-    // Obtener reservas por usuario
+    // HU33: Historial ordenado por fecha descendente
     public List<Reserva> getReservasByUser(Long userId) {
-        return reservaRepository.findByUserId(userId);
+        return reservaRepository.findByUserIdOrderByStartTimeDesc(userId);
     }
 
-    //  Crear reserva con validación REAL
-    public Reserva crearReserva(Reserva nuevaReserva) {
-
-        // Validaciones básicas
-        if (nuevaReserva.getStartTime() == null || nuevaReserva.getEndTime() == null) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "Debe especificar fecha de inicio y fin"
-            );
-        }
-        // Evita reservas de 0 minutos
-        if (nuevaReserva.getStartTime().isEqual(nuevaReserva.getEndTime())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La reserva debe tener una duración válida"
-            );
-        }
-
-        if (nuevaReserva.getEndTime().isBefore(nuevaReserva.getStartTime())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La fecha fin no puede ser menor que la fecha inicio"
-            );
-        }
-
-        // VALIDACIÓN CLAVE: evitar doble reserva
-        boolean disponible = estaDisponible(
-                nuevaReserva.getProduct().getId(),
-                nuevaReserva.getStartTime(),
-                nuevaReserva.getEndTime()
-        );
-
-        if (!disponible) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "El parqueadero ya está reservado en ese horario"
-            );
-
-        }
-
-        // Estado inicial
-        nuevaReserva.setEstado("CONFIRMADA");
-
-        return reservaRepository.save(nuevaReserva);
+    // HU31: Detalle de reserva por ID
+    public Reserva getReservaById(Long id) {
+        return reservaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada con ID: " + id));
     }
 
-    // Cancelar reserva con validación de usuario
-    public void cancelarReserva(Long reservaId, Long userId) {
-
-        Reserva reserva = reservaRepository.findByIdAndUserId(reservaId, userId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.FORBIDDEN,
-                        "No tienes permiso para cancelar esta reserva"
-                ));
-
-        if ("CANCELADA".equals(reserva.getEstado())) {
-            throw new ResponseStatusException(
-                    HttpStatus.BAD_REQUEST,
-                    "La reserva ya está cancelada"
-            );
-        }
-
-        reserva.setEstado("CANCELADA");
-
-        //  CORRECTO en JPA
-        reservaRepository.save(reserva);
-    }
+    // HU30 + HU23: Verificar si un producto está disponible en el rango de fechas
     public boolean estaDisponible(Long productId, LocalDateTime startTime, LocalDateTime endTime) {
+        if (startTime == null || endTime == null) {
+            throw new RuntimeException("Las fechas no pueden ser nulas");
+        }
+        if (!startTime.isBefore(endTime)) {
+            throw new RuntimeException("La fecha de inicio debe ser anterior a la fecha de fin");
+        }
+        if (startTime.isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("No puedes reservar en una fecha pasada");
+        }
 
         List<Reserva> conflictos = reservaRepository
                 .findByProductIdAndStartTimeLessThanAndEndTimeGreaterThan(
-                        productId,
-                        endTime,
-                        startTime
+                        productId, endTime, startTime
                 );
 
-        return conflictos.isEmpty();
+        // Solo cuenta conflictos activos (no canceladas)
+        return conflictos.stream()
+                .noneMatch(r -> !"CANCELLED".equalsIgnoreCase(r.getEstado()));
     }
 
-    public Reserva getReservaById(Long reservaId) {
-        return reservaRepository.findById(reservaId)
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Reserva no encontrada"
-                ));
+    // HU32: Crear reserva con validaciones completas
+    public Reserva crearReserva(Reserva reserva) {
+        if (reserva.getProduct() == null || reserva.getProduct().getId() == null) {
+            throw new RuntimeException("Debes indicar un producto/plaza válido");
+        }
+        if (reserva.getStartTime() == null || reserva.getEndTime() == null) {
+            throw new RuntimeException("Debes indicar fecha y hora de inicio y fin");
+        }
+        if (!reserva.getStartTime().isBefore(reserva.getEndTime())) {
+            throw new RuntimeException("La fecha de inicio debe ser anterior a la de fin");
+        }
+        if (reserva.getStartTime().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("No puedes reservar en una fecha pasada");
+        }
+
+        boolean disponible = estaDisponible(
+                reserva.getProduct().getId(),
+                reserva.getStartTime(),
+                reserva.getEndTime()
+        );
+
+        if (!disponible) {
+            throw new RuntimeException("La plaza no está disponible en ese rango de fechas");
+        }
+
+        reserva.setEstado("CONFIRMED");
+        return reservaRepository.save(reserva);
+    }
+
+    // Cancelar reserva validando que pertenece al usuario (o admin puede cancelar cualquiera)
+    public void cancelarReserva(Long reservaId, Long userId) {
+        Reserva reserva = reservaRepository.findById(reservaId)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+        if (!reserva.getUser().getId().equals(userId)) {
+            throw new RuntimeException("No tienes permiso para cancelar esta reserva");
+        }
+        if ("CANCELLED".equalsIgnoreCase(reserva.getEstado())) {
+            throw new RuntimeException("La reserva ya estaba cancelada");
+        }
+
+        reserva.setEstado("CANCELLED");
+        reservaRepository.save(reserva);
     }
 }

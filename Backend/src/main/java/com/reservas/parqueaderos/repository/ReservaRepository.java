@@ -11,13 +11,13 @@ import java.util.Optional;
 @Repository
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
-    // HU: Obtener reservas por usuario
-    List<Reserva> findByUserId(Long userId);
+    // HU33: Historial de reservas ordenado por fecha descendente (más reciente primero)
+    List<Reserva> findByUserIdOrderByStartTimeDesc(Long userId);
 
     // HU9: Buscar reserva solo si pertenece al usuario
     Optional<Reserva> findByIdAndUserId(Long id, Long userId);
 
-    // CLAVE: detectar conflictos de horario (evitar doble reserva)
+    // HU30 + HU23: Detectar conflictos de horario (evitar doble reserva)
     List<Reserva> findByProductIdAndStartTimeLessThanAndEndTimeGreaterThan(
             Long productId,
             LocalDateTime endTime,
