@@ -8,14 +8,11 @@ const BASE_URL = "http://localhost:8080";
 // AUTH — HU13, HU14, HU15
 // ============================================================
 
-// HU13: Registrar usuario en el backend
-// CORRECCIÓN: rol por defecto cambiado de "cliente" → "USER"
 export async function registrarUsuario(username, email, password, rol = "USER") {
   try {
     const res = await fetch(`${BASE_URL}/api/auth/registro`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      // CORRECCIÓN: normalización robusta del rol
       body: JSON.stringify({
         username,
         email,
@@ -31,7 +28,6 @@ export async function registrarUsuario(username, email, password, rol = "USER") 
   }
 }
 
-// HU14: Login — guarda token y rol en localStorage
 export async function loginUsuario(username, password) {
   try {
     const res = await fetch(`${BASE_URL}/api/auth/login`, {
@@ -42,7 +38,6 @@ export async function loginUsuario(username, password) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Credenciales incorrectas");
 
-    // Guardar token y sesión
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuarioActual", JSON.stringify({
       nombre:   data.username,
@@ -57,7 +52,6 @@ export async function loginUsuario(username, password) {
   }
 }
 
-// HU15: Logout — limpia token y sesión
 export async function logoutUsuario() {
   try {
     await fetch(`${BASE_URL}/api/auth/logout`, {
@@ -73,40 +67,40 @@ export async function logoutUsuario() {
 // PRODUCTOS — HU10, HU3, HU12, HU17
 // ============================================================
 
-// HU10: Listar productos del backend
 export async function obtenerProductos() {
   try {
-    const res = await fetch(`${BASE_URL}/productos`);
+    const res = await fetch(`${BASE_URL}/api/productos`);
     return await res.json();
   } catch (_) {
     return [];
   }
 }
 
-// HU12: Categorías del backend
 export async function obtenerCategorias() {
   try {
-    const res = await fetch(`${BASE_URL}/productos/categorias`);
-    return await res.json();
+    const res = await fetch(`${BASE_URL}/api/productos/categorias`);
+    const data = await res.json();
+    if (data.length > 0 && typeof data[0] === "object") {
+      return data.map(c => c.name);
+    }
+    return data;
   } catch (_) {
-    return ["Cubierto", "Descubierto", "Motos", "Bicicletas"];
+    return ["Cubierto", "Descubierto", "Motos", "Bicicletas", "Discapacitados"];
   }
 }
 
-// HU17: Características del backend
 export async function obtenerCaracteristicas() {
   try {
-    const res = await fetch(`${BASE_URL}/productos/caracteristicas`);
+    const res = await fetch(`${BASE_URL}/api/productos/caracteristicas`);
     return await res.json();
   } catch (_) {
     return [];
   }
 }
 
-// HU3: Crear producto (solo ADMIN)
 export async function crearProducto(producto) {
   try {
-    const res = await fetch(`${BASE_URL}/productos`, {
+    const res = await fetch(`${BASE_URL}/api/productos`, {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify(producto)
@@ -121,10 +115,15 @@ export async function crearProducto(producto) {
 }
 
 // ============================================================
-// PLAZAS — sigue en localStorage (Sprint 3 conectará a BD)
+// PLAZAS — usando localStorage como base
 // ============================================================
 
 export async function obtenerPlazas() {
+  // Plazas siempre desde localStorage
+  return obtenerPlazasLocal();
+}
+
+function obtenerPlazasLocal() {
   const guardadas = localStorage.getItem("plazas");
   if (guardadas) return JSON.parse(guardadas);
 
@@ -133,12 +132,12 @@ export async function obtenerPlazas() {
   const estados = ["disponible", "reservado", "ocupado"];
 
   const plazas = Array.from({ length: 10 }, (_, i) => ({
-    id:          i + 1,
-    zona:        zonas[Math.floor(Math.random() * zonas.length)],
-    tipo:        tipos[Math.floor(Math.random() * tipos.length)],
-    estado:      estados[Math.floor(Math.random() * estados.length)],
+    id:           i + 1,
+    zona:         zonas[Math.floor(Math.random() * zonas.length)],
+    tipo:         tipos[Math.floor(Math.random() * tipos.length)],
+    estado:       estados[Math.floor(Math.random() * estados.length)],
     reservadoPor: null,
-    fecha:       null,
+    fecha:        null,
     extras: {
       techado:        Math.random() > 0.5,
       camaras:        Math.random() > 0.5,
@@ -156,19 +155,97 @@ export function guardarPlazas(plazas) {
 }
 
 // ============================================================
-// HU23 — Disponibilidad mock
+// HU23 — Disponibilidad
 // ============================================================
+
 export async function obtenerDisponibilidad(zona = "", tipo = "", fecha = "") {
   try {
-    await new Promise(r => setTimeout(r, 300));
-    const plazas = JSON.parse(localStorage.getItem("plazas")) || [];
+    const plazas = obtenerPlazasLocal();
     let resultado = plazas.filter(p => p.estado !== "ocupado");
     if (zona)  resultado = resultado.filter(p => p.zona.toLowerCase() === zona.toLowerCase());
     if (tipo)  resultado = resultado.filter(p => p.tipo.toLowerCase() === tipo.toLowerCase());
     if (fecha) resultado = resultado.filter(p => !(p.estado === "reservado" && p.fecha === fecha));
-    return { ok: true, status: 200, total: resultado.length, filtros: { zona, tipo, fecha }, plazas: resultado };
+    return { ok: true, total: resultado.length, filtros: { zona, tipo, fecha }, plazas: resultado };
   } catch (_) {
     return { ok: false, plazas: [] };
+  }
+}
+
+// ============================================================
+// HU32 — Crear reserva en el backend
+// ============================================================
+
+export async function crearReservaBackend(productId, fecha) {
+  try {
+    const startTime = `${fecha}T08:00:00`;
+    const endTime   = `${fecha}T20:00:00`;
+
+    const res = await fetch(`${BASE_URL}/api/reservas`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...authHeaders() },
+      body: JSON.stringify({
+        product: { id: productId },
+        startTime,
+        endTime
+      })
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Error al crear reserva");
+    return { ok: true, reserva: data };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+// ============================================================
+// HU33 — Historial de reservas
+// ============================================================
+
+export async function obtenerMisReservas() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/reservas/mis-reservas`, {
+      headers: authHeaders()
+    });
+    if (!res.ok) throw new Error("Error al obtener reservas");
+    return await res.json();
+  } catch (e) {
+    console.warn("Error obteniendo reservas:", e.message);
+    return [];
+  }
+}
+
+// ============================================================
+// HU31 — Detalle de una reserva
+// ============================================================
+
+export async function obtenerDetalleReserva(id) {
+  try {
+    const res = await fetch(`${BASE_URL}/api/reservas/${id}`, {
+      headers: authHeaders()
+    });
+    if (!res.ok) throw new Error("Reserva no encontrada");
+    return { ok: true, reserva: await res.json() };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+// ============================================================
+// Cancelar reserva
+// ============================================================
+
+export async function cancelarReservaBackend(reservaId) {
+  try {
+    const res = await fetch(`${BASE_URL}/api/reservas/${reservaId}/cancelar`, {
+      method: "PUT",
+      headers: authHeaders()
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Error al cancelar");
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
   }
 }
 
@@ -179,3 +256,4 @@ function authHeaders() {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
+// prueba
