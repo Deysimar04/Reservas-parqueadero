@@ -2,6 +2,7 @@ package com.reservas.parqueaderos.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.time.LocalDateTime;
 
@@ -21,6 +22,7 @@ public class Reserva {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
+    @JsonIgnore
     private Users user;
 
     @ManyToOne

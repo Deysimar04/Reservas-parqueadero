@@ -1,5 +1,5 @@
 package com.reservas.parqueaderos.model;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.util.List;
@@ -19,5 +19,6 @@ public class Users {
     private String role;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Reserva> reservas;
 }
