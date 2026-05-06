@@ -116,6 +116,9 @@ const manager = new PlazaManager();
 
 // ========== INIT ==========
 async function iniciar() {
+  // ✅ Siempre cargar desde backend, nunca desde localStorage
+  localStorage.removeItem("plazas");   // ← limpia plazas ficticias viejas
+  
   plazas = await obtenerPlazas();
   manager.suscribir(new ContadorObserver());
   manager.suscribir(new NotificacionObserver());
@@ -296,7 +299,7 @@ function mostrarPlazas(){
       ${btnHtml}
     `;
 
-    // ✅ HU32 — Reservar conectado al backend
+    //  HU32 — Reservar conectado al backend
     card.querySelector(".btn-reservar")?.addEventListener("click", async () => {
       const fecha = obtenerFecha();
       const errorSpan = document.getElementById("fechaError");
@@ -338,6 +341,7 @@ function mostrarPlazas(){
       plazas[idx].reservadoPor = usuarioActual.email;
       plazas[idx].estado = "reservado";
       plazas[idx].fecha  = fecha;
+      plazas[idx].reservaBackendId  = resultado.reserva?.id; // ← guarda ID backend
       guardarPlazas(plazas);
 
       guardarNotificacion(
@@ -348,33 +352,31 @@ function mostrarPlazas(){
       render();
     });
 
-    // Cancelar
-    card.querySelector(".btn-cancelar")?.addEventListener("click", () => {
-      const esAdmin = usuarioActual.rol === "admin";
-      const esDueno = plazas[idx].reservadoPor === usuarioActual.email;
+ // En mostrarPlazas(), reemplaza el listener del btn-cancelar:
+card.querySelector(".btn-cancelar")?.addEventListener("click", async () => {
+  const esAdmin = usuarioActual.rol === "admin";
+  const esDueno = plazas[idx].reservadoPor === usuarioActual.email;
 
-      if (!esAdmin && !esDueno) {
-        alert("No puedes cancelar una reserva que no es tuya");
-        return;
-      }
+  if (!esAdmin && !esDueno) {
+    alert("No puedes cancelar una reserva que no es tuya");
+    return;
+  }
 
-      manager.cancelar(plazas[idx].id);
-      plazas = manager.getPlazas();
-      guardarPlazas(plazas);
+  //  Cancelar en el backend si tiene ID de reserva del backend
+  if (plazas[idx].reservaBackendId) {
+    const { cancelarReservaBackend } = await import("./api.js");
+    await cancelarReservaBackend(plazas[idx].reservaBackendId);
+  }
 
-      if (esAdmin && !esDueno) {
-        guardarNotificacion(
-          "Reserva cancelada por administrador",
-          `Tu reserva de la plaza ${plazas[idx].id} fue cancelada por un administrador`
-        );
-      } else {
-        guardarNotificacion(
-          "Reserva cancelada",
-          `Cancelaste la reserva de la plaza ${plazas[idx].id}`
-        );
-      }
-      render();
-    });
+  manager.cancelar(plazas[idx].id);
+  plazas = manager.getPlazas();
+
+  guardarNotificacion(
+    "Reserva cancelada",
+    `Cancelaste la reserva de la plaza ${plazas[idx].id}`
+  );
+  render();
+});
 
     // Liberar (admin)
     card.querySelector(".btn-liberar")?.addEventListener("click", () => {

@@ -115,39 +115,46 @@ export async function crearProducto(producto) {
 }
 
 // ============================================================
-// PLAZAS — usando localStorage como base
+// PLAZAS — Desde el BACKEND (productos reales de la BD)
 // ============================================================
 
 export async function obtenerPlazas() {
-  // Plazas siempre desde localStorage
-  return obtenerPlazasLocal();
+  try {
+    const res = await fetch(`${BASE_URL}/api/productos`);
+    if (!res.ok) throw new Error("Error al cargar productos");
+    const productos = await res.json();
+
+    return productos.map(p => ({
+      id:          p.id,                              // ← ID real BD (1-8)
+      nombre:      p.name,
+      zona:        p.category?.name || "General",
+      tipo:        mapearTipo(p.category?.name),      // ← mapeo abajo
+      estado:      "disponible",
+      reservadoPor: null,
+      fecha:       null,
+      extras: {
+        techado:        false,
+        camaras:        false,
+        iluminado:      false,
+        discapacitados: p.category?.name === "Discapacitados"
+      }
+    }));
+  } catch (e) {
+    console.error("Error obteniendo plazas:", e.message);
+    return [];
+  }
 }
 
-function obtenerPlazasLocal() {
-  const guardadas = localStorage.getItem("plazas");
-  if (guardadas) return JSON.parse(guardadas);
-
-  const zonas   = ["Aeropuerto", "Centro Comercial", "Centro Ciudad"];
-  const tipos   = ["automovil", "camioneta", "moto"];
-  const estados = ["disponible", "reservado", "ocupado"];
-
-  const plazas = Array.from({ length: 10 }, (_, i) => ({
-    id:           i + 1,
-    zona:         zonas[Math.floor(Math.random() * zonas.length)],
-    tipo:         tipos[Math.floor(Math.random() * tipos.length)],
-    estado:       estados[Math.floor(Math.random() * estados.length)],
-    reservadoPor: null,
-    fecha:        null,
-    extras: {
-      techado:        Math.random() > 0.5,
-      camaras:        Math.random() > 0.5,
-      iluminado:      Math.random() > 0.5,
-      discapacitados: Math.random() > 0.5
-    }
-  }));
-
-  localStorage.setItem("plazas", JSON.stringify(plazas));
-  return plazas;
+// Mapea categoría de BD → tipo de vehículo para los filtros
+function mapearTipo(categoria) {
+  const mapa = {
+    "Cubierto":       "automovil",
+    "Descubierto":    "automovil",
+    "Motos":          "moto",
+    "Bicicletas":     "moto",
+    "Discapacitados": "automovil"
+  };
+  return mapa[categoria] || "automovil";
 }
 
 export function guardarPlazas(plazas) {
@@ -172,9 +179,8 @@ export async function obtenerDisponibilidad(zona = "", tipo = "", fecha = "") {
 }
 
 // ============================================================
-// HU32 — Crear reserva en el backend
+// HU32 — Crear reserva (con ID real del producto)
 // ============================================================
-
 export async function crearReservaBackend(productId, fecha) {
   try {
     const startTime = `${fecha}T08:00:00`;
@@ -184,7 +190,7 @@ export async function crearReservaBackend(productId, fecha) {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({
-        product: { id: productId },
+        product:   { id: productId },   // ← ID real de la BD
         startTime,
         endTime
       })
@@ -197,7 +203,6 @@ export async function crearReservaBackend(productId, fecha) {
     return { ok: false, error: e.message };
   }
 }
-
 // ============================================================
 // HU33 — Historial de reservas
 // ============================================================
