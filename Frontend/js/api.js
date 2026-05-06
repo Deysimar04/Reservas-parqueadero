@@ -125,13 +125,13 @@ export async function obtenerPlazas() {
     const productos = await res.json();
 
     return productos.map(p => ({
-      id:          p.id,                              // ← ID real BD (1-8)
-      nombre:      p.name,
-      zona:        p.category?.name || "General",
-      tipo:        mapearTipo(p.category?.name),      // ← mapeo abajo
-      estado:      "disponible",
+      id:           p.id,
+      nombre:       p.name,
+      zona:         p.zona || "General",
+      tipo:         mapearTipo(p.category?.name),
+      estado:       "disponible",
       reservadoPor: null,
-      fecha:       null,
+      fecha:        null,
       extras: {
         techado:        p.category?.name === "Cubierto",
         camaras:        false,
@@ -145,11 +145,10 @@ export async function obtenerPlazas() {
   }
 }
 
-// Mapea categoría de BD → tipo de vehículo para los filtros
 function mapearTipo(categoria) {
   const mapa = {
     "Cubierto":       "automovil",
-    "Descubierto":    "automovil",
+    "Descubierto":    "camioneta",
     "Motos":          "moto",
     "Bicicletas":     "moto",
     "Discapacitados": "automovil"
@@ -190,7 +189,7 @@ export async function crearReservaBackend(productId, fecha) {
       method: "POST",
       headers: { "Content-Type": "application/json", ...authHeaders() },
       body: JSON.stringify({
-        product:   { id: productId },   // ← ID real de la BD
+        product: { id: productId },
         startTime,
         endTime
       })

@@ -116,7 +116,7 @@ const manager = new PlazaManager();
 
 // ========== INIT ==========
 async function iniciar() {
-  // ✅ Siempre cargar desde backend, nunca desde localStorage
+  //  Siempre cargar desde backend, nunca desde localStorage
   localStorage.removeItem("plazas");   // ← limpia plazas ficticias viejas
   
   plazas = await obtenerPlazas();
@@ -225,17 +225,16 @@ async function render(){
   renderMisReservas();
 }
 
-async function filtrarPlazas(){
-  = zonaSeleccionada === "" || p.zona === zonaSeleccionada;
-  = tipoSeleccionado === "" || p.tipo === tipoSeleccionado;
+async function filtrarPlazas() {
   plazasFiltradas = plazas.filter(p => {
-  const zona0k
-  const tipo0k
-  const disponible = p.estado === "disponible" 11
-  p.reservadoPor === usuarioActual ?. email;
-  return zona0k && tipo0k && disponible;
+    const zonaOk     = zonaSeleccionada === "" || p.zona === zonaSeleccionada;
+    const tipoOk     = tipoSeleccionado === "" || p.tipo === tipoSeleccionado;
+    const disponible = p.estado === "disponible" ||
+                       p.reservadoPor === usuarioActual?.email;
+    return zonaOk && tipoOk && disponible;
   });
 }
+
 
 function mostrarPlazas(){
   const cont = document.getElementById("parkingContainer");
@@ -323,11 +322,10 @@ function mostrarPlazas(){
         return;
       }
 
-      // Actualizar localStorage
-      plazas[idx].reservadoPor = usuarioActual.email;
-      plazas[idx].estado = "reservado";
-      plazas[idx].fecha  = fecha;
-      plazas[idx].reservaBackendId  = resultado.reserva?.id; // ← guarda ID backend
+plazas[idx].reservadoPor     = usuarioActual.email;
+plazas[idx].estado           = "reservado";
+plazas[idx].fecha            = fecha;
+plazas[idx].reservaBackendId = resultado.reserva?.id; // ← línea nueva
       guardarPlazas(plazas);
 
       guardarNotificacion(
@@ -338,7 +336,6 @@ function mostrarPlazas(){
       render();
     });
 
- // En mostrarPlazas(), reemplaza el listener del btn-cancelar:
 card.querySelector(".btn-cancelar")?.addEventListener("click", async () => {
   const esAdmin = usuarioActual.rol === "admin";
   const esDueno = plazas[idx].reservadoPor === usuarioActual.email;
@@ -348,9 +345,7 @@ card.querySelector(".btn-cancelar")?.addEventListener("click", async () => {
     return;
   }
 
-  //  Cancelar en el backend si tiene ID de reserva del backend
   if (plazas[idx].reservaBackendId) {
-    const { cancelarReservaBackend } = await import("./api.js");
     await cancelarReservaBackend(plazas[idx].reservaBackendId);
   }
 
