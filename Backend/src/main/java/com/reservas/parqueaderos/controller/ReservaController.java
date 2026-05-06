@@ -35,6 +35,18 @@ public class ReservaController {
         }
     }
 
+    // Solo para admin - todas las reservas
+    @GetMapping("/todas")
+    public ResponseEntity <? > getTodas() {
+        try {
+            List<Reserva> reservas = reservaService.getTodas();
+            return ResponseEntity.ok(reservas);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // Cancelar reserva (validando propietario)
     @PutMapping("/{id}/cancelar")
     public ResponseEntity<?> cancelar(@PathVariable Long id, Authentication auth) {

@@ -444,694 +444,697 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="admin-alert" id="adminAlert"></div>
 
 <script type="module">
-import { obtenerPlazas, guardarPlazas } from "./js/api.js";
+  import { obtenerPlazas, guardarPlazas, obtenerTodasLasReservas } from "./js/api.js";
 
-/* ========== ESTADO ========== */
-let plazas = [];
-let usuarioActual = null;
-let editandoPlazaId   = null;
-let editandoCaractId  = null;
-let editandoCategoriaId = null;  // HU21
+  /* ========== ESTADO ========== */
+  let plazas = [];
+  let reservas= [];
+  let usuarioActual = null;
+  let editandoPlazaId   = null;
+  let editandoCaractId  = null;
+  let editandoCategoriaId = null;  // HU21
 
-// HU17: características de plaza
-let caracteristicas = JSON.parse(localStorage.getItem("caracteristicas")) || [
-  { id: 1, nombre: "Techado",        descripcion: "Plaza con techo protegido de lluvia" },
-  { id: 2, nombre: "Vigilancia 24h", descripcion: "Cámaras y guardia de seguridad" },
-  { id: 3, nombre: "Iluminado",      descripcion: "Iluminación artificial nocturna" },
-  { id: 4, nombre: "Accesible",      descripcion: "Adaptado para personas con discapacidad" },
-  { id: 5, nombre: "Eléctrico",      descripcion: "Cargador para vehículos eléctricos" },
-];
+  // HU17: características de plaza
+  let caracteristicas = JSON.parse(localStorage.getItem("caracteristicas")) || [
+    { id: 1, nombre: "Techado",        descripcion: "Plaza con techo protegido de lluvia" },
+    { id: 2, nombre: "Vigilancia 24h", descripcion: "Cámaras y guardia de seguridad" },
+    { id: 3, nombre: "Iluminado",      descripcion: "Iluminación artificial nocturna" },
+    { id: 4, nombre: "Accesible",      descripcion: "Adaptado para personas con discapacidad" },
+    { id: 5, nombre: "Eléctrico",      descripcion: "Cargador para vehículos eléctricos" },
+  ];
 
-// HU21: categorías de vehículo — pre-sembradas, administrables desde panel
-let categoriasVehiculo = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
-  { id: 1, nombre: "automovil",  label: "Automóvil",  icono: "🚗", largo: "4.5 – 5.0", ancho: "2.2 – 2.5", altura: "2.0" },
-  { id: 2, nombre: "camioneta",  label: "Camioneta",  icono: "🚙", largo: "5.0 – 5.5", ancho: "2.5 – 2.8", altura: "2.5" },
-  { id: 3, nombre: "moto",       label: "Moto",       icono: "🏍️", largo: "2.0 – 2.5", ancho: "1.0 – 1.2", altura: "1.5" },
-];
+  // HU21: categorías de vehículo — pre-sembradas, administrables desde panel
+  let categoriasVehiculo = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
+    { id: 1, nombre: "automovil",  label: "Automóvil",  icono: "🚗", largo: "4.5 – 5.0", ancho: "2.2 – 2.5", altura: "2.0" },
+    { id: 2, nombre: "camioneta",  label: "Camioneta",  icono: "🚙", largo: "5.0 – 5.5", ancho: "2.5 – 2.8", altura: "2.5" },
+    { id: 3, nombre: "moto",       label: "Moto",       icono: "🏍️", largo: "2.0 – 2.5", ancho: "1.0 – 1.2", altura: "1.5" },
+  ];
 
-function guardarCaracteristicas()  { localStorage.setItem("caracteristicas",   JSON.stringify(caracteristicas)); }
-function guardarCategoriasVehiculo(){ localStorage.setItem("categoriasVehiculo", JSON.stringify(categoriasVehiculo)); }
+  function guardarCaracteristicas()  { localStorage.setItem("caracteristicas",   JSON.stringify(caracteristicas)); }
+  function guardarCategoriasVehiculo(){ localStorage.setItem("categoriasVehiculo", JSON.stringify(categoriasVehiculo)); }
 
-/* ========== INIT ========== */
-async function iniciar() {
-  const raw = localStorage.getItem("usuarioActual");
-  if (!raw) { denegarAcceso(); return; }
-  usuarioActual = JSON.parse(raw);
-  if (usuarioActual.rol !== "admin") { denegarAcceso(); return; }
+  /* ========== INIT ========== */
+  async function iniciar() {
+    const raw = localStorage.getItem("usuarioActual");
+    plazas = await obtenerPlazas();
+    reservas = await obtenerTodasLasReservas(); // € NUEVA
+    if (!raw) { denegarAcceso(); return; }
+    usuarioActual = JSON.parse(raw);
+    if (usuarioActual.rol !== "admin") { denegarAcceso(); return; }
 
-  const iniciales = usuarioActual.nombre.split(" ").map(n => n[0]).join("").toUpperCase();
-  document.getElementById("avatarAdmin").textContent = iniciales;
-  document.getElementById("usuarioActualAdmin").textContent =
-    `Hola, ${usuarioActual.nombre} (${usuarioActual.rol})`;
+    const iniciales = usuarioActual.nombre.split(" ").map(n => n[0]).join("").toUpperCase();
+    document.getElementById("avatarAdmin").textContent = iniciales;
+    document.getElementById("usuarioActualAdmin").textContent =
+      `Hola, ${usuarioActual.nombre} (${usuarioActual.rol})`;
 
-  plazas = await obtenerPlazas();
+    plazas = await obtenerPlazas();
 
-  configurarSidebar();
-  configurarLogout();
-  configurarModalPlaza();
-  configurarModalCaract();
-  configurarModalCategoria();   // HU21
-  configurarFiltrosPlazas();
-  configurarBusquedas();
-  configurarConfig();
+    configurarSidebar();
+    configurarLogout();
+    configurarModalPlaza();
+    configurarModalCaract();
+    configurarModalCategoria();   // HU21
+    configurarFiltrosPlazas();
+    configurarBusquedas();
+    configurarConfig();
 
-  renderDashboard();
-  renderTablaPlazas();
-  renderTablaReservas();
-  renderTablaUsuarios();
-  renderTablaCaract();
-  renderTablaCategorias();      // HU21
-  renderReportes();
-}
-
-function denegarAcceso() {
-  document.querySelectorAll(".admin-page").forEach(p => p.classList.remove("visible"));
-  document.getElementById("accesoDenegado").style.display = "flex";
-  document.getElementById("sidebar").style.display = "none";
-}
-
-/* ========== SIDEBAR ========== */
-function configurarSidebar() {
-  document.querySelectorAll(".sidebar-item").forEach(item => {
-    item.addEventListener("click", () => {
-      document.querySelectorAll(".sidebar-item").forEach(i => i.classList.remove("activo"));
-      item.classList.add("activo");
-      const page = item.dataset.page;
-      document.querySelectorAll(".admin-page").forEach(p => p.classList.remove("visible"));
-      document.getElementById("page-" + page).classList.add("visible");
-    });
-  });
-}
-
-/* ========== LOGOUT ========== */
-function configurarLogout() {
-  document.getElementById("btnLogoutAdmin").onclick = () => {
-    localStorage.removeItem("usuarioActual");
-    location.href = "index.html";
-  };
-}
-
-/* ========== DASHBOARD ========== */
-function renderDashboard() {
-  const disponibles = plazas.filter(p => p.estado === "disponible").length;
-  const reservadas  = plazas.filter(p => p.estado === "reservado").length;
-  const ocupadas    = plazas.filter(p => p.estado === "ocupado").length;
-
-  document.getElementById("kpi-disponibles").textContent = disponibles;
-  document.getElementById("kpi-reservadas").textContent  = reservadas;
-  document.getElementById("kpi-ocupadas").textContent    = ocupadas;
-  document.getElementById("kpi-total").textContent       = plazas.length;
-
-  const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
-  document.getElementById("kpi-usuarios").textContent = usuarios.length;
-
-  const zonas = ["Aeropuerto", "Centro Comercial", "Centro Ciudad"];
-  const coloresZona = ["#3498db", "#8e44ad", "#27ae60"];
-  const chartZonas = document.getElementById("chartZonas");
-  chartZonas.innerHTML = "";
-  zonas.forEach((z, i) => {
-    const count = plazas.filter(p => p.zona === z).length;
-    const pct   = plazas.length ? Math.round(count / plazas.length * 100) : 0;
-    chartZonas.innerHTML += barRow(z, count, pct, coloresZona[i]);
-  });
-
-  const coloresTipo = ["#e74c3c", "#f1c40f", "#1abc9c", "#9b59b6", "#e67e22"];
-  const chartTipos = document.getElementById("chartTipos");
-  chartTipos.innerHTML = "";
-  categoriasVehiculo.forEach((cat, i) => {
-    const count = plazas.filter(p => p.tipo === cat.nombre).length;
-    const pct   = plazas.length ? Math.round(count / plazas.length * 100) : 0;
-    chartTipos.innerHTML += barRow(cat.label, count, pct, coloresTipo[i % coloresTipo.length]);
-  });
-}
-
-function barRow(label, count, pct, color) {
-  return `
-    <div class="bar-row">
-      <div class="bar-label">${label}</div>
-      <div class="bar-track">
-        <div class="bar-fill" style="width:${pct}%;background:${color}">${pct > 10 ? pct + "%" : ""}</div>
-      </div>
-      <div class="bar-count">${count}</div>
-    </div>`;
-}
-
-/* ========== TABLA PLAZAS (HU10) ========== */
-function renderTablaPlazas(filtros = {}) {
-  let lista = [...plazas];
-  if (filtros.zona)   lista = lista.filter(p => p.zona === filtros.zona);
-  if (filtros.tipo)   lista = lista.filter(p => p.tipo === filtros.tipo);
-  if (filtros.estado) lista = lista.filter(p => p.estado === filtros.estado);
-  if (filtros.buscar) {
-    const q = filtros.buscar.toLowerCase();
-    lista = lista.filter(p =>
-      String(p.id).includes(q) ||
-      p.zona.toLowerCase().includes(q) ||
-      p.tipo.toLowerCase().includes(q)
-    );
+    renderDashboard();
+    renderTablaPlazas();
+    renderTablaReservas();
+    renderTablaUsuarios();
+    renderTablaCaract();
+    renderTablaCategorias();      // HU21
+    renderReportes();
   }
 
-  const tbody = document.getElementById("tablaPlazasBody");
-  tbody.innerHTML = lista.length === 0
-    ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No se encontraron plazas</td></tr>`
-    : lista.map(p => {
-        const caracts = (p.caracteristicas || [])
-          .map(id => caracteristicas.find(c => c.id === id)?.nombre)
-          .filter(Boolean);
-        const caractHtml = caracts.length
-          ? caracts.map(n => `<span class="caract-tag">${n}</span>`).join(" ")
-          : `<span class="caract-tag-none">Sin características</span>`;
+  function denegarAcceso() {
+    document.querySelectorAll(".admin-page").forEach(p => p.classList.remove("visible"));
+    document.getElementById("accesoDenegado").style.display = "flex";
+    document.getElementById("sidebar").style.display = "none";
+  }
 
-        const accionLiberar = p.estado === "ocupado"
-          ? `<button class="btn-accion btn-liberar" data-id="${p.id}" data-accion="liberar">Liberar</button>`
-          : "";
+  /* ========== SIDEBAR ========== */
+  function configurarSidebar() {
+    document.querySelectorAll(".sidebar-item").forEach(item => {
+      item.addEventListener("click", () => {
+        document.querySelectorAll(".sidebar-item").forEach(i => i.classList.remove("activo"));
+        item.classList.add("activo");
+        const page = item.dataset.page;
+        document.querySelectorAll(".admin-page").forEach(p => p.classList.remove("visible"));
+        document.getElementById("page-" + page).classList.add("visible");
+      });
+    });
+  }
 
-        return `
-          <tr>
-            <td><strong>#${p.id}</strong></td>
-            <td>${p.zona}</td>
-            <td style="text-transform:capitalize">${p.tipo}</td>
-            <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
-            <td>${p.fecha || "—"}</td>
-            <td><div class="caract-tags">${caractHtml}</div></td>
-            <td>
-              <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
-              ${accionLiberar}
-              <button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="eliminar">Eliminar</button>
-            </td>
-          </tr>`;
-      }).join("");
-
-  tbody.querySelectorAll("[data-accion='liberar']").forEach(btn => {
-    btn.onclick = () => {
-      const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
-      plazas[idx].estado = "disponible"; plazas[idx].fecha = null;
-      guardarPlazas(plazas); toast("Plaza #" + btn.dataset.id + " liberada", "verde"); refrescar();
+  /* ========== LOGOUT ========== */
+  function configurarLogout() {
+    document.getElementById("btnLogoutAdmin").onclick = () => {
+      localStorage.removeItem("usuarioActual");
+      location.href = "index.html";
     };
-  });
-  tbody.querySelectorAll("[data-accion='editar']").forEach(btn => {
-    btn.onclick = () => abrirModalEditarPlaza(Number(btn.dataset.id));
-  });
-  tbody.querySelectorAll("[data-accion='eliminar']").forEach(btn => {
-    btn.onclick = () => {
-      const id = Number(btn.dataset.id);
-      const plaza = plazas.find(p => p.id === id);
-      if (plaza.estado !== "disponible") { toast("No puedes eliminar una plaza reservada u ocupada", "rojo"); return; }
-      if (!confirm(`¿Eliminar la plaza #${id}?`)) return;
-      plazas = plazas.filter(p => p.id !== id);
-      guardarPlazas(plazas); refrescar();
-    };
-  });
-}
+  }
 
-/* ========== TABLA RESERVAS ========== */
-function renderTablaReservas(buscar = "") {
-  const lista = plazas
-    .filter(p => p.estado === "reservado" || p.estado === "ocupado")
-    .filter(p => {
+  /* ========== DASHBOARD ========== */
+  function renderDashboard() {
+    const disponibles = plazas.filter(p => p.estado === "disponible").length;
+    const reservadas  = plazas.filter(p => p.estado === "reservado").length;
+    const ocupadas    = plazas.filter(p => p.estado === "ocupado").length;
+
+    document.getElementById("kpi-disponibles").textContent = disponibles;
+    document.getElementById("kpi-reservadas").textContent  = reservadas;
+    document.getElementById("kpi-ocupadas").textContent    = ocupadas;
+    document.getElementById("kpi-total").textContent       = plazas.length;
+
+    const usuarios = JSON.parse(localStorage.getItem("usuarios")) || [];
+    document.getElementById("kpi-usuarios").textContent = usuarios.length;
+
+    const zonas = ["Aeropuerto", "Centro Comercial", "Centro Ciudad"];
+    const coloresZona = ["#3498db", "#8e44ad", "#27ae60"];
+    const chartZonas = document.getElementById("chartZonas");
+    chartZonas.innerHTML = "";
+    zonas.forEach((z, i) => {
+      const count = plazas.filter(p => p.zona === z).length;
+      const pct   = plazas.length ? Math.round(count / plazas.length * 100) : 0;
+      chartZonas.innerHTML += barRow(z, count, pct, coloresZona[i]);
+    });
+
+    const coloresTipo = ["#e74c3c", "#f1c40f", "#1abc9c", "#9b59b6", "#e67e22"];
+    const chartTipos = document.getElementById("chartTipos");
+    chartTipos.innerHTML = "";
+    categoriasVehiculo.forEach((cat, i) => {
+      const count = plazas.filter(p => p.tipo === cat.nombre).length;
+      const pct   = plazas.length ? Math.round(count / plazas.length * 100) : 0;
+      chartTipos.innerHTML += barRow(cat.label, count, pct, coloresTipo[i % coloresTipo.length]);
+    });
+  }
+
+  function barRow(label, count, pct, color) {
+    return `
+      <div class="bar-row">
+        <div class="bar-label">${label}</div>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${pct}%;background:${color}">${pct > 10 ? pct + "%" : ""}</div>
+        </div>
+        <div class="bar-count">${count}</div>
+      </div>`;
+  }
+
+  /* ========== TABLA PLAZAS (HU10) ========== */
+  function renderTablaPlazas(filtros = {}) {
+    let lista = [...plazas];
+    if (filtros.zona)   lista = lista.filter(p => p.zona === filtros.zona);
+    if (filtros.tipo)   lista = lista.filter(p => p.tipo === filtros.tipo);
+    if (filtros.estado) lista = lista.filter(p => p.estado === filtros.estado);
+    if (filtros.buscar) {
+      const q = filtros.buscar.toLowerCase();
+      lista = lista.filter(p =>
+        String(p.id).includes(q) ||
+        p.zona.toLowerCase().includes(q) ||
+        p.tipo.toLowerCase().includes(q)
+      );
+    }
+
+    const tbody = document.getElementById("tablaPlazasBody");
+    tbody.innerHTML = lista.length === 0
+      ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No se encontraron plazas</td></tr>`
+      : lista.map(p => {
+          const caracts = (p.caracteristicas || [])
+            .map(id => caracteristicas.find(c => c.id === id)?.nombre)
+            .filter(Boolean);
+          const caractHtml = caracts.length
+            ? caracts.map(n => `<span class="caract-tag">${n}</span>`).join(" ")
+            : `<span class="caract-tag-none">Sin características</span>`;
+
+          const accionLiberar = p.estado === "ocupado"
+            ? `<button class="btn-accion btn-liberar" data-id="${p.id}" data-accion="liberar">Liberar</button>`
+            : "";
+
+          return `
+            <tr>
+              <td><strong>#${p.id}</strong></td>
+              <td>${p.zona}</td>
+              <td style="text-transform:capitalize">${p.tipo}</td>
+              <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
+              <td>${p.fecha || "—"}</td>
+              <td><div class="caract-tags">${caractHtml}</div></td>
+              <td>
+                <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
+                ${accionLiberar}
+                <button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="eliminar">Eliminar</button>
+              </td>
+            </tr>`;
+        }).join("");
+
+    tbody.querySelectorAll("[data-accion='liberar']").forEach(btn => {
+      btn.onclick = () => {
+        const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
+        plazas[idx].estado = "disponible"; plazas[idx].fecha = null;
+        guardarPlazas(plazas); toast("Plaza #" + btn.dataset.id + " liberada", "verde"); refrescar();
+      };
+    });
+    tbody.querySelectorAll("[data-accion='editar']").forEach(btn => {
+      btn.onclick = () => abrirModalEditarPlaza(Number(btn.dataset.id));
+    });
+    tbody.querySelectorAll("[data-accion='eliminar']").forEach(btn => {
+      btn.onclick = () => {
+        const id = Number(btn.dataset.id);
+        const plaza = plazas.find(p => p.id === id);
+        if (plaza.estado !== "disponible") { toast("No puedes eliminar una plaza reservada u ocupada", "rojo"); return; }
+        if (!confirm(`¿Eliminar la plaza #${id}?`)) return;
+        plazas = plazas.filter(p => p.id !== id);
+        guardarPlazas(plazas); refrescar();
+      };
+    });
+  }
+
+  /* ========== TABLA RESERVAS ========== */
+  function renderTablaReservas(buscar = "") {
+    const lista = plazas
+      .filter(p => p.estado === "reservado" || p.estado === "ocupado")
+      .filter(p => {
+        if (!buscar) return true;
+        const q = buscar.toLowerCase();
+        return String(p.id).includes(q) || p.zona.toLowerCase().includes(q) ||
+               p.tipo.toLowerCase().includes(q) || (p.reservadoPor || "").toLowerCase().includes(q);
+      });
+
+    const tbody = document.getElementById("tablaReservasBody");
+    tbody.innerHTML = lista.length === 0
+      ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No hay reservas activas</td></tr>`
+      : lista.map(p => {
+          const accionLiberar = p.estado === "ocupado"
+            ? `<button class="btn-accion btn-liberar" data-id="${p.id}" data-accion="liberar-reserva">Liberar</button>`
+            : `<button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="cancelar-reserva">Cancelar</button>`;
+          return `
+            <tr>
+              <td><strong>#${p.id}</strong></td><td>${p.zona}</td>
+              <td style="text-transform:capitalize">${p.tipo}</td>
+              <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
+              <td>${p.fecha || "—"}</td>
+              <td style="font-size:12px;color:#888">${p.reservadoPor || "—"}</td>
+              <td>${accionLiberar}</td>
+            </tr>`;
+        }).join("");
+
+    tbody.querySelectorAll("[data-accion='cancelar-reserva']").forEach(btn => {
+      btn.onclick = () => {
+        const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
+        plazas[idx].estado = "disponible"; plazas[idx].fecha = null; plazas[idx].reservadoPor = null;
+        guardarPlazas(plazas); toast("Reserva cancelada", "verde"); refrescar();
+      };
+    });
+    tbody.querySelectorAll("[data-accion='liberar-reserva']").forEach(btn => {
+      btn.onclick = () => {
+        const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
+        plazas[idx].estado = "disponible"; plazas[idx].fecha = null; plazas[idx].reservadoPor = null;
+        guardarPlazas(plazas); toast("Plaza liberada", "verde"); refrescar();
+      };
+    });
+  }
+
+  /* ========== TABLA USUARIOS (HU16) ========== */
+  function renderTablaUsuarios(buscar = "") {
+    const usuarios = (JSON.parse(localStorage.getItem("usuarios")) || []).filter(u => {
       if (!buscar) return true;
       const q = buscar.toLowerCase();
-      return String(p.id).includes(q) || p.zona.toLowerCase().includes(q) ||
-             p.tipo.toLowerCase().includes(q) || (p.reservadoPor || "").toLowerCase().includes(q);
+      return u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
     });
 
-  const tbody = document.getElementById("tablaReservasBody");
-  tbody.innerHTML = lista.length === 0
-    ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No hay reservas activas</td></tr>`
-    : lista.map(p => {
-        const accionLiberar = p.estado === "ocupado"
-          ? `<button class="btn-accion btn-liberar" data-id="${p.id}" data-accion="liberar-reserva">Liberar</button>`
-          : `<button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="cancelar-reserva">Cancelar</button>`;
-        return `
+    const tbody = document.getElementById("tablaUsuariosBody");
+    tbody.innerHTML = usuarios.length === 0
+      ? `<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px">No hay usuarios registrados</td></tr>`
+      : usuarios.map((u, i) => `
           <tr>
-            <td><strong>#${p.id}</strong></td><td>${p.zona}</td>
-            <td style="text-transform:capitalize">${p.tipo}</td>
-            <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
-            <td>${p.fecha || "—"}</td>
-            <td style="font-size:12px;color:#888">${p.reservadoPor || "—"}</td>
-            <td>${accionLiberar}</td>
-          </tr>`;
-      }).join("");
-
-  tbody.querySelectorAll("[data-accion='cancelar-reserva']").forEach(btn => {
-    btn.onclick = () => {
-      const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
-      plazas[idx].estado = "disponible"; plazas[idx].fecha = null; plazas[idx].reservadoPor = null;
-      guardarPlazas(plazas); toast("Reserva cancelada", "verde"); refrescar();
-    };
-  });
-  tbody.querySelectorAll("[data-accion='liberar-reserva']").forEach(btn => {
-    btn.onclick = () => {
-      const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
-      plazas[idx].estado = "disponible"; plazas[idx].fecha = null; plazas[idx].reservadoPor = null;
-      guardarPlazas(plazas); toast("Plaza liberada", "verde"); refrescar();
-    };
-  });
-}
-
-/* ========== TABLA USUARIOS (HU16) ========== */
-function renderTablaUsuarios(buscar = "") {
-  const usuarios = (JSON.parse(localStorage.getItem("usuarios")) || []).filter(u => {
-    if (!buscar) return true;
-    const q = buscar.toLowerCase();
-    return u.nombre.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-  });
-
-  const tbody = document.getElementById("tablaUsuariosBody");
-  tbody.innerHTML = usuarios.length === 0
-    ? `<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px">No hay usuarios registrados</td></tr>`
-    : usuarios.map((u, i) => `
-        <tr>
-          <td>${u.nombre}</td><td>${u.email}</td>
-          <td><span class="badge badge-${u.rol}">${u.rol}</span></td>
-          <td>
-            <button class="btn-accion btn-rol" data-idx="${i}" data-accion="cambiar-rol">
-              ${u.rol === "admin" ? "Quitar admin" : "Hacer admin"}
-            </button>
-            <button class="btn-accion btn-eliminar" data-idx="${i}" data-accion="eliminar-usuario">Eliminar</button>
-          </td>
-        </tr>`
-      ).join("");
-
-  tbody.querySelectorAll("[data-accion='cambiar-rol']").forEach(btn => {
-    btn.onclick = () => {
-      const arr = JSON.parse(localStorage.getItem("usuarios")) || [];
-      const idx = Number(btn.dataset.idx);
-      if (arr[idx].email === usuarioActual.email) { toast("No puedes cambiar tu propio rol", "rojo"); return; }
-      arr[idx].rol = arr[idx].rol === "admin" ? "cliente" : "admin";
-      localStorage.setItem("usuarios", JSON.stringify(arr));
-      toast(`Rol de ${arr[idx].nombre} actualizado a ${arr[idx].rol}`, "verde");
-      renderTablaUsuarios(buscar); renderDashboard();
-    };
-  });
-  tbody.querySelectorAll("[data-accion='eliminar-usuario']").forEach(btn => {
-    btn.onclick = () => {
-      const arr = JSON.parse(localStorage.getItem("usuarios")) || [];
-      const idx = Number(btn.dataset.idx);
-      if (arr[idx].email === usuarioActual.email) { toast("No puedes eliminarte a ti mismo", "rojo"); return; }
-      if (!confirm(`¿Eliminar a ${arr[idx].nombre}?`)) return;
-      arr.splice(idx, 1);
-      localStorage.setItem("usuarios", JSON.stringify(arr));
-      toast("Usuario eliminado", "rojo"); renderTablaUsuarios(); renderDashboard();
-    };
-  });
-}
-
-/* ========== TABLA CARACTERÍSTICAS (HU17) ========== */
-function renderTablaCaract(buscar = "") {
-  const lista = caracteristicas.filter(c => {
-    if (!buscar) return true;
-    const q = buscar.toLowerCase();
-    return c.nombre.toLowerCase().includes(q) || c.descripcion.toLowerCase().includes(q);
-  });
-
-  const tbody = document.getElementById("tablaCaractBody");
-  tbody.innerHTML = lista.length === 0
-    ? `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px">No hay características</td></tr>`
-    : lista.map(c => {
-        const asociadas = plazas.filter(p => (p.caracteristicas || []).includes(c.id)).length;
-        return `
-          <tr>
-            <td><strong>#${c.id}</strong></td><td>${c.nombre}</td>
-            <td style="color:#888;font-size:13px">${c.descripcion}</td>
-            <td><span class="badge badge-admin">${asociadas} plaza${asociadas !== 1 ? "s" : ""}</span></td>
+            <td>${u.nombre}</td><td>${u.email}</td>
+            <td><span class="badge badge-${u.rol}">${u.rol}</span></td>
             <td>
-              <button class="btn-accion btn-editar" data-id="${c.id}" data-accion="editar-caract">Editar</button>
-              <button class="btn-accion btn-eliminar" data-id="${c.id}" data-accion="eliminar-caract">Eliminar</button>
+              <button class="btn-accion btn-rol" data-idx="${i}" data-accion="cambiar-rol">
+                ${u.rol === "admin" ? "Quitar admin" : "Hacer admin"}
+              </button>
+              <button class="btn-accion btn-eliminar" data-idx="${i}" data-accion="eliminar-usuario">Eliminar</button>
             </td>
-          </tr>`;
-      }).join("");
+          </tr>`
+        ).join("");
 
-  tbody.querySelectorAll("[data-accion='editar-caract']").forEach(btn => {
-    btn.onclick = () => abrirModalEditarCaract(Number(btn.dataset.id));
-  });
-  tbody.querySelectorAll("[data-accion='eliminar-caract']").forEach(btn => {
-    btn.onclick = () => {
-      const id = Number(btn.dataset.id);
-      const c  = caracteristicas.find(x => x.id === id);
-      if (!confirm(`¿Eliminar característica "${c.nombre}"?`)) return;
-      caracteristicas = caracteristicas.filter(x => x.id !== id);
-      plazas.forEach(p => { p.caracteristicas = (p.caracteristicas || []).filter(cid => cid !== id); });
-      guardarCaracteristicas(); guardarPlazas(plazas);
-      toast(`Característica "${c.nombre}" eliminada`, "rojo");
-      renderTablaCaract(); renderTablaPlazas();
-    };
-  });
-}
-
-/* ========== TABLA CATEGORÍAS VEHÍCULO (HU21) ========== */
-function renderTablaCategorias(buscar = "") {
-  const lista = categoriasVehiculo.filter(c => {
-    if (!buscar) return true;
-    const q = buscar.toLowerCase();
-    return c.nombre.toLowerCase().includes(q) || c.label.toLowerCase().includes(q);
-  });
-
-  const tbody = document.getElementById("tablaCategoriasBody");
-  tbody.innerHTML = lista.length === 0
-    ? `<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px">No hay categorías registradas</td></tr>`
-    : lista.map(c => {
-        const asociadas = plazas.filter(p => p.tipo === c.nombre).length;
-        return `
-          <tr>
-            <td><strong>#${c.id}</strong></td>
-            <td><strong>${c.label}</strong></td>
-            <td style="font-size:20px">${c.icono}</td>
-            <td>${c.largo} m</td>
-            <td>${c.ancho} m</td>
-            <td>${c.altura} m</td>
-            <td><span class="badge badge-admin">${asociadas} plaza${asociadas !== 1 ? "s" : ""}</span></td>
-            <td>
-              <button class="btn-accion btn-editar" data-id="${c.id}" data-accion="editar-cat">Editar</button>
-              <button class="btn-accion btn-eliminar" data-id="${c.id}" data-accion="eliminar-cat">Eliminar</button>
-            </td>
-          </tr>`;
-      }).join("");
-
-  tbody.querySelectorAll("[data-accion='editar-cat']").forEach(btn => {
-    btn.onclick = () => abrirModalEditarCategoria(Number(btn.dataset.id));
-  });
-  tbody.querySelectorAll("[data-accion='eliminar-cat']").forEach(btn => {
-    btn.onclick = () => {
-      const id  = Number(btn.dataset.id);
-      const cat = categoriasVehiculo.find(c => c.id === id);
-      const enUso = plazas.some(p => p.tipo === cat.nombre);
-      if (enUso) { toast(`No puedes eliminar "${cat.label}": hay plazas de este tipo`, "rojo"); return; }
-      if (!confirm(`¿Eliminar la categoría "${cat.label}"?`)) return;
-      categoriasVehiculo = categoriasVehiculo.filter(c => c.id !== id);
-      guardarCategoriasVehiculo();
-      toast(`Categoría "${cat.label}" eliminada`, "rojo");
-      renderTablaCategorias(); actualizarSelectTipo(); renderDashboard();
-    };
-  });
-
-  // Sincronizar select de tipo en modal plaza
-  actualizarSelectTipo();
-}
-
-// Rellena el <select id="plazaTipo"> con las categorías actuales
-function actualizarSelectTipo() {
-  const sel = document.getElementById("plazaTipo");
-  const valorActual = sel.value;
-  sel.innerHTML = categoriasVehiculo.map(c =>
-    `<option value="${c.nombre}">${c.icono} ${c.label}</option>`
-  ).join("");
-  if (valorActual) sel.value = valorActual;
-}
-
-/* ========== MODAL CATEGORÍA (HU21) ========== */
-function configurarModalCategoria() {
-  document.getElementById("btnNuevaCategoria").onclick = () => {
-    editandoCategoriaId = null;
-    document.getElementById("tituloModalCategoria").textContent = "Nueva Categoría";
-    ["catNombre","catLabel","catIcono","catLargo","catAncho","catAltura"].forEach(id => {
-      document.getElementById(id).value = "";
+    tbody.querySelectorAll("[data-accion='cambiar-rol']").forEach(btn => {
+      btn.onclick = () => {
+        const arr = JSON.parse(localStorage.getItem("usuarios")) || [];
+        const idx = Number(btn.dataset.idx);
+        if (arr[idx].email === usuarioActual.email) { toast("No puedes cambiar tu propio rol", "rojo"); return; }
+        arr[idx].rol = arr[idx].rol === "admin" ? "cliente" : "admin";
+        localStorage.setItem("usuarios", JSON.stringify(arr));
+        toast(`Rol de ${arr[idx].nombre} actualizado a ${arr[idx].rol}`, "verde");
+        renderTablaUsuarios(buscar); renderDashboard();
+      };
     });
-    document.getElementById("modalCategoria").classList.add("abierto");
-  };
-  document.getElementById("cerrarModalCategoria").onclick  = cerrarModalCategoria;
-  document.getElementById("cancelarModalCategoria").onclick = cerrarModalCategoria;
-
-  document.getElementById("guardarCategoria").onclick = () => {
-    const nombre = document.getElementById("catNombre").value.trim().toLowerCase().replace(/\s+/g, "");
-    const label  = document.getElementById("catLabel").value.trim();
-    const icono  = document.getElementById("catIcono").value.trim() || "🚘";
-    const largo  = document.getElementById("catLargo").value.trim();
-    const ancho  = document.getElementById("catAncho").value.trim();
-    const altura = document.getElementById("catAltura").value.trim();
-
-    if (!nombre || !label) { toast("Nombre y etiqueta son obligatorios", "rojo"); return; }
-
-    const duplicado = categoriasVehiculo.some(c =>
-      c.nombre === nombre && c.id !== editandoCategoriaId
-    );
-    if (duplicado) { toast("Ya existe una categoría con ese nombre", "rojo"); return; }
-
-    if (editandoCategoriaId !== null) {
-      const idx = categoriasVehiculo.findIndex(c => c.id === editandoCategoriaId);
-      categoriasVehiculo[idx] = { ...categoriasVehiculo[idx], nombre, label, icono, largo, ancho, altura };
-      toast(`Categoría "${label}" actualizada`, "verde");
-    } else {
-      const nuevoId = categoriasVehiculo.length
-        ? Math.max(...categoriasVehiculo.map(c => c.id)) + 1 : 1;
-      categoriasVehiculo.push({ id: nuevoId, nombre, label, icono, largo, ancho, altura });
-      toast(`Categoría "${label}" creada`, "verde");
-    }
-
-    guardarCategoriasVehiculo();
-    cerrarModalCategoria();
-    renderTablaCategorias();
-    renderDashboard();
-  };
-}
-
-function abrirModalEditarCategoria(id) {
-  const c = categoriasVehiculo.find(x => x.id === id);
-  if (!c) return;
-  editandoCategoriaId = id;
-  document.getElementById("tituloModalCategoria").textContent = `Editar: ${c.label}`;
-  document.getElementById("catNombre").value  = c.nombre;
-  document.getElementById("catLabel").value   = c.label;
-  document.getElementById("catIcono").value   = c.icono;
-  document.getElementById("catLargo").value   = c.largo;
-  document.getElementById("catAncho").value   = c.ancho;
-  document.getElementById("catAltura").value  = c.altura;
-  document.getElementById("modalCategoria").classList.add("abierto");
-}
-
-function cerrarModalCategoria() {
-  document.getElementById("modalCategoria").classList.remove("abierto");
-  editandoCategoriaId = null;
-}
-
-/* ========== MODAL CARACTERÍSTICA (HU17) ========== */
-function configurarModalCaract() {
-  document.getElementById("btnNuevaCaract").onclick = () => {
-    editandoCaractId = null;
-    document.getElementById("tituloModalCaract").textContent = "Nueva Característica";
-    document.getElementById("caractNombre").value = "";
-    document.getElementById("caractDesc").value   = "";
-    document.getElementById("modalCaract").classList.add("abierto");
-  };
-  document.getElementById("cerrarModalCaract").onclick  = cerrarModalCaract;
-  document.getElementById("cancelarModalCaract").onclick = cerrarModalCaract;
-
-  document.getElementById("guardarCaract").onclick = () => {
-    const nombre = document.getElementById("caractNombre").value.trim();
-    const desc   = document.getElementById("caractDesc").value.trim();
-    if (!nombre) { toast("El nombre es obligatorio", "rojo"); return; }
-    const existe = caracteristicas.some(c =>
-      c.nombre.toLowerCase() === nombre.toLowerCase() && c.id !== editandoCaractId
-    );
-    if (existe) { toast("Ya existe una característica con ese nombre", "rojo"); return; }
-
-    if (editandoCaractId !== null) {
-      const idx = caracteristicas.findIndex(c => c.id === editandoCaractId);
-      caracteristicas[idx] = { ...caracteristicas[idx], nombre, descripcion: desc };
-      toast(`Característica "${nombre}" actualizada`, "verde");
-    } else {
-      const nuevoId = caracteristicas.length ? Math.max(...caracteristicas.map(c => c.id)) + 1 : 1;
-      caracteristicas.push({ id: nuevoId, nombre, descripcion: desc });
-      toast(`Característica "${nombre}" creada`, "verde");
-    }
-    guardarCaracteristicas(); cerrarModalCaract(); renderTablaCaract();
-  };
-}
-
-function abrirModalEditarCaract(id) {
-  const c = caracteristicas.find(x => x.id === id);
-  if (!c) return;
-  editandoCaractId = id;
-  document.getElementById("tituloModalCaract").textContent = `Editar: ${c.nombre}`;
-  document.getElementById("caractNombre").value = c.nombre;
-  document.getElementById("caractDesc").value   = c.descripcion;
-  document.getElementById("modalCaract").classList.add("abierto");
-}
-
-function cerrarModalCaract() {
-  document.getElementById("modalCaract").classList.remove("abierto");
-  editandoCaractId = null;
-}
-
-/* ========== MODAL PLAZA (HU3) ========== */
-function configurarModalPlaza() {
-  document.getElementById("btnNuevaPlaza").onclick = () => {
-    editandoPlazaId = null;
-    document.getElementById("tituloModalPlaza").textContent = "Nueva Plaza";
-    document.getElementById("plazaZona").value   = "Aeropuerto";
-    document.getElementById("plazaEstado").value = "disponible";
-    document.getElementById("extraTechado").checked   = false;
-    document.getElementById("extraCamaras").checked   = false;
-    document.getElementById("extraIluminado").checked = false;
-    document.getElementById("extraDiscap").checked    = false;
-    actualizarSelectTipo();
-    renderCaractCheckList([]);
-    document.getElementById("modalPlaza").classList.add("abierto");
-  };
-  document.getElementById("cerrarModalPlaza").onclick  = cerrarModalPlaza;
-  document.getElementById("cancelarModalPlaza").onclick = cerrarModalPlaza;
-
-  document.getElementById("guardarPlaza").onclick = () => {
-    const zona   = document.getElementById("plazaZona").value;
-    const tipo   = document.getElementById("plazaTipo").value;
-    const estado = document.getElementById("plazaEstado").value;
-    if (!zona || !tipo || !estado) { toast("Todos los campos son obligatorios", "rojo"); return; }
-
-    const extras = {
-      techado:        document.getElementById("extraTechado").checked,
-      camaras:        document.getElementById("extraCamaras").checked,
-      iluminado:      document.getElementById("extraIluminado").checked,
-      discapacitados: document.getElementById("extraDiscap").checked,
-    };
-    const selCaracts = Array.from(
-      document.querySelectorAll("#plazaCaractList input:checked")
-    ).map(cb => Number(cb.value));
-
-    if (editandoPlazaId !== null) {
-      const idx = plazas.findIndex(p => p.id === editandoPlazaId);
-      plazas[idx] = { ...plazas[idx], zona, tipo, estado, extras, caracteristicas: selCaracts };
-      toast("Plaza #" + editandoPlazaId + " actualizada", "verde");
-    } else {
-      const duplicada = plazas.some(p => p.zona === zona && p.tipo === tipo && p.estado === estado);
-      if (duplicada) { toast("Ya existe una plaza con esos datos", "rojo"); return; }
-      const maxPlazas  = Number(document.getElementById("cfgMaxPlazas").value) || 10;
-      const plazasZona = plazas.filter(p => p.zona === zona).length;
-      if (plazasZona >= maxPlazas) { toast("Se alcanzó el máximo de plazas para esta zona", "rojo"); return; }
-      const nuevoId = plazas.length ? Math.max(...plazas.map(p => p.id)) + 1 : 1;
-      plazas.push({ id: nuevoId, zona, tipo, estado, extras, fecha: null, caracteristicas: selCaracts });
-      toast("Plaza #" + nuevoId + " creada", "verde");
-    }
-    cerrarModalPlaza(); guardarPlazas(plazas); refrescar();
-  };
-}
-
-function renderCaractCheckList(seleccionadas = []) {
-  const cont = document.getElementById("plazaCaractList");
-  if (caracteristicas.length === 0) {
-    cont.innerHTML = `<span class="caract-tag-none">No hay características creadas</span>`;
-    return;
+    tbody.querySelectorAll("[data-accion='eliminar-usuario']").forEach(btn => {
+      btn.onclick = () => {
+        const arr = JSON.parse(localStorage.getItem("usuarios")) || [];
+        const idx = Number(btn.dataset.idx);
+        if (arr[idx].email === usuarioActual.email) { toast("No puedes eliminarte a ti mismo", "rojo"); return; }
+        if (!confirm(`¿Eliminar a ${arr[idx].nombre}?`)) return;
+        arr.splice(idx, 1);
+        localStorage.setItem("usuarios", JSON.stringify(arr));
+        toast("Usuario eliminado", "rojo"); renderTablaUsuarios(); renderDashboard();
+      };
+    });
   }
-  cont.innerHTML = caracteristicas.map(c => `
-    <label class="caract-check-item">
-      <input type="checkbox" value="${c.id}" ${seleccionadas.includes(c.id) ? "checked" : ""}>
-      ${c.nombre} <span style="color:#aaa;font-size:11px">— ${c.descripcion}</span>
-    </label>
-  `).join("");
-}
 
-function abrirModalEditarPlaza(id) {
-  const p = plazas.find(pl => pl.id === id);
-  if (!p) return;
-  editandoPlazaId = id;
-  actualizarSelectTipo();
-  document.getElementById("tituloModalPlaza").textContent = "Editar Plaza #" + id;
-  document.getElementById("plazaZona").value   = p.zona;
-  document.getElementById("plazaTipo").value   = p.tipo;
-  document.getElementById("plazaEstado").value = p.estado;
-  document.getElementById("extraTechado").checked   = p.extras?.techado   || false;
-  document.getElementById("extraCamaras").checked   = p.extras?.camaras   || false;
-  document.getElementById("extraIluminado").checked = p.extras?.iluminado  || false;
-  document.getElementById("extraDiscap").checked    = p.extras?.discapacitados || false;
-  renderCaractCheckList(p.caracteristicas || []);
-  document.getElementById("modalPlaza").classList.add("abierto");
-}
+  /* ========== TABLA CARACTERÍSTICAS (HU17) ========== */
+  function renderTablaCaract(buscar = "") {
+    const lista = caracteristicas.filter(c => {
+      if (!buscar) return true;
+      const q = buscar.toLowerCase();
+      return c.nombre.toLowerCase().includes(q) || c.descripcion.toLowerCase().includes(q);
+    });
 
-function cerrarModalPlaza() {
-  document.getElementById("modalPlaza").classList.remove("abierto");
-  editandoPlazaId = null;
-}
+    const tbody = document.getElementById("tablaCaractBody");
+    tbody.innerHTML = lista.length === 0
+      ? `<tr><td colspan="5" style="text-align:center;color:#aaa;padding:20px">No hay características</td></tr>`
+      : lista.map(c => {
+          const asociadas = plazas.filter(p => (p.caracteristicas || []).includes(c.id)).length;
+          return `
+            <tr>
+              <td><strong>#${c.id}</strong></td><td>${c.nombre}</td>
+              <td style="color:#888;font-size:13px">${c.descripcion}</td>
+              <td><span class="badge badge-admin">${asociadas} plaza${asociadas !== 1 ? "s" : ""}</span></td>
+              <td>
+                <button class="btn-accion btn-editar" data-id="${c.id}" data-accion="editar-caract">Editar</button>
+                <button class="btn-accion btn-eliminar" data-id="${c.id}" data-accion="eliminar-caract">Eliminar</button>
+              </td>
+            </tr>`;
+        }).join("");
 
-/* ========== REPORTES ========== */
-function renderReportes() {
-  const disponibles = plazas.filter(p => p.estado === "disponible").length;
-  const noDisp      = plazas.length - disponibles;
-  const ocupacion   = plazas.length ? Math.round(noDisp / plazas.length * 100) : 0;
-  document.getElementById("rep-ocupacion").textContent = ocupacion + "%";
+    tbody.querySelectorAll("[data-accion='editar-caract']").forEach(btn => {
+      btn.onclick = () => abrirModalEditarCaract(Number(btn.dataset.id));
+    });
+    tbody.querySelectorAll("[data-accion='eliminar-caract']").forEach(btn => {
+      btn.onclick = () => {
+        const id = Number(btn.dataset.id);
+        const c  = caracteristicas.find(x => x.id === id);
+        if (!confirm(`¿Eliminar característica "${c.nombre}"?`)) return;
+        caracteristicas = caracteristicas.filter(x => x.id !== id);
+        plazas.forEach(p => { p.caracteristicas = (p.caracteristicas || []).filter(cid => cid !== id); });
+        guardarCaracteristicas(); guardarPlazas(plazas);
+        toast(`Característica "${c.nombre}" eliminada`, "rojo");
+        renderTablaCaract(); renderTablaPlazas();
+      };
+    });
+  }
 
-  const zonas = {};
-  plazas.filter(p => p.estado !== "disponible").forEach(p => { zonas[p.zona] = (zonas[p.zona] || 0) + 1; });
-  const zonaTop = Object.entries(zonas).sort((a,b) => b[1]-a[1])[0];
-  document.getElementById("rep-zona").textContent = zonaTop ? zonaTop[0] : "—";
+  /* ========== TABLA CATEGORÍAS VEHÍCULO (HU21) ========== */
+  function renderTablaCategorias(buscar = "") {
+    const lista = categoriasVehiculo.filter(c => {
+      if (!buscar) return true;
+      const q = buscar.toLowerCase();
+      return c.nombre.toLowerCase().includes(q) || c.label.toLowerCase().includes(q);
+    });
 
-  const tipos = {};
-  plazas.filter(p => p.estado !== "disponible").forEach(p => { tipos[p.tipo] = (tipos[p.tipo] || 0) + 1; });
-  const tipoTop = Object.entries(tipos).sort((a,b) => b[1]-a[1])[0];
-  const catTop  = tipoTop ? categoriasVehiculo.find(c => c.nombre === tipoTop[0]) : null;
-  document.getElementById("rep-tipo").textContent = catTop ? catTop.label : (tipoTop ? tipoTop[0] : "—");
+    const tbody = document.getElementById("tablaCategoriasBody");
+    tbody.innerHTML = lista.length === 0
+      ? `<tr><td colspan="8" style="text-align:center;color:#aaa;padding:20px">No hay categorías registradas</td></tr>`
+      : lista.map(c => {
+          const asociadas = plazas.filter(p => p.tipo === c.nombre).length;
+          return `
+            <tr>
+              <td><strong>#${c.id}</strong></td>
+              <td><strong>${c.label}</strong></td>
+              <td style="font-size:20px">${c.icono}</td>
+              <td>${c.largo} m</td>
+              <td>${c.ancho} m</td>
+              <td>${c.altura} m</td>
+              <td><span class="badge badge-admin">${asociadas} plaza${asociadas !== 1 ? "s" : ""}</span></td>
+              <td>
+                <button class="btn-accion btn-editar" data-id="${c.id}" data-accion="editar-cat">Editar</button>
+                <button class="btn-accion btn-eliminar" data-id="${c.id}" data-accion="eliminar-cat">Eliminar</button>
+              </td>
+            </tr>`;
+        }).join("");
 
-  const estados = [
-    { label: "Disponible", color: "#27ae60" },
-    { label: "Reservado",  color: "#f1c40f" },
-    { label: "Ocupado",    color: "#e74c3c" },
-  ];
-  const chartEstados = document.getElementById("chartEstados");
-  chartEstados.innerHTML = "";
-  estados.forEach(e => {
-    const count = plazas.filter(p => p.estado === e.label.toLowerCase()).length;
-    const pct   = plazas.length ? Math.round(count / plazas.length * 100) : 0;
-    chartEstados.innerHTML += barRow(e.label, count, pct, e.color);
-  });
-}
+    tbody.querySelectorAll("[data-accion='editar-cat']").forEach(btn => {
+      btn.onclick = () => abrirModalEditarCategoria(Number(btn.dataset.id));
+    });
+    tbody.querySelectorAll("[data-accion='eliminar-cat']").forEach(btn => {
+      btn.onclick = () => {
+        const id  = Number(btn.dataset.id);
+        const cat = categoriasVehiculo.find(c => c.id === id);
+        const enUso = plazas.some(p => p.tipo === cat.nombre);
+        if (enUso) { toast(`No puedes eliminar "${cat.label}": hay plazas de este tipo`, "rojo"); return; }
+        if (!confirm(`¿Eliminar la categoría "${cat.label}"?`)) return;
+        categoriasVehiculo = categoriasVehiculo.filter(c => c.id !== id);
+        guardarCategoriasVehiculo();
+        toast(`Categoría "${cat.label}" eliminada`, "rojo");
+        renderTablaCategorias(); actualizarSelectTipo(); renderDashboard();
+      };
+    });
 
-/* ========== FILTROS ========== */
-function configurarFiltrosPlazas() {
-  const getFiltros = () => ({
-    zona:   document.getElementById("filtroZona").value,
-    tipo:   document.getElementById("filtroTipo").value,
-    estado: document.getElementById("filtroEstado").value,
-    buscar: document.getElementById("buscarPlaza").value,
-  });
-  ["filtroZona","filtroTipo","filtroEstado"].forEach(id =>
-    document.getElementById(id).addEventListener("change", () => renderTablaPlazas(getFiltros()))
-  );
-}
+    // Sincronizar select de tipo en modal plaza
+    actualizarSelectTipo();
+  }
 
-function configurarBusquedas() {
-  document.getElementById("buscarPlaza").addEventListener("input", e => {
+  // Rellena el <select id="plazaTipo"> con las categorías actuales
+  function actualizarSelectTipo() {
+    const sel = document.getElementById("plazaTipo");
+    const valorActual = sel.value;
+    sel.innerHTML = categoriasVehiculo.map(c =>
+      `<option value="${c.nombre}">${c.icono} ${c.label}</option>`
+    ).join("");
+    if (valorActual) sel.value = valorActual;
+  }
+
+  /* ========== MODAL CATEGORÍA (HU21) ========== */
+  function configurarModalCategoria() {
+    document.getElementById("btnNuevaCategoria").onclick = () => {
+      editandoCategoriaId = null;
+      document.getElementById("tituloModalCategoria").textContent = "Nueva Categoría";
+      ["catNombre","catLabel","catIcono","catLargo","catAncho","catAltura"].forEach(id => {
+        document.getElementById(id).value = "";
+      });
+      document.getElementById("modalCategoria").classList.add("abierto");
+    };
+    document.getElementById("cerrarModalCategoria").onclick  = cerrarModalCategoria;
+    document.getElementById("cancelarModalCategoria").onclick = cerrarModalCategoria;
+
+    document.getElementById("guardarCategoria").onclick = () => {
+      const nombre = document.getElementById("catNombre").value.trim().toLowerCase().replace(/\s+/g, "");
+      const label  = document.getElementById("catLabel").value.trim();
+      const icono  = document.getElementById("catIcono").value.trim() || "🚘";
+      const largo  = document.getElementById("catLargo").value.trim();
+      const ancho  = document.getElementById("catAncho").value.trim();
+      const altura = document.getElementById("catAltura").value.trim();
+
+      if (!nombre || !label) { toast("Nombre y etiqueta son obligatorios", "rojo"); return; }
+
+      const duplicado = categoriasVehiculo.some(c =>
+        c.nombre === nombre && c.id !== editandoCategoriaId
+      );
+      if (duplicado) { toast("Ya existe una categoría con ese nombre", "rojo"); return; }
+
+      if (editandoCategoriaId !== null) {
+        const idx = categoriasVehiculo.findIndex(c => c.id === editandoCategoriaId);
+        categoriasVehiculo[idx] = { ...categoriasVehiculo[idx], nombre, label, icono, largo, ancho, altura };
+        toast(`Categoría "${label}" actualizada`, "verde");
+      } else {
+        const nuevoId = categoriasVehiculo.length
+          ? Math.max(...categoriasVehiculo.map(c => c.id)) + 1 : 1;
+        categoriasVehiculo.push({ id: nuevoId, nombre, label, icono, largo, ancho, altura });
+        toast(`Categoría "${label}" creada`, "verde");
+      }
+
+      guardarCategoriasVehiculo();
+      cerrarModalCategoria();
+      renderTablaCategorias();
+      renderDashboard();
+    };
+  }
+
+  function abrirModalEditarCategoria(id) {
+    const c = categoriasVehiculo.find(x => x.id === id);
+    if (!c) return;
+    editandoCategoriaId = id;
+    document.getElementById("tituloModalCategoria").textContent = `Editar: ${c.label}`;
+    document.getElementById("catNombre").value  = c.nombre;
+    document.getElementById("catLabel").value   = c.label;
+    document.getElementById("catIcono").value   = c.icono;
+    document.getElementById("catLargo").value   = c.largo;
+    document.getElementById("catAncho").value   = c.ancho;
+    document.getElementById("catAltura").value  = c.altura;
+    document.getElementById("modalCategoria").classList.add("abierto");
+  }
+
+  function cerrarModalCategoria() {
+    document.getElementById("modalCategoria").classList.remove("abierto");
+    editandoCategoriaId = null;
+  }
+
+  /* ========== MODAL CARACTERÍSTICA (HU17) ========== */
+  function configurarModalCaract() {
+    document.getElementById("btnNuevaCaract").onclick = () => {
+      editandoCaractId = null;
+      document.getElementById("tituloModalCaract").textContent = "Nueva Característica";
+      document.getElementById("caractNombre").value = "";
+      document.getElementById("caractDesc").value   = "";
+      document.getElementById("modalCaract").classList.add("abierto");
+    };
+    document.getElementById("cerrarModalCaract").onclick  = cerrarModalCaract;
+    document.getElementById("cancelarModalCaract").onclick = cerrarModalCaract;
+
+    document.getElementById("guardarCaract").onclick = () => {
+      const nombre = document.getElementById("caractNombre").value.trim();
+      const desc   = document.getElementById("caractDesc").value.trim();
+      if (!nombre) { toast("El nombre es obligatorio", "rojo"); return; }
+      const existe = caracteristicas.some(c =>
+        c.nombre.toLowerCase() === nombre.toLowerCase() && c.id !== editandoCaractId
+      );
+      if (existe) { toast("Ya existe una característica con ese nombre", "rojo"); return; }
+
+      if (editandoCaractId !== null) {
+        const idx = caracteristicas.findIndex(c => c.id === editandoCaractId);
+        caracteristicas[idx] = { ...caracteristicas[idx], nombre, descripcion: desc };
+        toast(`Característica "${nombre}" actualizada`, "verde");
+      } else {
+        const nuevoId = caracteristicas.length ? Math.max(...caracteristicas.map(c => c.id)) + 1 : 1;
+        caracteristicas.push({ id: nuevoId, nombre, descripcion: desc });
+        toast(`Característica "${nombre}" creada`, "verde");
+      }
+      guardarCaracteristicas(); cerrarModalCaract(); renderTablaCaract();
+    };
+  }
+
+  function abrirModalEditarCaract(id) {
+    const c = caracteristicas.find(x => x.id === id);
+    if (!c) return;
+    editandoCaractId = id;
+    document.getElementById("tituloModalCaract").textContent = `Editar: ${c.nombre}`;
+    document.getElementById("caractNombre").value = c.nombre;
+    document.getElementById("caractDesc").value   = c.descripcion;
+    document.getElementById("modalCaract").classList.add("abierto");
+  }
+
+  function cerrarModalCaract() {
+    document.getElementById("modalCaract").classList.remove("abierto");
+    editandoCaractId = null;
+  }
+
+  /* ========== MODAL PLAZA (HU3) ========== */
+  function configurarModalPlaza() {
+    document.getElementById("btnNuevaPlaza").onclick = () => {
+      editandoPlazaId = null;
+      document.getElementById("tituloModalPlaza").textContent = "Nueva Plaza";
+      document.getElementById("plazaZona").value   = "Aeropuerto";
+      document.getElementById("plazaEstado").value = "disponible";
+      document.getElementById("extraTechado").checked   = false;
+      document.getElementById("extraCamaras").checked   = false;
+      document.getElementById("extraIluminado").checked = false;
+      document.getElementById("extraDiscap").checked    = false;
+      actualizarSelectTipo();
+      renderCaractCheckList([]);
+      document.getElementById("modalPlaza").classList.add("abierto");
+    };
+    document.getElementById("cerrarModalPlaza").onclick  = cerrarModalPlaza;
+    document.getElementById("cancelarModalPlaza").onclick = cerrarModalPlaza;
+
+    document.getElementById("guardarPlaza").onclick = () => {
+      const zona   = document.getElementById("plazaZona").value;
+      const tipo   = document.getElementById("plazaTipo").value;
+      const estado = document.getElementById("plazaEstado").value;
+      if (!zona || !tipo || !estado) { toast("Todos los campos son obligatorios", "rojo"); return; }
+
+      const extras = {
+        techado:        document.getElementById("extraTechado").checked,
+        camaras:        document.getElementById("extraCamaras").checked,
+        iluminado:      document.getElementById("extraIluminado").checked,
+        discapacitados: document.getElementById("extraDiscap").checked,
+      };
+      const selCaracts = Array.from(
+        document.querySelectorAll("#plazaCaractList input:checked")
+      ).map(cb => Number(cb.value));
+
+      if (editandoPlazaId !== null) {
+        const idx = plazas.findIndex(p => p.id === editandoPlazaId);
+        plazas[idx] = { ...plazas[idx], zona, tipo, estado, extras, caracteristicas: selCaracts };
+        toast("Plaza #" + editandoPlazaId + " actualizada", "verde");
+      } else {
+        const duplicada = plazas.some(p => p.zona === zona && p.tipo === tipo && p.estado === estado);
+        if (duplicada) { toast("Ya existe una plaza con esos datos", "rojo"); return; }
+        const maxPlazas  = Number(document.getElementById("cfgMaxPlazas").value) || 10;
+        const plazasZona = plazas.filter(p => p.zona === zona).length;
+        if (plazasZona >= maxPlazas) { toast("Se alcanzó el máximo de plazas para esta zona", "rojo"); return; }
+        const nuevoId = plazas.length ? Math.max(...plazas.map(p => p.id)) + 1 : 1;
+        plazas.push({ id: nuevoId, zona, tipo, estado, extras, fecha: null, caracteristicas: selCaracts });
+        toast("Plaza #" + nuevoId + " creada", "verde");
+      }
+      cerrarModalPlaza(); guardarPlazas(plazas); refrescar();
+    };
+  }
+
+  function renderCaractCheckList(seleccionadas = []) {
+    const cont = document.getElementById("plazaCaractList");
+    if (caracteristicas.length === 0) {
+      cont.innerHTML = `<span class="caract-tag-none">No hay características creadas</span>`;
+      return;
+    }
+    cont.innerHTML = caracteristicas.map(c => `
+      <label class="caract-check-item">
+        <input type="checkbox" value="${c.id}" ${seleccionadas.includes(c.id) ? "checked" : ""}>
+        ${c.nombre} <span style="color:#aaa;font-size:11px">— ${c.descripcion}</span>
+      </label>
+    `).join("");
+  }
+
+  function abrirModalEditarPlaza(id) {
+    const p = plazas.find(pl => pl.id === id);
+    if (!p) return;
+    editandoPlazaId = id;
+    actualizarSelectTipo();
+    document.getElementById("tituloModalPlaza").textContent = "Editar Plaza #" + id;
+    document.getElementById("plazaZona").value   = p.zona;
+    document.getElementById("plazaTipo").value   = p.tipo;
+    document.getElementById("plazaEstado").value = p.estado;
+    document.getElementById("extraTechado").checked   = p.extras?.techado   || false;
+    document.getElementById("extraCamaras").checked   = p.extras?.camaras   || false;
+    document.getElementById("extraIluminado").checked = p.extras?.iluminado  || false;
+    document.getElementById("extraDiscap").checked    = p.extras?.discapacitados || false;
+    renderCaractCheckList(p.caracteristicas || []);
+    document.getElementById("modalPlaza").classList.add("abierto");
+  }
+
+  function cerrarModalPlaza() {
+    document.getElementById("modalPlaza").classList.remove("abierto");
+    editandoPlazaId = null;
+  }
+
+  /* ========== REPORTES ========== */
+  function renderReportes() {
+    const disponibles = plazas.filter(p => p.estado === "disponible").length;
+    const noDisp      = plazas.length - disponibles;
+    const ocupacion   = plazas.length ? Math.round(noDisp / plazas.length * 100) : 0;
+    document.getElementById("rep-ocupacion").textContent = ocupacion + "%";
+
+    const zonas = {};
+    plazas.filter(p => p.estado !== "disponible").forEach(p => { zonas[p.zona] = (zonas[p.zona] || 0) + 1; });
+    const zonaTop = Object.entries(zonas).sort((a,b) => b[1]-a[1])[0];
+    document.getElementById("rep-zona").textContent = zonaTop ? zonaTop[0] : "—";
+
+    const tipos = {};
+    plazas.filter(p => p.estado !== "disponible").forEach(p => { tipos[p.tipo] = (tipos[p.tipo] || 0) + 1; });
+    const tipoTop = Object.entries(tipos).sort((a,b) => b[1]-a[1])[0];
+    const catTop  = tipoTop ? categoriasVehiculo.find(c => c.nombre === tipoTop[0]) : null;
+    document.getElementById("rep-tipo").textContent = catTop ? catTop.label : (tipoTop ? tipoTop[0] : "—");
+
+    const estados = [
+      { label: "Disponible", color: "#27ae60" },
+      { label: "Reservado",  color: "#f1c40f" },
+      { label: "Ocupado",    color: "#e74c3c" },
+    ];
+    const chartEstados = document.getElementById("chartEstados");
+    chartEstados.innerHTML = "";
+    estados.forEach(e => {
+      const count = plazas.filter(p => p.estado === e.label.toLowerCase()).length;
+      const pct   = plazas.length ? Math.round(count / plazas.length * 100) : 0;
+      chartEstados.innerHTML += barRow(e.label, count, pct, e.color);
+    });
+  }
+
+  /* ========== FILTROS ========== */
+  function configurarFiltrosPlazas() {
+    const getFiltros = () => ({
+      zona:   document.getElementById("filtroZona").value,
+      tipo:   document.getElementById("filtroTipo").value,
+      estado: document.getElementById("filtroEstado").value,
+      buscar: document.getElementById("buscarPlaza").value,
+    });
+    ["filtroZona","filtroTipo","filtroEstado"].forEach(id =>
+      document.getElementById(id).addEventListener("change", () => renderTablaPlazas(getFiltros()))
+    );
+  }
+
+  function configurarBusquedas() {
+    document.getElementById("buscarPlaza").addEventListener("input", e => {
+      renderTablaPlazas({
+        zona:   document.getElementById("filtroZona").value,
+        tipo:   document.getElementById("filtroTipo").value,
+        estado: document.getElementById("filtroEstado").value,
+        buscar: e.target.value,
+      });
+    });
+    document.getElementById("buscarReserva").addEventListener("input",   e => renderTablaReservas(e.target.value));
+    document.getElementById("buscarUsuario").addEventListener("input",   e => renderTablaUsuarios(e.target.value));
+    document.getElementById("buscarCaract").addEventListener("input",    e => renderTablaCaract(e.target.value));
+    document.getElementById("buscarCategoria").addEventListener("input", e => renderTablaCategorias(e.target.value));
+  }
+
+  /* ========== CONFIG ========== */
+  function configurarConfig() {
+    document.getElementById("btnGuardarConfig").onclick = () => {
+      toast("Configuración guardada", "verde");
+    };
+  }
+
+  /* ========== UTILS ========== */
+  function refrescar() {
+    renderDashboard();
     renderTablaPlazas({
       zona:   document.getElementById("filtroZona").value,
       tipo:   document.getElementById("filtroTipo").value,
       estado: document.getElementById("filtroEstado").value,
-      buscar: e.target.value,
+      buscar: document.getElementById("buscarPlaza").value,
     });
-  });
-  document.getElementById("buscarReserva").addEventListener("input",   e => renderTablaReservas(e.target.value));
-  document.getElementById("buscarUsuario").addEventListener("input",   e => renderTablaUsuarios(e.target.value));
-  document.getElementById("buscarCaract").addEventListener("input",    e => renderTablaCaract(e.target.value));
-  document.getElementById("buscarCategoria").addEventListener("input", e => renderTablaCategorias(e.target.value));
-}
+    renderTablaReservas(document.getElementById("buscarReserva").value);
+    renderTablaUsuarios(document.getElementById("buscarUsuario").value);
+    renderTablaCaract(document.getElementById("buscarCaract").value);
+    renderTablaCategorias(document.getElementById("buscarCategoria").value);
+    renderReportes();
+  }
 
-/* ========== CONFIG ========== */
-function configurarConfig() {
-  document.getElementById("btnGuardarConfig").onclick = () => {
-    toast("Configuración guardada", "verde");
-  };
-}
+  function toast(msg, tipo = "") {
+    const el = document.getElementById("adminAlert");
+    el.textContent = msg;
+    el.className = "admin-alert mostrar" + (tipo ? " " + tipo : "");
+    setTimeout(() => el.classList.remove("mostrar"), 3000);
+  }
 
-/* ========== UTILS ========== */
-function refrescar() {
-  renderDashboard();
-  renderTablaPlazas({
-    zona:   document.getElementById("filtroZona").value,
-    tipo:   document.getElementById("filtroTipo").value,
-    estado: document.getElementById("filtroEstado").value,
-    buscar: document.getElementById("buscarPlaza").value,
-  });
-  renderTablaReservas(document.getElementById("buscarReserva").value);
-  renderTablaUsuarios(document.getElementById("buscarUsuario").value);
-  renderTablaCaract(document.getElementById("buscarCaract").value);
-  renderTablaCategorias(document.getElementById("buscarCategoria").value);
-  renderReportes();
-}
-
-function toast(msg, tipo = "") {
-  const el = document.getElementById("adminAlert");
-  el.textContent = msg;
-  el.className = "admin-alert mostrar" + (tipo ? " " + tipo : "");
-  setTimeout(() => el.classList.remove("mostrar"), 3000);
-}
-
-iniciar();
+  iniciar();
 </script>
 </body>
 </html>

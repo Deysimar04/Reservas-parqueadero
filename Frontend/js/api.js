@@ -27,7 +27,18 @@ export async function registrarUsuario(username, email, password, rol = "USER") 
     return { ok: false, error: e.message };
   }
 }
-
+export async function obtenerTodasLasReservas() {
+    try {
+        const res = await fetch('${BASE_URL}/api/reservas/todas', {
+        headers: authHeaders()
+    });
+    if (!res.ok) throw new Error("Error al obtener reservas");
+        return await res.json();
+    } catch (e) {
+        console.error("Error obteniendo reservas:", e.message);
+    return [];
+    }
+  }
 export async function loginUsuario(username, password) {
   try {
     const res = await fetch(`${BASE_URL}/api/auth/login`, {
@@ -163,7 +174,7 @@ export function guardarPlazas(plazas) {
 // ============================================================
 // HU23 — Disponibilidad
 // ============================================================
-
+11
 export async function obtenerDisponibilidad(zona = "", tipo = "", fecha = "") {
   try {
     const plazas = obtenerPlazasLocal();

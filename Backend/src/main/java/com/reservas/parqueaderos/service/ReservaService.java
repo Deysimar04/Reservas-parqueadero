@@ -91,4 +91,8 @@ public class ReservaService {
         reserva.setEstado("CANCELLED");
         reservaRepository.save(reserva);
     }
+
+    public List<Reserva> getTodas() {
+        return reservaRepository.findAll();
+    }
 }
