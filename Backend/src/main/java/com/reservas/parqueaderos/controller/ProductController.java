@@ -22,13 +22,13 @@ public class ProductController {
     private final ProductService productService;
     private final CategoryRepository categoryRepository;
 
-    // ✅ HU10: Listar productos
+    // HU10: Listar productos
     @GetMapping
     public List<Product> listar() {
         return productService.obtenerTodos();
     }
 
-    // ✅ HU3: Registrar producto con validaciones
+    // HU3: Registrar producto con validaciones
     @PostMapping
     public ResponseEntity<?> guardar(@RequestBody Product product) {
 
@@ -44,19 +44,19 @@ public class ProductController {
         );
     }
 
-    // ✅ CORREGIDO: categorías desde BD
+    //  CORREGIDO: categorías desde BD
     @GetMapping("/categorias")
     public List<Category> listarCategorias() {
         return categoryRepository.findAll();
     }
 
-    // ✅ HU17: características (desde BD)
+    //  HU17: características (desde BD)
     @GetMapping("/caracteristicas")
     public List<Feature> listarCaracteristicas() {
         return productService.listarTodasLasCaracteristicas();
     }
 
-    // ✅ DISPONIBILIDAD REAL (recomendado)
+    // DISPONIBILIDAD REAL (recomendado)
     @GetMapping("/{id}/disponibilidad")
     public ResponseEntity<?> obtenerDisponibilidad(@PathVariable Long id) {
 

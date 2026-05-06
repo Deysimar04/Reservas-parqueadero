@@ -22,7 +22,7 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final AuthService authService;
 
-    // ✅ LOGIN CORREGIDO
+    //  LOGIN CORREGIDO
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
 
@@ -53,7 +53,7 @@ public class AuthController {
                         .body(Map.of("error", "Usuario no encontrado")));
     }
 
-    // ✅ REGISTRO
+    //  REGISTRO
     @PostMapping("/registro")
     public ResponseEntity<?> registro(@RequestBody Users user) {
 
@@ -82,13 +82,13 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("mensaje", resultado));
     }
 
-    // ✅ LOGOUT (stateless con JWT)
+    // LOGOUT (stateless con JWT)
     @PostMapping("/logout")
     public ResponseEntity<?> logout() {
         return ResponseEntity.ok(Map.of("mensaje", "Sesión cerrada correctamente"));
     }
 
-    // ✅ CAMBIAR ROL (corregido)
+    // CAMBIAR ROL (corregido)
     @PutMapping("/usuarios/{id}/rol")
     public ResponseEntity<?> cambiarRol(@PathVariable Long id,
                                         @RequestBody Map<String, String> body) {
@@ -104,7 +104,7 @@ public class AuthController {
                 .map(user -> {
                     user.setRole(nuevoRol);
 
-                    // 🔥 IMPORTANTE: guardar en BD
+                    // IMPORTANTE: guardar en BD
                     userRepository.save(user);
 
                     return ResponseEntity.ok(
