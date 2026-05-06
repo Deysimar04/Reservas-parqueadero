@@ -378,57 +378,6 @@ function actualizarContador(){
   document.getElementById("plazasOcupadas").textContent   = plazas.filter(p => p.estado === "ocupado").length;
 }
 
-function renderTablaReservas(buscar = "") {
-    const lista = reservas. filter(r => {
-    if (r.estado === "CANCELLED") return false; // ocultar canceladas
-    if (Ibuscar) return true;
-        const q = buscar. toLowerCase();
-        return String(r.id).includes(q) ||
-                (r.product ?. name || "").toLowerCase().includes(q) ||
-                (r.user ?. username || "").toLowerCase().includes(q) ||
-                (r.product ?. zona || "").toLowerCase().includes(q);
-
-    });
-    const tbody = document.getElementById("tablaReservasBody");
-    tbody.innerHTML = lista.length === 0
-        ?`{<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">
-            No hay reservas activas</td></tr>`
-    : lista.map(r =>`
-        <tr>
-            <td><strong>#${r.product ?. id || "-"}</strong></td>
-            <td>${r.product ?. zona || "-"}</td>
-            <td style="text-transform:capitalize">
-                $[r.product ?. category ?. name || "-"]
-            </td>
-            <td><span class="badge badge-reservado">${r.estado}</span></td>
-            <td>${r.startTime ?. split("T")[0] || "-"}</td>
-            <td style="font-size:12px;color:#888">
-                $[r.user ?. username || "-"]
-            </td>
-            <td>
-                <button class="btn-accion btn-eliminar"
-                data-id="$[r.id}" data-accion="cancelar-reserva">
-                Cancelar
-                </button>
-            </td>
-            </tr>`
-        ).join("");
-
-    tbody.querySelectorAll("[data-accion='cancelar-reserva']"). forEach(btn => {
-        btn.onclick = async () => {
-            const id = btn.dataset.id;
-            const { cancelarReservaBackend } = await import("./js/api.js");
-            const resultado = await cancelarReservaBackend(id);
-            if (resultado.ok) {
-                reservas = await obtenerTodasLasReservas();
-                toast("Reserva cancelada", "verde");
-                refrescar();
-            } else {
-                toast("Error al cancelar: " + resultado.error, "rojo");
-            }
-        };
-    });
-}
 // ========== MIS RESERVAS ==========
 
 function renderMisReservas(){

@@ -43,7 +43,7 @@
   padding: 12px 20px; cursor: pointer;
   transition: background 0.2s; font-size: 14px;
   color: rgba(255,255,255,0.75);
-  border-left: 3px solid transparent; users-select: none;
+  border-left: 3px solid transparent; 
 }
 .sidebar-item:hover { background: rgba(255,255,255,0.07); color: white; }
 .sidebar-item.activo { background: rgba(52,152,219,0.18); border-left: 3px solid #3498db; color: white; font-weight: bold; }
@@ -448,7 +448,7 @@ tbody tr:last-child td { border-bottom: none; }
 
   /* ========== ESTADO ========== */
   let plazas = [];
-  let reservas= [];
+  let reservas = [];
   let usuarioActual = null;
   let editandoPlazaId   = null;
   let editandoCaractId  = null;
@@ -476,8 +476,6 @@ tbody tr:last-child td { border-bottom: none; }
   /* ========== INIT ========== */
   async function iniciar() {
     const raw = localStorage.getItem("usuarioActual");
-    plazas = await obtenerPlazas();
-    reservas = await obtenerTodasLasReservas(); // € NUEVA
     if (!raw) { denegarAcceso(); return; }
     usuarioActual = JSON.parse(raw);
     if (usuarioActual.rol !== "admin") { denegarAcceso(); return; }
@@ -488,6 +486,7 @@ tbody tr:last-child td { border-bottom: none; }
       `Hola, ${usuarioActual.nombre} (${usuarioActual.rol})`;
 
     plazas = await obtenerPlazas();
+    reservas = await obtenerTodasLasReservas(); // € NUEVA
 
     configurarSidebar();
     configurarLogout();
@@ -648,49 +647,99 @@ tbody tr:last-child td { border-bottom: none; }
   }
 
   /* ========== TABLA RESERVAS ========== */
-  function renderTablaReservas(buscar = "") {
-    const lista = plazas
-      .filter(p => p.estado === "reservado" || p.estado === "ocupado")
-      .filter(p => {
+function renderTablaReservas(buscar = "") {
+
+    const lista = reservas.filter(r => {
+
+        if (r.estado === "CANCELADA") return false;
+
         if (!buscar) return true;
+
         const q = buscar.toLowerCase();
-        return String(p.id).includes(q) || p.zona.toLowerCase().includes(q) ||
-               p.tipo.toLowerCase().includes(q) || (p.reservadoPor || "").toLowerCase().includes(q);
-      });
+
+        return String(r.id).includes(q) ||
+            (r.product?.name || "").toLowerCase().includes(q) ||
+            (r.user?.username || "").toLowerCase().includes(q) ||
+            (r.product?.zona || "").toLowerCase().includes(q);
+    });
 
     const tbody = document.getElementById("tablaReservasBody");
-    tbody.innerHTML = lista.length === 0
-      ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No hay reservas activas</td></tr>`
-      : lista.map(p => {
-          const accionLiberar = p.estado === "ocupado"
-            ? `<button class="btn-accion btn-liberar" data-id="${p.id}" data-accion="liberar-reserva">Liberar</button>`
-            : `<button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="cancelar-reserva">Cancelar</button>`;
-          return `
-            <tr>
-              <td><strong>#${p.id}</strong></td><td>${p.zona}</td>
-              <td style="text-transform:capitalize">${p.tipo}</td>
-              <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
-              <td>${p.fecha || "—"}</td>
-              <td style="font-size:12px;color:#888">${p.reservadoPor || "—"}</td>
-              <td>${accionLiberar}</td>
-            </tr>`;
-        }).join("");
 
-    tbody.querySelectorAll("[data-accion='cancelar-reserva']").forEach(btn => {
-      btn.onclick = () => {
-        const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
-        plazas[idx].estado = "disponible"; plazas[idx].fecha = null; plazas[idx].reservadoPor = null;
-        guardarPlazas(plazas); toast("Reserva cancelada", "verde"); refrescar();
-      };
-    });
-    tbody.querySelectorAll("[data-accion='liberar-reserva']").forEach(btn => {
-      btn.onclick = () => {
-        const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
-        plazas[idx].estado = "disponible"; plazas[idx].fecha = null; plazas[idx].reservadoPor = null;
-        guardarPlazas(plazas); toast("Plaza liberada", "verde"); refrescar();
-      };
-    });
-  }
+    tbody.innerHTML = lista.length === 0
+        ? `<tr>
+            <td colspan="7" style="text-align:center;color:#aaa;padding:20px">
+                No hay reservas activas
+            </td>
+           </tr>`
+        : lista.map(r => `
+            <tr>
+                <td><strong>#${r.product?.id || "-"}</strong></td>
+
+                <td>${r.product?.zona || "-"}</td>
+
+                <td style="text-transform:capitalize">
+                    ${r.product?.category?.name || "-"}
+                </td>
+
+                <td>
+                    <span class="badge badge-reservado">
+                        ${r.estado}
+                    </span>
+                </td>
+
+                <td>
+                    ${r.startTime?.split("T")[0] || "-"}
+                </td>
+
+                <td style="font-size:12px;color:#888">
+                    ${r.user?.username || "-"}
+                </td>
+
+                <td>
+                    <button
+                        class="btn-accion btn-eliminar"
+                        data-id="${r.id}"
+                        data-accion="cancelar-reserva">
+
+                        Cancelar
+                    </button>
+                </td>
+            </tr>
+        `).join("");
+
+    tbody
+        .querySelectorAll("[data-accion='cancelar-reserva']")
+        .forEach(btn => {
+
+            btn.onclick = async () => {
+
+                const id = btn.dataset.id;
+
+                const { cancelarReservaBackend } =
+                    await import("./js/api.js");
+
+                const resultado =
+                    await cancelarReservaBackend(id);
+
+                if (resultado.ok) {
+
+                    reservas =
+                        await obtenerTodasLasReservas();
+
+                    toast("Reserva cancelada", "verde");
+
+                    refrescar();
+
+                } else {
+
+                    toast(
+                        "Error al cancelar: " + resultado.error,
+                        "rojo"
+                    );
+                }
+            };
+        });
+}
 
   /* ========== TABLA USUARIOS (HU16) ========== */
   function renderTablaUsuarios(buscar = "") {
