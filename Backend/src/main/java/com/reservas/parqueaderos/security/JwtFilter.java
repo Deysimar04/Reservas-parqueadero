@@ -26,14 +26,18 @@ public class JwtFilter extends OncePerRequestFilter {
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getServletPath();
 
-        return path.startsWith("/api/auth") ||
-                path.startsWith("/productos");
+        return path.equals("/api/auth/login") ||
+                path.equals("/api/auth/registro") ||
+                path.startsWith("/api/productos") ||
+                path.startsWith("/api/reservas/ocupadas");
     }
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     @Nonnull HttpServletResponse response,
                                     @Nonnull FilterChain filterChain)
             throws ServletException, IOException {
+
         final String header = request.getHeader("Authorization");
 
         if (header == null || !header.startsWith("Bearer ")) {
@@ -45,13 +49,10 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = header.substring(7);
 
             if (jwtUtil.isTokenValid(token)) {
-
                 String username = jwtUtil.extractUsername(token);
                 String role = jwtUtil.extractRole(token);
 
-                // 🔥 Evitar sobreescribir autenticación existente
                 if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-
                     UsernamePasswordAuthenticationToken auth =
                             new UsernamePasswordAuthenticationToken(
                                     username,
@@ -59,21 +60,15 @@ public class JwtFilter extends OncePerRequestFilter {
                                     List.of(new SimpleGrantedAuthority("ROLE_" + role))
                             );
 
-                    // 🔥 Agregar detalles del request
                     auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
             }
 
-
-
         } catch (Exception e) {
-            // 🔴 Opcional: loggear error (no romper la app)
             System.out.println("JWT error: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);
-
     }
 }

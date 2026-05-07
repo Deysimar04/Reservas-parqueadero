@@ -85,6 +85,28 @@ public class ReservaController {
         }
     }
 
+    @PostMapping("/{id}/confirmar-correo")
+    public ResponseEntity<?> confirmarCorreo(@PathVariable Long id) {
+        // Simula envío — en Sprint 3 conectar con JavaMailSender
+        System.out.println("📧 Correo de confirmación enviado para reserva #" + id);
+        return ResponseEntity.ok(Map.of("mensaje", "Correo enviado"));
+    }
+    // HU23: Productos ocupados en un rango de fechas
+    @GetMapping("/ocupadas")
+    public ResponseEntity<?> getProductosOcupados(
+            @RequestParam LocalDateTime startTime,
+            @RequestParam LocalDateTime endTime
+    ) {
+        try {
+            return ResponseEntity.ok(
+                    reservaService.getProductosOcupados(startTime, endTime)
+            );
+        } catch (Exception e) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // HU31: Detalle de reserva
     @GetMapping("/{id}")
     public ResponseEntity<?> getReserva(@PathVariable Long id) {
