@@ -103,6 +103,24 @@
   </div>
 </section>
 
+<!-- BUSCADOR -->
+<section class="buscador-reservas">
+  <div class="buscador-inner">
+    <div>
+      <h2>Buscar plaza</h2>
+      <p>Filtra por nombre, zona, tipo o caracteristica y elige una fecha para consultar disponibilidad.</p>
+    </div>
+    <div class="buscador-controles">
+      <div class="buscador-campo">
+        <input type="search" id="buscarPlaza" list="sugerenciasPlazas" placeholder="Ej: Aeropuerto, moto, cubierta">
+        <datalist id="sugerenciasPlazas"></datalist>
+      </div>
+      <button id="btnBuscarPlaza" class="btn-buscar-plaza">Buscar</button>
+      <button id="btnLimpiarBusqueda" class="btn-limpiar-busqueda">Limpiar</button>
+    </div>
+  </div>
+</section>
+
 <!-- FECHA DE RESERVA -->
 <div id="fechaReservaContainer">
   <div class="fecha-wrapper">
@@ -137,6 +155,14 @@
 
 <!-- PLAZAS -->
 <section id="parkingContainer"></section>
+
+<!-- MODAL DETALLE PLAZA -->
+<div id="modalDetallePlaza" class="modal">
+  <div class="modal-contenido modal-detalle-plaza">
+    <span class="cerrar" id="cerrarDetallePlaza">&times;</span>
+    <div id="detallePlazaContenido"></div>
+  </div>
+</div>
 
 <!-- GALERIA -->
 <section class="galeria">
@@ -217,7 +243,7 @@
   <div class="modal-contenido">
     <span class="cerrar" data-modal="modalLogin">&times;</span>
     <h2>Iniciar Sesión</h2>
-    <input type="email" id="emailLogin" placeholder="Email">
+    <input type="text" id="emailLogin" placeholder="Email o usuario">
     <input type="password" id="passLogin" placeholder="Contraseña">
     <button id="btnLogin">Iniciar Sesión</button>
   </div>
@@ -227,6 +253,8 @@
   <p>© 2026 ParkApp</p>
   <p>Sistema inteligente de reservas de parqueaderos</p>
 </footer>
+
+<a class="btn-whatsapp" href="https://wa.me/573126857315?text=Hola%2C%20quiero%20informacion%20sobre%20una%20reserva%20de%20parqueadero" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">WA</a>
 
 <script type="module" src="js/main.js"></script>
 

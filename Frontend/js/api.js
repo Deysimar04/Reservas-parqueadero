@@ -35,8 +35,8 @@ export async function loginUsuario(username, password) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password })
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || "Credenciales incorrectas");
+    const data = await leerRespuesta(res);
+    if (!res.ok) throw new Error(data.error || `Error ${res.status}: credenciales incorrectas`);
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("usuarioActual", JSON.stringify({
@@ -52,6 +52,17 @@ export async function loginUsuario(username, password) {
   }
 }
 
+async function leerRespuesta(res) {
+  const text = await res.text();
+  if (!text) return {};
+
+  try {
+    return JSON.parse(text);
+  } catch (_) {
+    return { error: text };
+  }
+}
+
 export async function logoutUsuario() {
   try {
     await fetch(`${BASE_URL}/api/auth/logout`, {
@@ -61,6 +72,10 @@ export async function logoutUsuario() {
   } catch (_) {}
   localStorage.removeItem("token");
   localStorage.removeItem("usuarioActual");
+}
+
+export function sesionValida() {
+  return Boolean(getValidToken());
 }
 
 // ============================================================
@@ -106,8 +121,7 @@ export async function crearProducto(producto) {
       body: JSON.stringify(producto)
     });
     const data = await res.json();
-    if (res.status === 403) return { ok: false, error: "No tienes permisos" };
-    if (!res.ok) return { ok: false, error: data.error };
+    if (!res.ok) return { ok: false, error: data.error || "Error al crear" };
     return { ok: true };
   } catch (e) {
     return { ok: false, error: e.message };
@@ -200,6 +214,8 @@ export async function obtenerDisponibilidad() {
 // HU23: IDs de productos ocupados en una fecha específica
 export async function obtenerReservasPorFecha(fecha) {
   try {
+    if (!sesionValida()) return [];
+
     const startTime = `${fecha}T00:00:00`;
     const endTime   = `${fecha}T23:59:59`;
     const res = await fetch(
@@ -220,6 +236,10 @@ export async function obtenerReservasPorFecha(fecha) {
 
 export async function crearReservaBackend(productId, fecha) {
   try {
+    if (!sesionValida()) {
+      return { ok: false, error: "Debes iniciar sesion nuevamente" };
+    }
+
     const startTime = `${fecha}T08:00:00`;
     const endTime   = `${fecha}T20:00:00`;
 
@@ -247,6 +267,8 @@ export async function crearReservaBackend(productId, fecha) {
 
 export async function obtenerMisReservas() {
   try {
+    if (!sesionValida()) return [];
+
     const res = await fetch(`${BASE_URL}/api/reservas/mis-reservas`, {
       headers: authHeaders()
     });
@@ -264,6 +286,8 @@ export async function obtenerMisReservas() {
 
 export async function obtenerTodasLasReservas() {
   try {
+    if (!sesionValida()) return [];
+
     const res = await fetch(`${BASE_URL}/api/reservas/todas`, {
       headers: authHeaders()
     });
@@ -281,6 +305,10 @@ export async function obtenerTodasLasReservas() {
 
 export async function obtenerDetalleReserva(id) {
   try {
+    if (!sesionValida()) {
+      return { ok: false, error: "Debes iniciar sesion nuevamente" };
+    }
+
     const res = await fetch(`${BASE_URL}/api/reservas/${id}`, {
       headers: authHeaders()
     });
@@ -297,6 +325,10 @@ export async function obtenerDetalleReserva(id) {
 
 export async function cancelarReservaBackend(reservaId) {
   try {
+    if (!sesionValida()) {
+      return { ok: false, error: "Debes iniciar sesion nuevamente" };
+    }
+
     const res = await fetch(`${BASE_URL}/api/reservas/${reservaId}/cancelar`, {
       method: "PUT",
       headers: authHeaders()
@@ -312,7 +344,100 @@ export async function cancelarReservaBackend(reservaId) {
 // ============================================================
 // UTIL — Header con token JWT
 // ============================================================
+// ============================================================
+// FAVORITOS — HU24, HU25
+// ============================================================
+
+export async function obtenerFavoritos() {
+  try {
+    if (!sesionValida()) return [];
+
+    const res = await fetch(`${BASE_URL}/favoritos`, {
+      headers: authHeaders()
+    });
+    if (!res.ok) return [];
+    return await res.json();
+  } catch (e) {
+    console.warn("Error obteniendo favoritos:", e.message);
+    return [];
+  }
+}
+
+export async function marcarFavorito(productoId) {
+  try {
+    if (!sesionValida()) {
+      return { ok: false, error: "Debes iniciar sesion nuevamente" };
+    }
+
+    const res = await fetch(`${BASE_URL}/favoritos/${productoId}`, {
+      method: "POST",
+      headers: authHeaders()
+    });
+    const data = await leerRespuesta(res);
+    if (!res.ok) throw new Error(data.error || "Error al marcar favorito");
+    return { ok: true, favorito: data };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
+export async function desmarcarFavorito(productoId) {
+  try {
+    if (!sesionValida()) {
+      return { ok: false, error: "Debes iniciar sesion nuevamente" };
+    }
+
+    const res = await fetch(`${BASE_URL}/favoritos/${productoId}`, {
+      method: "DELETE",
+      headers: authHeaders()
+    });
+    const data = await leerRespuesta(res);
+    if (!res.ok) throw new Error(data.error || "Error al quitar favorito");
+    return { ok: true, mensaje: data.mensaje };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
 function authHeaders() {
-  const token = localStorage.getItem("token");
+  const token = getValidToken();
   return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+function getValidToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return null;
+
+  try {
+    const payload = JSON.parse(atob(toBase64(token.split(".")[1])));
+    if (payload.exp && payload.exp * 1000 <= Date.now()) {
+      limpiarSesionVencida();
+      return null;
+    }
+    return token;
+  } catch (_) {
+    limpiarSesionVencida();
+    return null;
+  }
+}
+
+function limpiarSesionVencida() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("usuarioActual");
+}
+
+function toBase64(base64Url) {
+  const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+  return base64.padEnd(base64.length + (4 - base64.length % 4) % 4, "=");
+}
+export async function enviarCorreoConfirmacion(reservaId) {
+  try {
+    const res = await fetch(`${BASE_URL}/api/reservas/${reservaId}/confirmar-correo`, {
+      method: "POST",
+      headers: authHeaders()
+    });
+    return res.ok ? { ok: true } : { ok: false };
+  } catch (_) {
+    return { ok: false };
+  }
 }

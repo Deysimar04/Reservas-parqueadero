@@ -3,7 +3,8 @@ import {
   registrarUsuario, loginUsuario, logoutUsuario,
   obtenerCategorias, obtenerCaracteristicas,
   crearReservaBackend, cancelarReservaBackend,
-  obtenerReservasPorFecha, obtenerMisReservas
+  obtenerReservasPorFecha, obtenerMisReservas,
+  sesionValida, obtenerFavoritos, marcarFavorito, desmarcarFavorito
 } from "./api.js";
 import { PlazaManager, ContadorObserver, NotificacionObserver, DisponibilidadObserver } from "./patrones.js";
 
@@ -87,6 +88,9 @@ let plazasFiltradas = [];
 let zonaSeleccionada = "";
 let tipoSeleccionado = "";
 let usuarioActual = null;
+let favoritosIds = new Set();
+let busquedaTexto = "";
+let homePlazasOrden = [];
 
 const manager = new PlazaManager();
 
@@ -94,6 +98,7 @@ const manager = new PlazaManager();
 async function iniciar() {
   localStorage.removeItem("plazas");
   plazas = await obtenerPlazas();
+  homePlazasOrden = plazas.slice().sort(() => Math.random() - 0.5).map(p => p.id);
   manager.suscribir(new ContadorObserver());
   manager.suscribir(new NotificacionObserver());
   manager.suscribir(new DisponibilidadObserver());
@@ -101,6 +106,8 @@ async function iniciar() {
   cargarSesion();
   configurarBotonesZona();
   await renderizarCategoriasHome();
+  configurarBuscadorPlazas();
+  configurarModalDetallePlaza();
   configurarLogo();
   configurarBotonVolver();
   configurarModales();
@@ -112,11 +119,12 @@ async function iniciar() {
 
 function cargarSesion(){
   const user = localStorage.getItem("usuarioActual");
-  if(user){
+  if(user && sesionValida()){
     usuarioActual = JSON.parse(user);
     mostrarHeaderUsuario();
     actualizarBurbujaBandeja();
   }else{
+    localStorage.removeItem("usuarioActual");
     mostrarHeaderLogin();
   }
 }
@@ -195,9 +203,15 @@ async function render(){
     return;
   }
   await filtrarPlazas();
+  await cargarFavoritos();
   mostrarPlazas();
   actualizarContador();
   renderMisReservas();
+}
+
+async function cargarFavoritos(){
+  const favoritos = await obtenerFavoritos();
+  favoritosIds = new Set(favoritos.map(f => Number(f.productoId)));
 }
 
 async function filtrarPlazas() {
@@ -216,8 +230,23 @@ async function filtrarPlazas() {
   })).filter(p => {
     const zonaOk = zonaSeleccionada === "" || p.zona === zonaSeleccionada;
     const tipoOk = tipoSeleccionado === "" || p.tipo === tipoSeleccionado;
-    return zonaOk && tipoOk;
+    const texto = [
+      p.nombre,
+      p.zona,
+      p.tipo,
+      p.category?.name,
+      ...(p.features || []).map(f => f.name)
+    ].join(" ").toLowerCase();
+    const busquedaOk = busquedaTexto === "" || texto.includes(busquedaTexto);
+    return zonaOk && tipoOk && busquedaOk;
   });
+
+  if (!zonaSeleccionada && !tipoSeleccionado && !busquedaTexto) {
+    plazasFiltradas = plazasFiltradas
+      .slice()
+      .sort((a, b) => homePlazasOrden.indexOf(a.id) - homePlazasOrden.indexOf(b.id))
+      .slice(0, 10);
+  }
 }
 
 function mostrarPlazas(){
@@ -244,10 +273,14 @@ function mostrarPlazas(){
 
     const card = document.createElement("div");
     card.className = `tarjeta ${estadoReal}`;
+    const esFavorito = favoritosIds.has(Number(plazaFiltrada.id));
 
     const fechaTexto = plazaFiltrada.fecha
       ? `<p class="plaza-fecha">Reservado para: ${plazaFiltrada.fecha}</p>`
       : "";
+    const featuresHtml = renderFeatures(plazaFiltrada).slice(0, 3).map(f =>
+      `<span class="plaza-feature">${f.icono} ${f.nombre}</span>`
+    ).join("");
 
     // ✅ FIX: botones según estadoReal
     let btnHtml = "";
@@ -268,16 +301,45 @@ function mostrarPlazas(){
     }
 
     card.innerHTML = `
+      <button class="btn-favorito ${esFavorito ? "activo" : ""}" title="${esFavorito ? "Quitar de favoritos" : "Marcar como favorito"}" aria-label="${esFavorito ? "Quitar de favoritos" : "Marcar como favorito"}">
+        ${esFavorito ? "♥" : "♡"}
+      </button>
       <h3>${plazaFiltrada.nombre || "Plaza #" + plazaFiltrada.id}</h3>
       <p>Zona: ${plazaFiltrada.zona}</p>
       <p>Tipo: ${plazaFiltrada.tipo}</p>
+      <div class="plaza-features">${featuresHtml}</div>
       <p class="estado-texto">${estadoReal.toUpperCase()}</p>
       <p class="plaza-precio">💰 $${(plazaFiltrada.precioPorHora || 5000).toLocaleString("es-CO")}/hora</p>
       ${fechaTexto}
+      <button class="btn-detalle" type="button">Ver detalle</button>
       ${btnHtml}
     `;
 
     // ✅ RESERVAR
+    card.querySelector(".btn-favorito")?.addEventListener("click", async () => {
+      const estabaMarcado = favoritosIds.has(Number(plazaFiltrada.id));
+      const resultado = estabaMarcado
+        ? await desmarcarFavorito(plazaFiltrada.id)
+        : await marcarFavorito(plazaFiltrada.id);
+
+      if (!resultado.ok) {
+        alert("Error con favorito: " + resultado.error);
+        return;
+      }
+
+      if (estabaMarcado) {
+        favoritosIds.delete(Number(plazaFiltrada.id));
+      } else {
+        favoritosIds.add(Number(plazaFiltrada.id));
+      }
+
+      mostrarPlazas();
+    });
+
+    card.querySelector(".btn-detalle")?.addEventListener("click", () => {
+      abrirDetallePlaza(plazaFiltrada, estadoReal);
+    });
+
     card.querySelector(".btn-reservar")?.addEventListener("click", async () => {
       const fecha = obtenerFecha();
       const errorSpan = document.getElementById("fechaError");
@@ -391,6 +453,124 @@ function actualizarContador(){
 
 // ========== MIS RESERVAS — desde backend ==========
 
+function renderFeatures(plaza) {
+  const features = (plaza.features || []).map(f => ({
+    nombre: f.name || f.nombre || "Caracteristica",
+    icono: iconoFeature(f.name || f.nombre || "")
+  }));
+
+  if (features.length) return features;
+
+  return [
+    { nombre: plaza.extras?.techado ? "Cubierta" : "Exterior", icono: plaza.extras?.techado ? "T" : "A" },
+    { nombre: plaza.extras?.camaras ? "Vigilancia" : "Iluminada", icono: plaza.extras?.camaras ? "V" : "L" },
+    { nombre: "Acceso 24h", icono: "24" }
+  ];
+}
+
+function iconoFeature(nombre) {
+  const n = nombre.toLowerCase();
+  if (n.includes("camar") || n.includes("vigil")) return "V";
+  if (n.includes("tech") || n.includes("cub")) return "T";
+  if (n.includes("ilumin")) return "L";
+  if (n.includes("acces") || n.includes("discap")) return "A";
+  if (n.includes("elect")) return "E";
+  return "P";
+}
+
+function configurarBuscadorPlazas() {
+  const input = document.getElementById("buscarPlaza");
+  const btnBuscar = document.getElementById("btnBuscarPlaza");
+  const btnLimpiar = document.getElementById("btnLimpiarBusqueda");
+  if (!input || !btnBuscar || !btnLimpiar) return;
+
+  const aplicarBusqueda = async () => {
+    busquedaTexto = input.value.trim().toLowerCase();
+    if (busquedaTexto) document.getElementById("btnVolver").style.display = "block";
+    await render();
+    document.getElementById("parkingContainer").scrollIntoView({ behavior: "smooth" });
+  };
+
+  input.addEventListener("input", () => actualizarSugerencias(input.value));
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") aplicarBusqueda();
+  });
+  btnBuscar.onclick = aplicarBusqueda;
+  btnLimpiar.onclick = async () => {
+    input.value = "";
+    busquedaTexto = "";
+    await render();
+  };
+}
+
+function actualizarSugerencias(valor) {
+  const datalist = document.getElementById("sugerenciasPlazas");
+  if (!datalist) return;
+  const filtro = valor.trim().toLowerCase();
+  const opciones = new Set();
+
+  plazas.forEach(p => {
+    [p.nombre, p.zona, p.tipo, p.category?.name].forEach(v => {
+      if (v && (!filtro || String(v).toLowerCase().includes(filtro))) opciones.add(v);
+    });
+    (p.features || []).forEach(f => {
+      const nombre = f.name || f.nombre;
+      if (nombre && (!filtro || nombre.toLowerCase().includes(filtro))) opciones.add(nombre);
+    });
+  });
+
+  datalist.innerHTML = [...opciones].slice(0, 8).map(v => `<option value="${v}"></option>`).join("");
+}
+
+function configurarModalDetallePlaza() {
+  const modal = document.getElementById("modalDetallePlaza");
+  const cerrar = document.getElementById("cerrarDetallePlaza");
+  if (!modal || !cerrar) return;
+
+  cerrar.onclick = () => modal.style.display = "none";
+  modal.addEventListener("click", e => {
+    if (e.target === modal) modal.style.display = "none";
+  });
+}
+
+function abrirDetallePlaza(plaza, estado) {
+  const modal = document.getElementById("modalDetallePlaza");
+  const cont = document.getElementById("detallePlazaContenido");
+  if (!modal || !cont) return;
+
+  const features = renderFeatures(plaza).map(f => `
+    <div class="detalle-feature"><span>${f.icono}</span><strong>${f.nombre}</strong></div>
+  `).join("");
+
+  cont.innerHTML = `
+    <div class="detalle-header">
+      <div>
+        <p class="detalle-eyebrow">${plaza.zona || "Zona general"}</p>
+        <h2>${plaza.nombre || "Plaza #" + plaza.id}</h2>
+      </div>
+      <span class="detalle-estado ${estado}">${estado.toUpperCase()}</span>
+    </div>
+    <div class="detalle-grid">
+      <div class="detalle-imagen"></div>
+      <div class="detalle-info">
+        <p>${plaza.description || "Plaza disponible para reservas por dia, con horario operativo de 08:00 a 20:00."}</p>
+        <p><strong>Tipo:</strong> ${plaza.tipo || plaza.category?.name || "General"}</p>
+        <p><strong>Precio:</strong> $${(plaza.precioPorHora || 5000).toLocaleString("es-CO")}/hora</p>
+        <div class="detalle-features">${features}</div>
+      </div>
+    </div>
+    <div class="detalle-politicas">
+      <h3>Politicas de reserva</h3>
+      <div>
+        <p><strong>Horario:</strong> disponible 24/7 para consulta y reservas de 08:00 a 20:00.</p>
+        <p><strong>Cancelacion:</strong> puedes cancelar desde tu historial si la reserva es tuya.</p>
+        <p><strong>Seguridad:</strong> ingreso sujeto a disponibilidad y validacion de la reserva.</p>
+      </div>
+    </div>
+  `;
+  modal.style.display = "flex";
+}
+
 async function renderMisReservas(){
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
   if(!usuario) return;
@@ -488,6 +668,9 @@ function configurarBotonVolver(){
   document.getElementById("btnVolver").onclick = () => {
     zonaSeleccionada = "";
     tipoSeleccionado = "";
+    busquedaTexto = "";
+    const buscarPlaza = document.getElementById("buscarPlaza");
+    if (buscarPlaza) buscarPlaza.value = "";
     document.querySelectorAll(".categoria-card").forEach(c => c.classList.remove("activa"));
     document.getElementById("btnVolver").style.display = "none";
     document.getElementById("fechaReservaContainer").style.display = "none";
@@ -533,15 +716,15 @@ function configurarModales(){
 
   // HU14: Login
   document.getElementById("btnLogin").onclick = async () => {
-    const username = document.getElementById("emailLogin").value.trim();
+    const usuarioOEmail = document.getElementById("emailLogin").value.trim();
     const pass     = document.getElementById("passLogin").value.trim();
 
-    if (!username || !pass) {
+    if (!usuarioOEmail || !pass) {
       alert("Completa todos los campos");
       return;
     }
 
-    const resultado = await loginUsuario(username, pass);
+    const resultado = await loginUsuario(usuarioOEmail, pass);
     if (resultado.ok) {
       const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
       guardarSesion(usuario);

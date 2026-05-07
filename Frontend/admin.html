@@ -1,4 +1,6 @@
+
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
 <meta charset="UTF-8">
@@ -230,7 +232,7 @@ tbody tr:last-child td { border-bottom: none; }
         <tbody id="tablaReservasBody"></tbody></table>
       </div>
     </div>
-
+<div id="paginacionPlazas" style="display:flex;justify-content:center;gap:8px;margin-top:12px"></div>
     <!-- USUARIOS -->
     <div class="admin-page" id="page-usuarios">
       <div class="section-header">
@@ -313,30 +315,44 @@ tbody tr:last-child td { border-bottom: none; }
   <div class="modal-admin-contenido">
     <span class="modal-cerrar-x" id="cerrarModalPlaza">&times;</span>
     <h3 id="tituloModalPlaza">Nueva Plaza</h3>
-    <div class="form-grupo"><label>Zona</label>
-      <select id="plazaZona"><option>Aeropuerto</option><option>Centro Comercial</option><option>Centro Ciudad</option></select>
-    </div>
-    <div class="form-grupo"><label>Tipo de vehículo</label><select id="plazaTipo"></select></div>
-    <div class="form-grupo"><label>Estado</label>
-      <select id="plazaEstado"><option value="disponible">Disponible</option><option value="reservado">Reservado</option><option value="ocupado">Ocupado</option></select>
-    </div>
-    <div class="form-grupo"><label>Características asociadas</label><div class="caract-check-list" id="plazaCaractList"></div></div>
+
     <div class="form-grupo">
-      <label style="margin-bottom:6px">Extras</label>
-      <div style="display:flex;gap:16px;flex-wrap:wrap">
-        <label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="extraTechado"> Techado</label>
-        <label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="extraCamaras"> Cámaras</label>
-        <label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="extraIluminado"> Iluminado</label>
-        <label style="font-size:13px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="extraDiscap"> Accesible</label>
+      <label>Nombre</label>
+      <input type="text" id="plazaNombre" placeholder="Ej: Parqueadero A3">
+    </div>
+    <div class="form-grupo">
+      <label>Descripción</label>
+      <input type="text" id="plazaDescripcion" placeholder="Ej: Zona cubierta cerca a la entrada">
+    </div>
+    <div class="form-grupo">
+      <label>Zona</label>
+      <select id="plazaZona">
+        <option>Aeropuerto</option>
+        <option>Centro Comercial</option>
+        <option>Centro Ciudad</option>
+      </select>
+    </div>
+    <div class="form-grupo">
+      <label>Categoría</label>
+      <select id="plazaCategoria"></select>
+    </div>
+    <div class="form-grupo">
+      <label>Precio por hora ($)</label>
+      <input type="number" id="plazaPrecio" placeholder="5000" min="0">
+    </div>
+    <div class="form-grupo">
+      <label>Características</label>
+      <div class="caract-check-list" id="plazaCaractList">
+        <span style="color:#aaa;font-size:12px">Cargando características...</span>
       </div>
     </div>
+
     <div class="form-acciones">
       <button class="btn-cancelar-modal" id="cancelarModalPlaza">Cancelar</button>
       <button class="btn-guardar-modal" id="guardarPlaza">Guardar</button>
     </div>
   </div>
 </div>
-
 <!-- MODAL CARACTERÍSTICA -->
 <div class="modal-admin" id="modalCaract">
   <div class="modal-admin-contenido">
@@ -377,7 +393,8 @@ tbody tr:last-child td { border-bottom: none; }
 <div class="admin-alert" id="adminAlert"></div>
 
 <script type="module">
-import { obtenerPlazas, guardarPlazas, obtenerTodasLasReservas, eliminarProducto, cancelarReservaBackend } from "./js/api.js";
+
+import { obtenerPlazas, guardarPlazas, obtenerTodasLasReservas, eliminarProducto, cancelarReservaBackend, crearProducto, sesionValida } from "./js/api.js";
 
 let plazas   = [];
 let reservas = [];
@@ -406,7 +423,7 @@ function guardarCategoriasVehiculo(){ localStorage.setItem("categoriasVehiculo",
 /* ===== INIT ===== */
 async function iniciar() {
   const raw = localStorage.getItem("usuarioActual");
-  if (!raw) { denegarAcceso(); return; }
+  if (!raw || !sesionValida()) { denegarAcceso(); return; }
   usuarioActual = JSON.parse(raw);
   if (usuarioActual.rol !== "admin") { denegarAcceso(); return; }
 
@@ -503,7 +520,9 @@ function barRow(label, count, pct, color) {
   </div>`;
 }
 
-/* ===== TABLA PLAZAS ===== */
+const PLAZAS_POR_PAGINA = 5;
+let paginaActualPlazas = 1;
+
 async function renderTablaPlazas(filtros = {}) {
   let lista = await obtenerPlazas();
 
@@ -519,10 +538,16 @@ async function renderTablaPlazas(filtros = {}) {
     );
   }
 
+  // Paginación
+  const totalPaginas = Math.ceil(lista.length / PLAZAS_POR_PAGINA);
+  if (paginaActualPlazas > totalPaginas) paginaActualPlazas = 1;
+  const inicio = (paginaActualPlazas - 1) * PLAZAS_POR_PAGINA;
+  const paginada = lista.slice(inicio, inicio + PLAZAS_POR_PAGINA);
+
   const tbody = document.getElementById("tablaPlazasBody");
-  tbody.innerHTML = lista.length === 0
+  tbody.innerHTML = paginada.length === 0
     ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No se encontraron plazas</td></tr>`
-    : lista.map(p => {
+    : paginada.map(p => {
         const caractHtml = (p.features && p.features.length > 0)
           ? p.features.map(f => `<span class="caract-tag">${f.name}</span>`).join(" ")
           : `<span class="caract-tag-none">Sin características</span>`;
@@ -538,6 +563,34 @@ async function renderTablaPlazas(filtros = {}) {
           </td>
         </tr>`;
       }).join("");
+
+  // Botones paginación
+  const paginacionDiv = document.getElementById("paginacionPlazas");
+  if (paginacionDiv) {
+    paginacionDiv.innerHTML = "";
+    for (let i = 1; i <= totalPaginas; i++) {
+      const btn = document.createElement("button");
+      btn.textContent = i;
+      btn.style.cssText = `
+        padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px;
+        cursor: pointer; font-size: 13px;
+        background: ${i === paginaActualPlazas ? "#3498db" : "white"};
+        color: ${i === paginaActualPlazas ? "white" : "#444"};
+        font-weight: ${i === paginaActualPlazas ? "bold" : "normal"};
+      `;
+      btn.onclick = () => {
+        paginaActualPlazas = i;
+        renderTablaPlazas(filtros);
+      };
+      paginacionDiv.appendChild(btn);
+    }
+
+    // Info páginas
+    const info = document.createElement("span");
+    info.style.cssText = "font-size:13px;color:#888;align-self:center;margin-left:8px";
+    info.textContent = `${lista.length} plazas — página ${paginaActualPlazas} de ${totalPaginas || 1}`;
+    paginacionDiv.appendChild(info);
+  }
 
   tbody.querySelectorAll("[data-accion='eliminar']").forEach(btn => {
     btn.onclick = async () => {
@@ -758,8 +811,11 @@ function renderTablaCategorias(buscar = "") {
   actualizarSelectTipo();
 }
 
+
 function actualizarSelectTipo() {
+  
   const sel = document.getElementById("plazaTipo");
+  if (!sel) return; // ← guard para evitar el error
   const valorActual = sel.value;
   sel.innerHTML = categoriasVehiculo.map(c =>
     `<option value="${c.nombre}">${c.icono} ${c.label}</option>`
@@ -873,26 +929,113 @@ function cerrarModalCaract() {
   editandoCaractId = null;
 }
 
-/* ===== MODAL PLAZA ===== */
-function configurarModalPlaza() {
-  document.getElementById("btnNuevaPlaza").onclick = () => {
-    editandoPlazaId = null;
+async function configurarModalPlaza() {
+  // Cargar categorías del backend
+  async function cargarCategorias() {
+    try {
+      const res = await fetch("http://localhost:8080/api/productos/categorias",
+        { headers: authHeaders() });
+      if (res.ok) {
+        const cats = await res.json();
+        const sel = document.getElementById("plazaCategoria");
+        sel.innerHTML = cats.map(c =>
+          `<option value="${c.id}">${c.name}</option>`
+        ).join("");
+      }
+    } catch (_) {}
+  }
+
+  // Cargar características del backend para checkboxes
+  async function cargarCaracteristicasCheck() {
+    try {
+      const res = await fetch("http://localhost:8080/api/productos/caracteristicas",
+        { headers: authHeaders() });
+      const cont = document.getElementById("plazaCaractList");
+      if (res.ok) {
+        const feats = await res.json();
+        if (feats.length === 0) {
+          cont.innerHTML = `<span style="color:#aaa;font-size:12px">No hay características registradas</span>`;
+          return;
+        }
+        cont.innerHTML = feats.map(f => `
+          <label class="caract-check-item">
+            <input type="checkbox" value="${f.id}" name="featCheck">
+            ${f.name}
+          </label>
+        `).join("");
+      } else {
+        // Fallback a las características locales
+        cont.innerHTML = caracteristicas.map(c => `
+          <label class="caract-check-item">
+            <input type="checkbox" value="${c.id}" name="featCheck">
+            ${c.nombre}
+          </label>
+        `).join("");
+      }
+    } catch (_) {
+      // Fallback local
+      const cont = document.getElementById("plazaCaractList");
+      cont.innerHTML = caracteristicas.map(c => `
+        <label class="caract-check-item">
+          <input type="checkbox" value="${c.id}" name="featCheck">
+          ${c.nombre}
+        </label>
+      `).join("");
+    }
+  }
+
+  document.getElementById("btnNuevaPlaza").onclick = async () => {
     document.getElementById("tituloModalPlaza").textContent = "Nueva Plaza";
-    document.getElementById("plazaZona").value   = "Aeropuerto";
-    document.getElementById("plazaEstado").value = "disponible";
-    document.getElementById("extraTechado").checked   = false;
-    document.getElementById("extraCamaras").checked   = false;
-    document.getElementById("extraIluminado").checked = false;
-    document.getElementById("extraDiscap").checked    = false;
-    actualizarSelectTipo();
-    renderCaractCheckList([]);
+    document.getElementById("plazaNombre").value      = "";
+    document.getElementById("plazaDescripcion").value = "";
+    document.getElementById("plazaZona").value        = "Aeropuerto";
+    document.getElementById("plazaPrecio").value      = "5000";
+    await cargarCategorias();
+    await cargarCaracteristicasCheck();
     document.getElementById("modalPlaza").classList.add("abierto");
   };
+
   document.getElementById("cerrarModalPlaza").onclick  = cerrarModalPlaza;
   document.getElementById("cancelarModalPlaza").onclick = cerrarModalPlaza;
-  document.getElementById("guardarPlaza").onclick = () => {
-    toast("Para crear plazas usa el backend directamente", "rojo");
+
+  document.getElementById("guardarPlaza").onclick = async () => {
+    const nombre      = document.getElementById("plazaNombre").value.trim();
+    const descripcion = document.getElementById("plazaDescripcion").value.trim();
+    const zona        = document.getElementById("plazaZona").value;
+    const categoriaId = document.getElementById("plazaCategoria").value;
+    const precio      = document.getElementById("plazaPrecio").value;
+
+    if (!nombre || !zona || !categoriaId) {
+      toast("Nombre, zona y categoría son obligatorios", "rojo");
+      return;
+    }
+
+    // Recoger características seleccionadas
+    const featuresSeleccionadas = Array.from(
+      document.querySelectorAll("#plazaCaractList input[name='featCheck']:checked")
+    ).map(cb => ({ id: Number(cb.value) }));
+
+    const producto = {
+      name:          nombre,
+      description:   descripcion,
+      zona:          zona,
+      precioPorHora: Number(precio) || 5000,
+      category:      { id: Number(categoriaId) },
+      features:      featuresSeleccionadas
+    };
+
+    const resultado = await crearProducto(producto);
+
+    if (!resultado.ok) {
+      toast("Error: " + resultado.error, "rojo");
+      return;
+    }
+
+    toast(`Plaza "${nombre}" creada con éxito `, "verde");
     cerrarModalPlaza();
+    plazas = await obtenerPlazas();
+    renderTablaPlazas();
+    renderDashboard();
   };
 }
 
@@ -999,7 +1142,10 @@ function toast(msg, tipo = "") {
   el.className = "admin-alert mostrar" + (tipo ? " " + tipo : "");
   setTimeout(() => el.classList.remove("mostrar"), 3000);
 }
-
+function authHeaders() {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
 iniciar();
 </script>
 </body>
