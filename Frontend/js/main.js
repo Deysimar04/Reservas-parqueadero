@@ -2,31 +2,20 @@ import {
   obtenerPlazas, guardarPlazas, obtenerDisponibilidad,
   registrarUsuario, loginUsuario, logoutUsuario,
   obtenerCategorias, obtenerCaracteristicas,
-  crearReservaBackend
+  crearReservaBackend, cancelarReservaBackend,
+  obtenerReservasPorFecha, obtenerMisReservas
 } from "./api.js";
 import { PlazaManager, ContadorObserver, NotificacionObserver, DisponibilidadObserver } from "./patrones.js";
 
 // ========== VALIDACIONES ==========
 
 function validarRegistro(nombre, email, pass){
-  if(!nombre || !email || !pass){
-    alert("Todos los campos son obligatorios");
-    return false;
-  }
-  if(nombre.length < 3){
-    alert("El nombre debe tener al menos 3 caracteres");
-    return false;
-  }
+  if(!nombre || !email || !pass){ alert("Todos los campos son obligatorios"); return false; }
+  if(nombre.length < 3){ alert("El nombre debe tener al menos 3 caracteres"); return false; }
   const regexEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if(!regexEmail.test(email)){
-    alert("Email inválido");
-    return false;
-  }
+  if(!regexEmail.test(email)){ alert("Email inválido"); return false; }
   const regexPass = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
-  if(!regexPass.test(pass)){
-    alert("La contraseña debe tener mínimo 6 caracteres y un número");
-    return false;
-  }
+  if(!regexPass.test(pass)){ alert("La contraseña debe tener mínimo 6 caracteres y un número"); return false; }
   return true;
 }
 
@@ -45,12 +34,7 @@ function guardarNotificacion(asunto, mensaje) {
     day: "2-digit", month: "2-digit", year: "numeric",
     hour: "2-digit", minute: "2-digit", hour12: true
   });
-  bandeja.push({
-    id: Date.now(),
-    usuario: usuario.email,
-    asunto, mensaje,
-    fecha: fechaLimpia
-  });
+  bandeja.push({ id: Date.now(), usuario: usuario.email, asunto, mensaje, fecha: fechaLimpia });
   localStorage.setItem("bandeja", JSON.stringify(bandeja));
   actualizarBurbujaBandeja();
 }
@@ -97,14 +81,6 @@ function limpiarBandeja() {
   actualizarBurbujaBandeja();
 }
 
-function reservaDuplicada(plazaId, fecha){
-  return plazas.some(p =>
-    p.id === plazaId &&
-    p.fecha === fecha &&
-    p.estado === "reservado"
-  );
-}
-
 // ========== VARIABLES ==========
 let plazas = [];
 let plazasFiltradas = [];
@@ -116,9 +92,7 @@ const manager = new PlazaManager();
 
 // ========== INIT ==========
 async function iniciar() {
-  //  Siempre cargar desde backend, nunca desde localStorage
-  localStorage.removeItem("plazas");   // ← limpia plazas ficticias viejas
-  
+  localStorage.removeItem("plazas");
   plazas = await obtenerPlazas();
   manager.suscribir(new ContadorObserver());
   manager.suscribir(new NotificacionObserver());
@@ -164,6 +138,9 @@ async function cerrarSesion(){
   actualizarEstadoUI();
   const burbuja = document.getElementById("badge-notif");
   if(burbuja) burbuja.style.display = "none";
+  // Ocultar mis reservas al cerrar sesión
+  const section = document.getElementById("misReservasSection");
+  if(section) section.style.display = "none";
   render();
 }
 
@@ -174,8 +151,7 @@ function mostrarHeaderUsuario(){
   const nombre = usuarioActual.nombre || usuarioActual.username || "U";
   const iniciales = nombre.split(" ").map(n => n[0]).join("").toUpperCase();
   document.querySelector(".avatar").textContent = iniciales;
-  document.getElementById("usuarioActual").textContent =
-    `Hola, ${nombre} (${usuarioActual.rol})`;
+  document.getElementById("usuarioActual").textContent = `Hola, ${nombre} (${usuarioActual.rol})`;
   const btnAdmin = document.getElementById("btnAdminPanel");
   if(usuarioActual.rol === "admin"){
     btnAdmin.style.display = "inline-block";
@@ -215,8 +191,7 @@ function obtenerFecha(){
 async function render(){
   const cont = document.getElementById("parkingContainer");
   if(!usuarioActual){
-    cont.innerHTML =
-      "<div class='aviso-login'>Inicia sesión para ver y reservar plazas</div>";
+    cont.innerHTML = "<div class='aviso-login'>Inicia sesión para ver y reservar plazas</div>";
     return;
   }
   await filtrarPlazas();
@@ -226,15 +201,24 @@ async function render(){
 }
 
 async function filtrarPlazas() {
-  plazasFiltradas = plazas.filter(p => {
-    const zonaOk     = zonaSeleccionada === "" || p.zona === zonaSeleccionada;
-    const tipoOk     = tipoSeleccionado === "" || p.tipo === tipoSeleccionado;
-    const disponible = p.estado === "disponible" ||
-                       p.reservadoPor === usuarioActual?.email;
-    return zonaOk && tipoOk && disponible;
+  const fecha = obtenerFecha();
+  let idsOcupados = new Set();
+
+  if (fecha) {
+    const ids = await obtenerReservasPorFecha(fecha);
+    idsOcupados = new Set(ids);
+  }
+
+  // ✅ FIX: el estado se calcula desde plazasFiltradas, no desde plazas[]
+  plazasFiltradas = plazas.map(p => ({
+    ...p,
+    estado: idsOcupados.has(p.id) ? "reservado" : "disponible"
+  })).filter(p => {
+    const zonaOk = zonaSeleccionada === "" || p.zona === zonaSeleccionada;
+    const tipoOk = tipoSeleccionado === "" || p.tipo === tipoSeleccionado;
+    return zonaOk && tipoOk;
   });
 }
-
 
 function mostrarPlazas(){
   const cont = document.getElementById("parkingContainer");
@@ -245,50 +229,60 @@ function mostrarPlazas(){
     return;
   }
 
-  plazasFiltradas.forEach(p => {
-    const idx = plazas.findIndex(pl => pl.id === p.id);
+  plazasFiltradas.forEach(plazaFiltrada => {
+    // ✅ FIX: usar plazaFiltrada.estado (que viene de filtrarPlazas con datos reales)
+    const estadoReal = plazaFiltrada.estado;
+
+    // Si es reservado y no es el dueño ni admin, no mostrar
     if(
       usuarioActual.rol !== "admin" &&
-      plazas[idx].estado === "reservado" &&
-      plazas[idx].reservadoPor !== usuarioActual.email
+      estadoReal === "reservado" &&
+      plazaFiltrada.reservadoPor !== usuarioActual.email
     ){
       return;
     }
 
     const card = document.createElement("div");
-    card.className = `tarjeta ${plazas[idx].estado}`;
+    card.className = `tarjeta ${estadoReal}`;
 
-    const fechaTexto = plazas[idx].fecha
-      ? `<p class="plaza-fecha">Reservado para: ${plazas[idx].fecha}</p>`
+    const fechaTexto = plazaFiltrada.fecha
+      ? `<p class="plaza-fecha">Reservado para: ${plazaFiltrada.fecha}</p>`
       : "";
+
+    // ✅ FIX: botones según estadoReal
     let btnHtml = "";
-    if(plazas[idx].estado === "disponible"){
+    if(estadoReal === "disponible"){
       btnHtml = `<button class="btn-reservar">Reservar</button>`;
-    }else if(plazas[idx].estado === "reservado"){
-      btnHtml = `<button class="btn-cancelar">Cancelar</button>`;
-    }else if(plazas[idx].estado === "ocupado"){
+    }else if(estadoReal === "reservado"){
+      if(plazaFiltrada.reservadoPor === usuarioActual.email || usuarioActual.rol === "admin"){
+        btnHtml = `<button class="btn-cancelar">Cancelar</button>`;
+      }else{
+        btnHtml = `<button class="btn-ocupada" disabled>Reservado</button>`;
+      }
+    }else if(estadoReal === "ocupado"){
       if(usuarioActual.rol === "admin"){
         btnHtml = `<button class="btn-liberar">Liberar plaza</button>`;
       }else{
-        btnHtml = `<button class="btn-ocupada">Plaza ocupada</button>`;
+        btnHtml = `<button class="btn-ocupada" disabled>Plaza ocupada</button>`;
       }
     }
 
     card.innerHTML = `
-      <h3>Plaza ${plazas[idx].id}</h3>
-      <p>Zona: ${plazas[idx].zona}</p>
-      <p>Vehículo: ${plazas[idx].tipo}</p>
-      <p class="estado-texto">${plazas[idx].estado.toUpperCase()}</p>
+      <h3>${plazaFiltrada.nombre || "Plaza #" + plazaFiltrada.id}</h3>
+      <p>Zona: ${plazaFiltrada.zona}</p>
+      <p>Tipo: ${plazaFiltrada.tipo}</p>
+      <p class="estado-texto">${estadoReal.toUpperCase()}</p>
+      <p class="plaza-precio">💰 $${(plazaFiltrada.precioPorHora || 5000).toLocaleString("es-CO")}/hora</p>
       ${fechaTexto}
       ${btnHtml}
     `;
 
-    //  HU32 — Reservar conectado al backend
+    // ✅ RESERVAR
     card.querySelector(".btn-reservar")?.addEventListener("click", async () => {
       const fecha = obtenerFecha();
       const errorSpan = document.getElementById("fechaError");
 
-      if(!fecha){
+      if (!fecha) {
         errorSpan.classList.add("visible");
         document.getElementById("fechaReserva").focus();
         return;
@@ -296,75 +290,88 @@ function mostrarPlazas(){
       errorSpan.classList.remove("visible");
 
       const hoy = new Date().toISOString().split("T")[0];
-      if(fecha < hoy){
+      if (fecha < hoy) {
         alert("No puedes reservar en una fecha pasada");
         return;
       }
-      if(plazas[idx].estado !== "disponible"){
-        alert("Esta plaza ya fue reservada");
+
+      // Verificar disponibilidad real en backend
+      const idsOcupados = await obtenerReservasPorFecha(fecha);
+      if (idsOcupados.includes(plazaFiltrada.id)) {
+        alert("Esta plaza ya está reservada para esa fecha");
+        await render();
         return;
       }
 
-      const tieneReservaActiva = plazas.some(p =>
-        p.reservadoPor === usuarioActual.email && p.estado === "reservado"
+      // Confirmación con precio
+      const horas  = 12;
+      const precio = (plazaFiltrada.precioPorHora || 5000) * horas;
+      const ok = confirm(
+        `¿Confirmar reserva?\n\n` +
+        `Plaza: ${plazaFiltrada.nombre || "#" + plazaFiltrada.id}\n` +
+        `Zona: ${plazaFiltrada.zona}\n` +
+        `Fecha: ${fecha}\n` +
+        `Horario: 08:00 – 20:00\n` +
+        `Total: $${precio.toLocaleString("es-CO")}`
       );
-      if (tieneReservaActiva) {
-        alert("Ya tienes una plaza activa. Debes cancelarla antes de reservar otra.");
-        return;
-      }
+      if (!ok) return;
 
-      // Llamar al backend
-      const resultado = await crearReservaBackend(plazas[idx].id, fecha);
+      const resultado = await crearReservaBackend(plazaFiltrada.id, fecha);
 
       if (!resultado.ok) {
         alert("Error al reservar: " + resultado.error);
         return;
       }
 
-plazas[idx].reservadoPor     = usuarioActual.email;
-plazas[idx].estado           = "reservado";
-plazas[idx].fecha            = fecha;
-plazas[idx].reservaBackendId = resultado.reserva?.id; // ← línea nueva
-      guardarPlazas(plazas);
-
       guardarNotificacion(
-        "Reserva confirmada",
-        `Reservaste la plaza ${plazas[idx].id} para el día ${fecha}`
+        "Reserva confirmada ✅",
+        `Reservaste la plaza ${plazaFiltrada.nombre || "#"+plazaFiltrada.id} para el ${fecha}. Total: $${precio.toLocaleString("es-CO")}`
       );
-      simularEnvioCorreo(usuarioActual, plazas[idx], fecha);
-      render();
+      simularEnvioCorreo(usuarioActual, plazaFiltrada, fecha);
+
+      // Recargar plazas desde backend para reflejar estado real
+      plazas = await obtenerPlazas();
+      manager.setPlazas(plazas);
+      await render();
     });
 
-card.querySelector(".btn-cancelar")?.addEventListener("click", async () => {
-  const esAdmin = usuarioActual.rol === "admin";
-  const esDueno = plazas[idx].reservadoPor === usuarioActual.email;
+    // ✅ CANCELAR
+    card.querySelector(".btn-cancelar")?.addEventListener("click", async () => {
+      const esAdmin = usuarioActual.rol === "admin";
+      const esDueno = plazaFiltrada.reservadoPor === usuarioActual.email;
 
-  if (!esAdmin && !esDueno) {
-    alert("No puedes cancelar una reserva que no es tuya");
-    return;
-  }
+      if (!esAdmin && !esDueno) {
+        alert("No puedes cancelar una reserva que no es tuya");
+        return;
+      }
 
-  if (plazas[idx].reservaBackendId) {
-    await cancelarReservaBackend(plazas[idx].reservaBackendId);
-  }
+      if (!confirm("¿Cancelar esta reserva?")) return;
 
-  manager.cancelar(plazas[idx].id);
-  plazas = manager.getPlazas();
+      if (plazaFiltrada.reservaBackendId) {
+        const res = await cancelarReservaBackend(plazaFiltrada.reservaBackendId);
+        if (!res.ok) {
+          alert("Error al cancelar: " + res.error);
+          return;
+        }
+      }
 
-  guardarNotificacion(
-    "Reserva cancelada",
-    `Cancelaste la reserva de la plaza ${plazas[idx].id}`
-  );
-  render();
-});
+      guardarNotificacion(
+        "Reserva cancelada ❌",
+        `Cancelaste la reserva de la plaza ${plazaFiltrada.nombre || "#"+plazaFiltrada.id}`
+      );
 
-    // Liberar (admin)
-    card.querySelector(".btn-liberar")?.addEventListener("click", () => {
+      plazas = await obtenerPlazas();
+      manager.setPlazas(plazas);
+      await render();
+    });
+
+    // LIBERAR (admin)
+    card.querySelector(".btn-liberar")?.addEventListener("click", async () => {
       if(usuarioActual.rol !== "admin") return;
-      manager.liberar(plazas[idx].id);
-      plazas = manager.getPlazas();
-      guardarPlazas(plazas);
-      render();
+      if (!confirm("¿Liberar esta plaza?")) return;
+      plazas = await obtenerPlazas();
+      manager.setPlazas(plazas);
+      await render();
     });
 
     cont.appendChild(card);
@@ -372,33 +379,45 @@ card.querySelector(".btn-cancelar")?.addEventListener("click", async () => {
 }
 
 function actualizarContador(){
-  document.getElementById("totalPlazas").textContent       = plazas.length;
-  document.getElementById("plazasLibres").textContent     = plazas.filter(p => p.estado === "disponible").length;
-  document.getElementById("plazasReservadas").textContent = plazas.filter(p => p.estado === "reservado").length;
-  document.getElementById("plazasOcupadas").textContent   = plazas.filter(p => p.estado === "ocupado").length;
+  const total      = plazas.length;
+  const ocupadas   = plazasFiltradas.filter(p => p.estado === "reservado").length;
+  const libres     = total - ocupadas;
+
+  document.getElementById("totalPlazas").textContent       = total;
+  document.getElementById("plazasLibres").textContent      = libres;
+  document.getElementById("plazasReservadas").textContent  = ocupadas;
+  document.getElementById("plazasOcupadas").textContent    = plazas.filter(p => p.estado === "ocupado").length;
 }
 
-// ========== MIS RESERVAS ==========
+// ========== MIS RESERVAS — desde backend ==========
 
-function renderMisReservas(){
+async function renderMisReservas(){
   const usuario = JSON.parse(localStorage.getItem("usuarioActual"));
   if(!usuario) return;
-  const reservas = plazas.filter(p => p.reservadoPor === usuario.email);
-  const cont = document.getElementById("misReservas");
+
+  const cont    = document.getElementById("misReservas");
   const section = document.getElementById("misReservasSection");
   if(!cont || !section) return;
-  if(reservas.length === 0){
-    cont.innerHTML = "<p>No tienes reservas</p>";
+
+  // ✅ FIX: cargar reservas reales del backend
+  const reservas = await obtenerMisReservas();
+
+  if(!reservas || reservas.length === 0){
+    cont.innerHTML = "<p style='color:#aaa;font-style:italic'>No tienes reservas activas</p>";
   }else{
-    cont.innerHTML = reservas.map(p => `
-      <div class="reserva-card">
-        <p><strong>Plaza #${p.id}</strong></p>
-        <p>Zona: ${p.zona}</p>
-        <p>Tipo: ${p.tipo}</p>
-        <p class="reserva-fecha">${p.fecha || "Sin fecha asignada"}</p>
-      </div>
-    `).join("");
+    cont.innerHTML = reservas
+      .filter(r => r.estado !== "CANCELLED")
+      .map(r => `
+        <div class="reserva-card">
+          <p><strong>${r.product?.name || "Plaza #" + r.product?.id}</strong></p>
+          <p>Zona: ${r.product?.zona || "—"}</p>
+          <p>Tipo: ${r.product?.category?.name || "—"}</p>
+          <p class="reserva-fecha">📅 ${r.startTime?.split("T")[0] || "Sin fecha"}</p>
+          <p style="font-size:12px;color:#888">Estado: ${r.estado}</p>
+        </div>
+      `).join("");
   }
+
   section.style.display = "block";
 }
 
@@ -423,9 +442,9 @@ async function renderizarCategoriasHome() {
   if (!contenedor) return;
 
   const categoriasVehiculo = JSON.parse(localStorage.getItem("categoriasVehiculo")) || [
-    { nombre: "automovil",  label: "Automóvil",  icono: "🚗" },
-    { nombre: "camioneta",  label: "Camioneta",  icono: "🚙" },
-    { nombre: "moto",       label: "Moto",       icono: "🏍️" }
+    { nombre: "automovil", label: "Automóvil", icono: "🚗" },
+    { nombre: "camioneta", label: "Camioneta", icono: "🚙" },
+    { nombre: "moto",      label: "Moto",      icono: "🏍️" }
   ];
 
   contenedor.innerHTML = categoriasVehiculo.map(cat => `
@@ -533,13 +552,8 @@ function configurarModales(){
     alert(resultado.error || "Credenciales incorrectas");
   };
 
-  document.getElementById("btnHeaderCrear").onclick = () => {
-    mCrear.style.display = "flex";
-  };
-
-  document.getElementById("btnHeaderLogin").onclick = () => {
-    mLogin.style.display = "flex";
-  };
+  document.getElementById("btnHeaderCrear").onclick = () => mCrear.style.display = "flex";
+  document.getElementById("btnHeaderLogin").onclick = () => mLogin.style.display = "flex";
 
   document.querySelectorAll(".cerrar").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -558,7 +572,7 @@ function simularCorreoBienvenida(usuario) {
   bandejaInterna.push({
     id: Date.now(),
     usuario: usuario.email,
-    asunto: "Bienvenido a ParkApp",
+    asunto: "Bienvenido a ParkApp 🎉",
     mensaje: `Tu cuenta fue creada correctamente. Rol: ${usuario.rol}`,
     fecha: new Date().toLocaleString("es-CO", { hour: "2-digit", minute: "2-digit", hour12: true })
   });
@@ -570,13 +584,13 @@ function simularEnvioCorreo(usuario, plaza, fecha) {
   const correo = {
     para: usuario.email,
     asunto: "Confirmación de reserva - ParkApp",
-    mensaje: `Hola ${usuario.nombre}, tu reserva fue confirmada. Plaza: ${plaza.id} | Fecha: ${fecha}`,
+    mensaje: `Hola ${usuario.nombre || usuario.username}, tu reserva fue confirmada. Plaza: ${plaza.nombre || plaza.id} | Fecha: ${fecha}`,
     fechaEnvio: new Date().toLocaleString()
   };
   let bandeja = JSON.parse(localStorage.getItem("bandejaSalida")) || [];
   bandeja.push(correo);
   localStorage.setItem("bandejaSalida", JSON.stringify(bandeja));
-  mostrarNotifCorreo("Correo enviado correctamente");
+  mostrarNotifCorreo("Correo enviado correctamente ✉️");
 }
 
 function mostrarNotifCorreo(mensaje) {
