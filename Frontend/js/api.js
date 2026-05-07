@@ -130,32 +130,53 @@ export async function crearProducto(producto) {
 // ============================================================
 
 export async function obtenerPlazas() {
-  try {
-    const res = await fetch(`${BASE_URL}/api/productos`);
-    if (!res.ok) throw new Error("Error al cargar productos");
-    const productos = await res.json();
 
-    return productos.map(p => ({
-      id:           p.id,
-      nombre:       p.name,
-      zona:         p.zona || "General",
-      tipo:         mapearTipo(p.category?.name),
-      estado:       "disponible",
-      reservadoPor: null,
-      fecha:        null,
-      extras: {
-        techado:        p.category?.name === "Cubierto",
-        camaras:        false,
-        iluminado:      true,
-        discapacitados: p.category?.name === "Discapacitados"
-      }
-    }));
+  try {
+
+    const res = await fetch(`${BASE_URL}/api/productos`);
+
+    if (!res.ok) {
+      throw new Error("Error al cargar productos");
+    }
+
+    return await res.json();
+
   } catch (e) {
-    console.error("Error obteniendo plazas:", e.message);
+
+    console.error("Error obteniendo productos:", e.message);
+
     return [];
   }
 }
+export async function eliminarProducto(id) {
 
+  try {
+
+    const res = await fetch(
+      `${BASE_URL}/api/productos/${id}`,
+      {
+        method: "DELETE",
+        headers: authHeaders()
+      }
+    );
+
+    if (!res.ok) {
+
+      const data = await res.json();
+
+      throw new Error(data.error || "Error eliminando");
+    }
+
+    return { ok: true };
+
+  } catch (e) {
+
+    return {
+      ok: false,
+      error: e.message
+    };
+  }
+}
 function mapearTipo(categoria) {
   const mapa = {
     "Cubierto":       "automovil",
@@ -167,24 +188,27 @@ function mapearTipo(categoria) {
   return mapa[categoria] || "automovil";
 }
 
-export function guardarPlazas(plazas) {
-  localStorage.setItem("plazas", JSON.stringify(plazas));
-}
-
 // ============================================================
 // HU23 — Disponibilidad
 // ============================================================
-11
-export async function obtenerDisponibilidad(zona = "", tipo = "", fecha = "") {
+export async function obtenerDisponibilidad() {
+
   try {
-    const plazas = obtenerPlazasLocal();
-    let resultado = plazas.filter(p => p.estado !== "ocupado");
-    if (zona)  resultado = resultado.filter(p => p.zona.toLowerCase() === zona.toLowerCase());
-    if (tipo)  resultado = resultado.filter(p => p.tipo.toLowerCase() === tipo.toLowerCase());
-    if (fecha) resultado = resultado.filter(p => !(p.estado === "reservado" && p.fecha === fecha));
-    return { ok: true, total: resultado.length, filtros: { zona, tipo, fecha }, plazas: resultado };
-  } catch (_) {
-    return { ok: false, plazas: [] };
+
+    const productos = await obtenerProductos();
+
+    return {
+      ok: true,
+      total: productos.length,
+      plazas: productos
+    };
+
+  } catch (e) {
+
+    return {
+      ok: false,
+      plazas: []
+    };
   }
 }
 

@@ -579,72 +579,128 @@ tbody tr:last-child td { border-bottom: none; }
   }
 
   /* ========== TABLA PLAZAS (HU10) ========== */
-  function renderTablaPlazas(filtros = {}) {
-    let lista = [...plazas];
-    if (filtros.zona)   lista = lista.filter(p => p.zona === filtros.zona);
-    if (filtros.tipo)   lista = lista.filter(p => p.tipo === filtros.tipo);
-    if (filtros.estado) lista = lista.filter(p => p.estado === filtros.estado);
+  async function renderTablaPlazas(filtros = {}) {
+
+    // 🔥 Consumir backend real
+    let lista = await obtenerProductos();
+
+    // 🔎 Filtros
+    if (filtros.zona) {
+        lista = lista.filter(p =>
+            (p.zona || "").toLowerCase() === filtros.zona.toLowerCase()
+        );
+    }
+
+    if (filtros.tipo) {
+        lista = lista.filter(p =>
+            (p.category?.name || "").toLowerCase() === filtros.tipo.toLowerCase()
+        );
+    }
+
     if (filtros.buscar) {
-      const q = filtros.buscar.toLowerCase();
-      lista = lista.filter(p =>
-        String(p.id).includes(q) ||
-        p.zona.toLowerCase().includes(q) ||
-        p.tipo.toLowerCase().includes(q)
-      );
+        const q = filtros.buscar.toLowerCase();
+
+        lista = lista.filter(p =>
+            String(p.id).includes(q) ||
+            (p.zona || "").toLowerCase().includes(q) ||
+            (p.name || "").toLowerCase().includes(q) ||
+            (p.category?.name || "").toLowerCase().includes(q)
+        );
     }
 
     const tbody = document.getElementById("tablaPlazasBody");
+
     tbody.innerHTML = lista.length === 0
-      ? `<tr><td colspan="7" style="text-align:center;color:#aaa;padding:20px">No se encontraron plazas</td></tr>`
-      : lista.map(p => {
-          const caracts = (p.caracteristicas || [])
-            .map(id => caracteristicas.find(c => c.id === id)?.nombre)
-            .filter(Boolean);
-          const caractHtml = caracts.length
-            ? caracts.map(n => `<span class="caract-tag">${n}</span>`).join(" ")
-            : `<span class="caract-tag-none">Sin características</span>`;
+        ? `
+        <tr>
+            <td colspan="7"
+                style="text-align:center;color:#aaa;padding:20px">
+                No se encontraron plazas
+            </td>
+        </tr>
+        `
+        : lista.map(p => {
 
-          const accionLiberar = p.estado === "ocupado"
-            ? `<button class="btn-accion btn-liberar" data-id="${p.id}" data-accion="liberar">Liberar</button>`
-            : "";
+            // ✅ Características reales
+            const caractHtml = (p.features && p.features.length > 0)
+                ? p.features.map(f =>
+                    `<span class="caract-tag">${f.name}</span>`
+                  ).join(" ")
+                : `<span class="caract-tag-none">Sin características</span>`;
 
-          return `
+            return `
             <tr>
-              <td><strong>#${p.id}</strong></td>
-              <td>${p.zona}</td>
-              <td style="text-transform:capitalize">${p.tipo}</td>
-              <td><span class="badge badge-${p.estado}">${p.estado}</span></td>
-              <td>${p.fecha || "—"}</td>
-              <td><div class="caract-tags">${caractHtml}</div></td>
-              <td>
-                <button class="btn-accion btn-editar" data-id="${p.id}" data-accion="editar">Editar</button>
-                ${accionLiberar}
-                <button class="btn-accion btn-eliminar" data-id="${p.id}" data-accion="eliminar">Eliminar</button>
-              </td>
-            </tr>`;
+                <td><strong>#${p.id}</strong></td>
+
+                <td>${p.zona || "-"}</td>
+
+                <td style="text-transform:capitalize">
+                    ${p.category?.name || "-"}
+                </td>
+
+                <td>${p.name || "-"}</td>
+
+                <td>${p.description || "-"}</td>
+
+                <td>
+                    <div class="caract-tags">
+                        ${caractHtml}
+                    </div>
+                </td>
+
+                <td>
+                    <button class="btn-accion btn-editar"
+                        data-id="${p.id}"
+                        data-accion="editar">
+                        Editar
+                    </button>
+
+                    <button class="btn-accion btn-eliminar"
+                        data-id="${p.id}"
+                        data-accion="eliminar">
+                        Eliminar
+                    </button>
+                </td>
+            </tr>
+            `;
         }).join("");
 
-    tbody.querySelectorAll("[data-accion='liberar']").forEach(btn => {
-      btn.onclick = () => {
-        const idx = plazas.findIndex(p => p.id === Number(btn.dataset.id));
-        plazas[idx].estado = "disponible"; plazas[idx].fecha = null;
-        guardarPlazas(plazas); toast("Plaza #" + btn.dataset.id + " liberada", "verde"); refrescar();
-      };
-    });
-    tbody.querySelectorAll("[data-accion='editar']").forEach(btn => {
-      btn.onclick = () => abrirModalEditarPlaza(Number(btn.dataset.id));
-    });
-    tbody.querySelectorAll("[data-accion='eliminar']").forEach(btn => {
-      btn.onclick = () => {
-        const id = Number(btn.dataset.id);
-        const plaza = plazas.find(p => p.id === id);
-        if (plaza.estado !== "disponible") { toast("No puedes eliminar una plaza reservada u ocupada", "rojo"); return; }
-        if (!confirm(`¿Eliminar la plaza #${id}?`)) return;
-        plazas = plazas.filter(p => p.id !== id);
-        guardarPlazas(plazas); refrescar();
-      };
-    });
-  }
+    // ✅ Editar
+    tbody.querySelectorAll("[data-accion='editar']")
+        .forEach(btn => {
+
+            btn.onclick = () => {
+                abrirModalEditarPlaza(Number(btn.dataset.id));
+            };
+        });
+
+    // ✅ Eliminar REAL desde backend
+    tbody.querySelectorAll("[data-accion='eliminar']")
+        .forEach(btn => {
+
+            btn.onclick = async () => {
+
+                const id = Number(btn.dataset.id);
+
+                if (!confirm(`¿Eliminar la plaza #${id}?`)) {
+                    return;
+                }
+
+                const resultado = await eliminarProducto(id);
+
+                if (resultado.ok) {
+
+                    toast("Producto eliminado", "verde");
+
+                    await renderTablaPlazas(filtros);
+
+                } else {
+
+                    toast(resultado.error || "Error al eliminar", "rojo");
+                }
+            };
+        });
+}
 
   /* ========== TABLA RESERVAS ========== */
 function renderTablaReservas(buscar = "") {
