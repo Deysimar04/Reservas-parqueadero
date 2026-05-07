@@ -14,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -28,6 +29,7 @@ public class SecurityConfig {
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -36,8 +38,8 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(request -> {
                     CorsConfiguration config = new CorsConfiguration();
                     config.setAllowedOriginPatterns(List.of("*"));
-                    config.setAllowedMethods(Arrays.asList("GET","POST","PUT","DELETE","OPTIONS","PATCH"));
-                    config.setAllowedHeaders(Arrays.asList("Authorization","Content-Type","Accept","Origin"));
+                    config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                    config.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "Accept", "Origin"));
                     config.setAllowCredentials(true);
                     return config;
                 }))
@@ -67,17 +69,31 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
 
-                        // Públicos
-                        .requestMatchers("/api/auth/**").permitAll()
-                        .requestMatchers("/api/productos", "/api/productos/**").permitAll()
+                        // Publicos
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/registro").permitAll()
+                        .requestMatchers("/api/reservas/ocupadas").permitAll()
+                        .requestMatchers("/api/reservas/ocupadas/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/productos").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/productos/**").permitAll()
 
-                        // ADMIN
+                        // HU16 temporal para pruebas Postman
+                        .requestMatchers(HttpMethod.PUT, "/api/auth/usuarios/**").hasRole("ADMIN")
+
+
+                        // Auth protegidos
+                        .requestMatchers("/api/auth/logout").authenticated()
+
+                        // Admin productos
                         .requestMatchers(HttpMethod.POST, "/api/productos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
                         .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
 
-                        // Reservas
+                        // Reservas privadas
                         .requestMatchers("/api/reservas/**").authenticated()
+
+                        // Favoritos
+                        .requestMatchers("/favoritos/**").authenticated()
 
                         .anyRequest().authenticated()
                 )

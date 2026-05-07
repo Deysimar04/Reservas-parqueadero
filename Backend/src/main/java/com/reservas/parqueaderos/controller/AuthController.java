@@ -32,7 +32,8 @@ public class AuthController {
         return userRepository.findByUsername(username)
                 .or(() -> userRepository.findByEmail(username))
                 .map(user -> {
-                    // 🔐 Validación REAL con BCrypt
+
+                    //  Validación REAL con BCrypt
                     if (passwordEncoder.matches(password, user.getPassword())) {
 
                         String token = jwtUtil.generateToken(
