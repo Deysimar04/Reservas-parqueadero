@@ -69,4 +69,14 @@ public class ProductController {
 
         return ResponseEntity.ok(disponibilidad);
     }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> eliminar(@PathVariable Long id) {
+
+    productService.eliminar(id);
+
+    return ResponseEntity.ok(
+            Map.of("mensaje", "Producto eliminado")
+    );
+}
 }

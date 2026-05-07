@@ -78,4 +78,8 @@ public class ProductService {
 
         return new Availability();
     }
+
+    public void eliminar(Long id) {
+        productRepository.deleteById(id);
+    }
 }

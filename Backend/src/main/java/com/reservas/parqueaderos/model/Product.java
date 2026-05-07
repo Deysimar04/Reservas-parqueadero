@@ -20,14 +20,15 @@ public class Product {
 
     @Column(name = "zona")
     private String zona;
+    @Column(name = "precio_por_hora")
+    private Double precioPorHora;
 
-    // 🔥 RELACIÓN CORRECTA
+    // RELACIÓN CORRECTA
     @ManyToOne
     @JoinColumn(name = "category_id")
     private Category category;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     @JsonManagedReference
-    @JsonIgnore
     private List<Feature> features;
 }
