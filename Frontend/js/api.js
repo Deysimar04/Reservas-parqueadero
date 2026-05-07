@@ -27,18 +27,7 @@ export async function registrarUsuario(username, email, password, rol = "USER") 
     return { ok: false, error: e.message };
   }
 }
-export async function obtenerTodasLasReservas() {
-    try {
-        const res = await fetch(`${BASE_URL}/api/reservas/todas`, {
-        headers: authHeaders()
-    });
-    if (!res.ok) throw new Error("Error al obtener reservas");
-        return await res.json();
-    } catch (e) {
-        console.error("Error obteniendo reservas:", e.message);
-        return [];
-    }
-  }
+
 export async function loginUsuario(username, password) {
   try {
     const res = await fetch(`${BASE_URL}/api/auth/login`, {
@@ -125,6 +114,22 @@ export async function crearProducto(producto) {
   }
 }
 
+export async function eliminarProducto(id) {
+  try {
+    const res = await fetch(`${BASE_URL}/api/productos/${id}`, {
+      method: "DELETE",
+      headers: authHeaders()
+    });
+    if (!res.ok) {
+      const data = await res.json();
+      throw new Error(data.error || "Error eliminando");
+    }
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+}
+
 // ============================================================
 // PLAZAS — Desde el BACKEND (productos reales de la BD)
 // ============================================================
@@ -135,6 +140,7 @@ export async function obtenerPlazas() {
     if (!res.ok) throw new Error("Error al cargar productos");
     const productos = await res.json();
 
+    // Mapeamos productos del backend como "plazas" para el frontend
     return productos.map(p => ({
       id:           p.id,
       nombre:       p.name,
@@ -143,9 +149,12 @@ export async function obtenerPlazas() {
       estado:       "disponible",
       reservadoPor: null,
       fecha:        null,
+      precioPorHora: p.precioPorHora || 5000,
+      features:     p.features || [],
+      category:     p.category,
       extras: {
         techado:        p.category?.name === "Cubierto",
-        camaras:        false,
+        camaras:        (p.features || []).some(f => f.name === "Cámara vigilancia"),
         iluminado:      true,
         discapacitados: p.category?.name === "Discapacitados"
       }
@@ -172,25 +181,43 @@ export function guardarPlazas(plazas) {
 }
 
 // ============================================================
-// HU23 — Disponibilidad
+// HU23 — Disponibilidad real con fechas de la BD
 // ============================================================
-11
-export async function obtenerDisponibilidad(zona = "", tipo = "", fecha = "") {
+
+export async function obtenerDisponibilidad() {
   try {
-    const plazas = obtenerPlazasLocal();
-    let resultado = plazas.filter(p => p.estado !== "ocupado");
-    if (zona)  resultado = resultado.filter(p => p.zona.toLowerCase() === zona.toLowerCase());
-    if (tipo)  resultado = resultado.filter(p => p.tipo.toLowerCase() === tipo.toLowerCase());
-    if (fecha) resultado = resultado.filter(p => !(p.estado === "reservado" && p.fecha === fecha));
-    return { ok: true, total: resultado.length, filtros: { zona, tipo, fecha }, plazas: resultado };
-  } catch (_) {
+    const productos = await obtenerProductos();
+    return {
+      ok: true,
+      total: productos.length,
+      plazas: productos
+    };
+  } catch (e) {
     return { ok: false, plazas: [] };
+  }
+}
+
+// HU23: IDs de productos ocupados en una fecha específica
+export async function obtenerReservasPorFecha(fecha) {
+  try {
+    const startTime = `${fecha}T00:00:00`;
+    const endTime   = `${fecha}T23:59:59`;
+    const res = await fetch(
+      `${BASE_URL}/api/reservas/ocupadas?startTime=${startTime}&endTime=${endTime}`,
+      { headers: authHeaders() }
+    );
+    if (!res.ok) return [];
+    return await res.json(); // lista de productIds ocupados ese día
+  } catch (e) {
+    console.warn("Error consultando disponibilidad:", e.message);
+    return [];
   }
 }
 
 // ============================================================
 // HU32 — Crear reserva (con ID real del producto)
 // ============================================================
+
 export async function crearReservaBackend(productId, fecha) {
   try {
     const startTime = `${fecha}T08:00:00`;
@@ -213,8 +240,9 @@ export async function crearReservaBackend(productId, fecha) {
     return { ok: false, error: e.message };
   }
 }
+
 // ============================================================
-// HU33 — Historial de reservas
+// HU33 — Historial de reservas del usuario
 // ============================================================
 
 export async function obtenerMisReservas() {
@@ -226,6 +254,23 @@ export async function obtenerMisReservas() {
     return await res.json();
   } catch (e) {
     console.warn("Error obteniendo reservas:", e.message);
+    return [];
+  }
+}
+
+// ============================================================
+// Admin — Todas las reservas
+// ============================================================
+
+export async function obtenerTodasLasReservas() {
+  try {
+    const res = await fetch(`${BASE_URL}/api/reservas/todas`, {
+      headers: authHeaders()
+    });
+    if (!res.ok) throw new Error("Error al obtener reservas");
+    return await res.json();
+  } catch (e) {
+    console.error("Error obteniendo todas las reservas:", e.message);
     return [];
   }
 }
@@ -271,4 +316,3 @@ function authHeaders() {
   const token = localStorage.getItem("token");
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
-// prueba
