@@ -30,6 +30,7 @@ public class AuthController {
         String password = body.get("password");
 
         return userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
                 .map(user -> {
                     // 🔐 Validación REAL con BCrypt
                     if (passwordEncoder.matches(password, user.getPassword())) {
