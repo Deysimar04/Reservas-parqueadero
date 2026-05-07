@@ -1,18 +1,22 @@
 package com.reservas.parqueaderos.service;
 
 import com.reservas.parqueaderos.model.Reserva;
+import com.reservas.parqueaderos.model.Users;
 import com.reservas.parqueaderos.repository.ReservaRepository;
+import com.reservas.parqueaderos.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class ReservaService {
 
     private final ReservaRepository reservaRepository;
+    private final UserRepository userRepository; // ← inyectado
 
     // HU33: Historial ordenado por fecha descendente
     public List<Reserva> getReservasByUser(Long userId) {
@@ -25,7 +29,7 @@ public class ReservaService {
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada con ID: " + id));
     }
 
-    // HU30 + HU23: Verificar si un producto está disponible en el rango de fechas
+    // HU30 + HU23: Verificar disponibilidad
     public boolean estaDisponible(Long productId, LocalDateTime startTime, LocalDateTime endTime) {
         if (startTime == null || endTime == null) {
             throw new RuntimeException("Las fechas no pueden ser nulas");
@@ -42,9 +46,17 @@ public class ReservaService {
                         productId, endTime, startTime
                 );
 
-        // Solo cuenta conflictos activos (no canceladas)
         return conflictos.stream()
                 .noneMatch(r -> !"CANCELLED".equalsIgnoreCase(r.getEstado()));
+    }
+
+    // HU23: IDs de productos ocupados en un rango
+    public List<Long> getProductosOcupados(LocalDateTime start, LocalDateTime end) {
+        return reservaRepository.findConflictosEnRango(start, end)
+                .stream()
+                .map(r -> r.getProduct().getId())
+                .distinct()
+                .collect(Collectors.toList());
     }
 
     // HU32: Crear reserva con validaciones completas
@@ -76,12 +88,18 @@ public class ReservaService {
         return reservaRepository.save(reserva);
     }
 
-    // Cancelar reserva validando que pertenece al usuario (o admin puede cancelar cualquiera)
+    // Cancelar reserva — admin puede cancelar cualquiera, cliente solo la suya
     public void cancelarReserva(Long reservaId, Long userId) {
         Reserva reserva = reservaRepository.findById(reservaId)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
 
-        if (!reserva.getUser().getId().equals(userId)) {
+        Users usuarioActual = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+
+        boolean esAdmin = "ADMIN".equalsIgnoreCase(usuarioActual.getRole());
+        boolean esDueno = reserva.getUser().getId().equals(userId);
+
+        if (!esAdmin && !esDueno) {
             throw new RuntimeException("No tienes permiso para cancelar esta reserva");
         }
         if ("CANCELLED".equalsIgnoreCase(reserva.getEstado())) {
@@ -92,6 +110,7 @@ public class ReservaService {
         reservaRepository.save(reserva);
     }
 
+    // Admin: todas las reservas
     public List<Reserva> getTodas() {
         return reservaRepository.findAll();
     }
