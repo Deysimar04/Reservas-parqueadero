@@ -103,6 +103,20 @@ public class AuthController {
         @RequestBody Map<String, String> body
     ) {
 
+    Authentication auth =
+    SecurityContextHolder.getContext().getAuthentication();
+
+    String actualUsername = auth.getName();
+
+if (user.getUsername().equals(actualUsername)) {
+
+    return ResponseEntity.badRequest()
+            .body(Map.of(
+                    "error",
+                    "No puedes modificar tu propio rol"
+            ));
+}
+
     Users user = userRepository.findById(id)
             .orElseThrow();
 
@@ -119,10 +133,15 @@ public class AuthController {
     public ResponseEntity<?> eliminarUsuario(
         @PathVariable Long id
     ) {
-
+        if (user.getRole().equals("ADMIN")) {
+            return ResponseEntity.badRequest()
+            .body(Map.of(
+                    "error",
+                    "No se puede eliminar un administrador"
+            ));
+        }
         userRepository.deleteById(id);
-
-    return ResponseEntity.ok(
+        return ResponseEntity.ok(
         Map.of("mensaje", "Usuario eliminado")
     );
 }

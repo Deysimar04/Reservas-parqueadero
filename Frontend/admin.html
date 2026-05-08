@@ -394,7 +394,7 @@ tbody tr:last-child td { border-bottom: none; }
 
 <script type="module">
 
-import { obtenerPlazas, guardarPlazas, obtenerTodasLasReservas, eliminarProducto, cancelarReservaBackend, crearProducto, sesionValida,obtenerUsuarios, eliminarUsuario, cambiarRolUsuario} from "./js/api.js";
+import { obtenerPlazas, guardarPlazas, obtenerTodasLasReservas, eliminarProducto, cancelarReservaBackend, crearProducto, sesionValida, obtenerUsuarios, eliminarUsuario, cambiarRolUsuario } from "./js/api.js";
 
 let plazas   = [];
 let reservas = [];
@@ -737,85 +737,96 @@ async function renderTablaUsuarios(buscar = "") {
   // CAMBIAR ROL
   // ==================================================
 
-  tbody.querySelectorAll("[data-accion='cambiar-rol']")
-    .forEach(btn => {
+tbody.querySelectorAll("[data-accion='cambiar-rol']")
+  .forEach(btn => {
 
-      btn.onclick = async () => {
+    btn.onclick = async () => {
 
-        const id = btn.dataset.id;
+      const id = btn.dataset.id;
 
-        const currentRole = btn.dataset.role;
+      const currentRole = btn.dataset.role;
 
-        const nuevoRol =
-          currentRole === "ADMIN"
-            ? "USER"
-            : "ADMIN";
+      const username = btn.closest("tr")
+        .children[0]
+        .innerText
+        .trim();
 
-        const resultado =
-          await cambiarRolUsuario(id, nuevoRol);
+      // ❌ No cambiarse el propio rol
+      if (username === usuarioActual.username) {
 
-        if (resultado.ok) {
+        toast("No puedes cambiar tu propio rol", "rojo");
 
-          toast("Rol actualizado", "verde");
+        return;
+      }
 
-          renderTablaUsuarios(buscar);
+      const nuevoRol =
+        currentRole === "ADMIN"
+          ? "USER"
+          : "ADMIN";
 
-        } else {
+      const resultado =
+        await cambiarRolUsuario(id, nuevoRol);
 
-          toast(resultado.error, "rojo");
-        }
-      };
-    });
+      if (resultado.ok) {
+
+        toast("Rol actualizado", "verde");
+
+        renderTablaUsuarios(buscar);
+
+      } else {
+
+        toast(resultado.error, "rojo");
+      }
+    };
+  });
 
   // ==================================================
   // ELIMINAR USUARIO
   // ==================================================
 
-  tbody.querySelectorAll("[data-accion='eliminar-usuario']")
-    .forEach(btn => {
+tbody.querySelectorAll("[data-accion='eliminar-usuario']")
+  .forEach(btn => {
 
-      btn.onclick = async () => {
+    btn.onclick = async () => {
 
-        const id = btn.dataset.id;
+      const id = btn.dataset.id;
 
-        const role = btn.dataset.role;
+      const role = btn.dataset.role;
 
-        const email = btn.dataset.email;
+      const email = btn.dataset.email;
 
-        // No eliminarse a sí mismo
+      // ❌ No eliminarse a sí mismo
+      if (email === usuarioActual.email) {
 
-        if (email === usuarioActual.email) {
+        toast("No puedes eliminarte a ti mismo", "rojo");
 
-          toast("No puedes eliminarte a ti mismo", "rojo");
+        return;
+      }
 
-          return;
-        }
+      // ❌ No eliminar administradores
+      if (role === "ADMIN") {
 
-        // No eliminar admins
+        toast("No puedes eliminar a otro administrador", "rojo");
 
-        if (role === "ADMIN") {
+        return;
+      }
 
-          toast("No puedes eliminar otro administrador", "rojo");
+      if (!confirm("¿Eliminar usuario?")) return;
 
-          return;
-        }
+      const resultado = await eliminarUsuario(id);
 
-        if (!confirm("¿Eliminar usuario?")) return;
+      if (resultado.ok) {
 
-        const resultado = await eliminarUsuario(id);
+        toast("Usuario eliminado", "verde");
 
-        if (resultado.ok) {
+        renderTablaUsuarios(buscar);
 
-          toast("Usuario eliminado", "verde");
+      } else {
 
-          renderTablaUsuarios(buscar);
-
-        } else {
-
-          toast(resultado.error, "rojo");
-        }
-      };
-    });
+        toast(resultado.error, "rojo");
+      }
+    };
+  });
 }
   const usuarios = (JSON.parse(localStorage.getItem("usuarios")) || []).filter(u => {
     if (!buscar) return true;
