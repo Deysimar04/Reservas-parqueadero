@@ -6,6 +6,8 @@ import com.reservas.parqueaderos.security.JwtUtil;
 import com.reservas.parqueaderos.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,50 +101,74 @@ public class AuthController {
     // CAMBIAR ROL (corregido)
     @PutMapping("/usuarios/{id}/rol")
     public ResponseEntity<?> cambiarRol(
-        @PathVariable Long id,
-        @RequestBody Map<String, String> body
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
     ) {
 
-    Authentication auth =
-    SecurityContextHolder.getContext().getAuthentication();
+        Users user = userRepository.findById(id)
+                .orElseThrow();
 
-    String actualUsername = auth.getName();
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
 
-if (user.getUsername().equals(actualUsername)) {
+        String actualUsername = auth.getName();
 
-    return ResponseEntity.badRequest()
-            .body(Map.of(
-                    "error",
-                    "No puedes modificar tu propio rol"
-            ));
-}
+        // ❌ No cambiarse el propio rol
+        if (user.getUsername().equals(actualUsername)) {
 
-    Users user = userRepository.findById(id)
-            .orElseThrow();
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "error",
+                            "No puedes modificar tu propio rol"
+                    ));
+        }
 
-    user.setRole(body.get("role"));
+        user.setRole(body.get("role"));
 
-    userRepository.save(user);
+        userRepository.save(user);
 
-    return ResponseEntity.ok(
-            Map.of("mensaje", "Rol actualizado")
-    );
+        return ResponseEntity.ok(
+                Map.of("mensaje", "Rol actualizado")
+        );
     }
 
     @DeleteMapping("/usuarios/{id}")
     public ResponseEntity<?> eliminarUsuario(
-        @PathVariable Long id
+            @PathVariable Long id
     ) {
-        if (user.getRole().equals("ADMIN")) {
+
+        Users user = userRepository.findById(id)
+                .orElseThrow();
+
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String actualUsername = auth.getName();
+
+        // ❌ No eliminarse a sí mismo
+        if (user.getUsername().equals(actualUsername)) {
+
             return ResponseEntity.badRequest()
-            .body(Map.of(
-                    "error",
-                    "No se puede eliminar un administrador"
-            ));
+                    .body(Map.of(
+                            "error",
+                            "No puedes eliminarte a ti mismo"
+                    ));
         }
+
+        // ❌ No eliminar admins
+        if ("ADMIN".equals(user.getRole())) {
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "error",
+                            "No se puede eliminar un administrador"
+                    ));
+        }
+
         userRepository.deleteById(id);
+
         return ResponseEntity.ok(
-        Map.of("mensaje", "Usuario eliminado")
-    );
-}
+                Map.of("mensaje", "Usuario eliminado")
+        );
+    }
 }
