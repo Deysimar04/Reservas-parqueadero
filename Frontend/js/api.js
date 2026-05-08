@@ -78,6 +78,83 @@ export function sesionValida() {
   return Boolean(getValidToken());
 }
 
+export async function obtenerUsuarios() {
+  try {
+
+    const res = await fetch(`${BASE_URL}/api/auth/usuarios`, {
+      headers: authHeaders()
+    });
+
+    if (!res.ok) {
+      throw new Error("Error obteniendo usuarios");
+    }
+
+    return await res.json();
+
+  } catch (e) {
+
+    console.error(e);
+
+    return [];
+  }
+}
+
+export async function cambiarRolUsuario(id, role) {
+
+  try {
+
+    const res = await fetch(`${BASE_URL}/api/auth/usuarios/${id}/rol`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        ...authHeaders()
+      },
+      body: JSON.stringify({ role })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Error cambiando rol");
+    }
+
+    return { ok: true };
+
+  } catch (e) {
+
+    return {
+      ok: false,
+      error: e.message
+    };
+  }
+}
+export async function eliminarUsuario(id) {
+
+  try {
+
+    const res = await fetch(`${BASE_URL}/api/auth/usuarios/${id}`, {
+      method: "DELETE",
+      headers: authHeaders()
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || "Error eliminando usuario");
+    }
+
+    return { ok: true };
+
+  } catch (e) {
+
+    return {
+      ok: false,
+      error: e.message
+    };
+  }
+}
+
+
 // ============================================================
 // PRODUCTOS — HU10, HU3, HU12, HU17
 // ============================================================
@@ -129,6 +206,7 @@ export async function crearProducto(producto) {
 }
 
 export async function eliminarProducto(id) {
+  console.log(authHeaders());
   try {
     const res = await fetch(`${BASE_URL}/api/productos/${id}`, {
       method: "DELETE",

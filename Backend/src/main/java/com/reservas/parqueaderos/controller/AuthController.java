@@ -90,30 +90,39 @@ public class AuthController {
         return ResponseEntity.ok(Map.of("mensaje", "Sesión cerrada correctamente"));
     }
 
+    @GetMapping("/usuarios")
+    public List<User> obtenerUsuarios() {
+        return userRepository.findAll();
+    }
+
     // CAMBIAR ROL (corregido)
     @PutMapping("/usuarios/{id}/rol")
-    public ResponseEntity<?> cambiarRol(@PathVariable Long id,
-                                        @RequestBody Map<String, String> body) {
+    public ResponseEntity<?> cambiarRol(
+        @PathVariable Long id,
+        @RequestBody Map<String, String> body
+    ) {
 
-        String nuevoRol = body.get("role");
+    User user = userRepository.findById(id)
+            .orElseThrow();
 
-        if (!"ADMIN".equals(nuevoRol) && !"USER".equals(nuevoRol)) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Rol inválido. Usa ADMIN o USER"));
-        }
+    user.setRole(body.get("role"));
 
-        return userRepository.findById(id)
-                .map(user -> {
-                    user.setRole(nuevoRol);
+    userRepository.save(user);
 
-                    // IMPORTANTE: guardar en BD
-                    userRepository.save(user);
-
-                    return ResponseEntity.ok(
-                            Map.of("mensaje", "Rol actualizado a " + nuevoRol)
-                    );
-                })
-                .orElse(ResponseEntity.status(404)
-                        .body(Map.of("error", "Usuario no encontrado")));
+    return ResponseEntity.ok(
+            Map.of("mensaje", "Rol actualizado")
+    );
     }
+
+    @DeleteMapping("/usuarios/{id}")
+    public ResponseEntity<?> eliminarUsuario(
+        @PathVariable Long id
+    ) {
+
+        userRepository.deleteById(id);
+
+    return ResponseEntity.ok(
+        Map.of("mensaje", "Usuario eliminado")
+    );
+}
 }

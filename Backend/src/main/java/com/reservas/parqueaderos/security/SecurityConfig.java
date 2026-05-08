@@ -94,6 +94,9 @@ public class SecurityConfig {
 
                         // Favoritos
                         .requestMatchers("/favoritos/**").authenticated()
+                        //Usuarios
+                        .requestMatchers("/api/auth/usuarios/**")
+.hasRole                   ("ADMIN")
 
                         .anyRequest().authenticated()
                 )
