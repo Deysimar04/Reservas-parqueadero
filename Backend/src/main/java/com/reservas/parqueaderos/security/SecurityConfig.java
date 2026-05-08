@@ -79,6 +79,7 @@ public class SecurityConfig {
 
                         // HU16 temporal para pruebas Postman
                         .requestMatchers(HttpMethod.PUT, "/api/auth/usuarios/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/auth/usuarios/**").hasRole("ADMIN")
 
 
                         // Auth protegidos
@@ -95,8 +96,6 @@ public class SecurityConfig {
                         // Favoritos
                         .requestMatchers("/favoritos/**").authenticated()
                         //Usuarios
-                        .requestMatchers("/api/auth/usuarios/**")
-.hasRole                   ("ADMIN")
 
                         .anyRequest().authenticated()
                 )

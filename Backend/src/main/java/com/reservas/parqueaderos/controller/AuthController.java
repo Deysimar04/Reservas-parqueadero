@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -91,7 +92,7 @@ public class AuthController {
     }
 
     @GetMapping("/usuarios")
-    public List<User> obtenerUsuarios() {
+    public List<Users> obtenerUsuarios() {
         return userRepository.findAll();
     }
 
@@ -102,7 +103,7 @@ public class AuthController {
         @RequestBody Map<String, String> body
     ) {
 
-    User user = userRepository.findById(id)
+    Users user = userRepository.findById(id)
             .orElseThrow();
 
     user.setRole(body.get("role"));
