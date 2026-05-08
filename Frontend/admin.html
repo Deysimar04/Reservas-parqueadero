@@ -663,7 +663,15 @@ function renderTablaReservas(buscar = "") {
 // ✅ FIX: admin no puede eliminarse a sí mismo ni a otro admin
 async function renderTablaUsuarios(buscar = "") {
 
+  // ============================================
+  // Obtener usuarios reales del backend
+  // ============================================
+
   const usuariosBackend = await obtenerUsuarios();
+
+  // ============================================
+  // Filtrar búsqueda
+  // ============================================
 
   const usuarios = usuariosBackend.filter(u => {
 
@@ -676,6 +684,10 @@ async function renderTablaUsuarios(buscar = "") {
       (u.email || "").toLowerCase().includes(q)
     );
   });
+
+  // ============================================
+  // Render tabla
+  // ============================================
 
   const tbody = document.getElementById("tablaUsuariosBody");
 
@@ -697,8 +709,8 @@ async function renderTablaUsuarios(buscar = "") {
         <td>${u.email || "—"}</td>
 
         <td>
-          <span class="badge badge-${u.role?.toLowerCase()}">
-            ${u.role}
+          <span class="badge badge-${(u.role || "").toLowerCase()}">
+            ${u.role || "USER"}
           </span>
         </td>
 
@@ -708,6 +720,7 @@ async function renderTablaUsuarios(buscar = "") {
             class="btn-accion btn-rol"
             data-id="${u.id}"
             data-role="${u.role}"
+            data-username="${u.username}"
             data-accion="cambiar-rol">
 
             ${u.role === "ADMIN"
@@ -720,7 +733,7 @@ async function renderTablaUsuarios(buscar = "") {
             class="btn-accion btn-eliminar"
             data-id="${u.id}"
             data-role="${u.role}"
-            data-email="${u.email}"
+            data-username="${u.username}"
             data-accion="eliminar-usuario">
 
             Eliminar
@@ -733,162 +746,100 @@ async function renderTablaUsuarios(buscar = "") {
 
     `).join("");
 
-  // ==================================================
+  // ============================================
   // CAMBIAR ROL
-  // ==================================================
+  // ============================================
 
-tbody.querySelectorAll("[data-accion='cambiar-rol']")
-  .forEach(btn => {
+  tbody.querySelectorAll("[data-accion='cambiar-rol']")
+    .forEach(btn => {
 
-    btn.onclick = async () => {
+      btn.onclick = async () => {
 
-      const id = btn.dataset.id;
+        const id = btn.dataset.id;
 
-      const currentRole = btn.dataset.role;
+        const currentRole = btn.dataset.role;
 
-      const username = btn.closest("tr")
-        .children[0]
-        .innerText
-        .trim();
+        const username = btn.dataset.username;
 
-      // ❌ No cambiarse el propio rol
-      if (username === usuarioActual.username) {
+        // ❌ No cambiarse el propio rol
+        if (username === usuarioActual.username) {
 
-        toast("No puedes cambiar tu propio rol", "rojo");
+          toast("No puedes cambiar tu propio rol", "rojo");
 
-        return;
-      }
+          return;
+        }
 
-      const nuevoRol =
-        currentRole === "ADMIN"
-          ? "USER"
-          : "ADMIN";
+        const nuevoRol =
+          currentRole === "ADMIN"
+            ? "USER"
+            : "ADMIN";
 
-      const resultado =
-        await cambiarRolUsuario(id, nuevoRol);
+        const resultado =
+          await cambiarRolUsuario(id, nuevoRol);
 
-      if (resultado.ok) {
+        if (resultado.ok) {
 
-        toast("Rol actualizado", "verde");
+          toast("Rol actualizado", "verde");
 
-        renderTablaUsuarios(buscar);
+          renderTablaUsuarios(buscar);
 
-      } else {
+        } else {
 
-        toast(resultado.error, "rojo");
-      }
-    };
-  });
+          toast(resultado.error || "Error cambiando rol", "rojo");
+        }
+      };
+    });
 
-  // ==================================================
+  // ============================================
   // ELIMINAR USUARIO
-  // ==================================================
+  // ============================================
 
-tbody.querySelectorAll("[data-accion='eliminar-usuario']")
-  .forEach(btn => {
+  tbody.querySelectorAll("[data-accion='eliminar-usuario']")
+    .forEach(btn => {
 
-    btn.onclick = async () => {
+      btn.onclick = async () => {
 
-      const id = btn.dataset.id;
+        const id = btn.dataset.id;
 
-      const role = btn.dataset.role;
+        const role = btn.dataset.role;
 
-      const email = btn.dataset.email;
+        const username = btn.dataset.username;
 
-      // ❌ No eliminarse a sí mismo
-      if (email === usuarioActual.email) {
+        // ❌ No eliminarse a sí mismo
+        if (username === usuarioActual.username) {
 
-        toast("No puedes eliminarte a ti mismo", "rojo");
+          toast("No puedes eliminarte a ti mismo", "rojo");
 
-        return;
-      }
+          return;
+        }
 
-      // ❌ No eliminar administradores
-      if (role === "ADMIN") {
+        // ❌ No eliminar otros admins
+        if (role === "ADMIN") {
 
-        toast("No puedes eliminar a otro administrador", "rojo");
+          toast("No puedes eliminar otro administrador", "rojo");
 
-        return;
-      }
+          return;
+        }
 
-      if (!confirm("¿Eliminar usuario?")) return;
+        if (!confirm(`¿Eliminar usuario ${username}?`)) {
+          return;
+        }
 
-      const resultado = await eliminarUsuario(id);
+        const resultado = await eliminarUsuario(id);
 
-      if (resultado.ok) {
+        if (resultado.ok) {
 
-        toast("Usuario eliminado", "verde");
+          toast("Usuario eliminado", "verde");
 
-        renderTablaUsuarios(buscar);
+          renderTablaUsuarios(buscar);
 
-      } else {
+        } else {
 
-        toast(resultado.error, "rojo");
-      }
-    };
-  });
+          toast(resultado.error || "Error eliminando usuario", "rojo");
+        }
+      };
+    });
 }
-  const usuarios = (JSON.parse(localStorage.getItem("usuarios")) || []).filter(u => {
-    if (!buscar) return true;
-    const q = buscar.toLowerCase();
-    return (u.nombre || "").toLowerCase().includes(q) || (u.email || "").toLowerCase().includes(q);
-  });
-
-  const tbody = document.getElementById("tablaUsuariosBody");
-  tbody.innerHTML = usuarios.length === 0
-    ? `<tr><td colspan="4" style="text-align:center;color:#aaa;padding:20px">No hay usuarios registrados</td></tr>`
-    : usuarios.map((u, i) => `
-        <tr>
-          <td>${u.nombre || u.username || "—"}</td>
-          <td>${u.email || "—"}</td>
-          <td><span class="badge badge-${u.rol}">${u.rol}</span></td>
-          <td>
-            <button class="btn-accion btn-rol" data-idx="${i}" data-accion="cambiar-rol">
-              ${u.rol === "admin" ? "Quitar admin" : "Hacer admin"}
-            </button>
-            <button class="btn-accion btn-eliminar" data-idx="${i}" data-accion="eliminar-usuario">Eliminar</button>
-          </td>
-        </tr>`
-      ).join("");
-
-  tbody.querySelectorAll("[data-accion='cambiar-rol']").forEach(btn => {
-    btn.onclick = () => {
-      const arr = JSON.parse(localStorage.getItem("usuarios")) || [];
-      const idx = Number(btn.dataset.idx);
-      if (arr[idx].email === usuarioActual.email) {
-        toast("No puedes cambiar tu propio rol", "rojo"); return;
-      }
-      arr[idx].rol = arr[idx].rol === "admin" ? "cliente" : "admin";
-      localStorage.setItem("usuarios", JSON.stringify(arr));
-      toast(`Rol de ${arr[idx].nombre || arr[idx].username} actualizado a ${arr[idx].rol}`, "verde");
-      renderTablaUsuarios(buscar);
-      renderDashboard();
-    };
-  });
-
-  tbody.querySelectorAll("[data-accion='eliminar-usuario']").forEach(btn => {
-    btn.onclick = () => {
-      const arr = JSON.parse(localStorage.getItem("usuarios")) || [];
-      const idx = Number(btn.dataset.idx);
-
-      // ✅ FIX: no puede eliminarse a sí mismo
-      if (arr[idx].email === usuarioActual.email) {
-        toast("No puedes eliminarte a ti mismo", "rojo"); return;
-      }
-      // ✅ FIX: no puede eliminar otro admin
-      if (arr[idx].rol === "admin") {
-        toast("No puedes eliminar a otro administrador", "rojo"); return;
-      }
-
-      if (!confirm(`¿Eliminar a ${arr[idx].nombre || arr[idx].username}?`)) return;
-      arr.splice(idx, 1);
-      localStorage.setItem("usuarios", JSON.stringify(arr));
-      toast("Usuario eliminado", "rojo");
-      renderTablaUsuarios();
-      renderDashboard();
-    };
-  });
-
 /* ===== TABLA CARACTERÍSTICAS ===== */
 function renderTablaCaract(buscar = "") {
   const lista = caracteristicas.filter(c => {
