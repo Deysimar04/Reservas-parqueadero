@@ -16,15 +16,16 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Permitir estos orígenes
-        config.setAllowedOriginPatterns(List.of("*"));
+        config.setAllowedOriginPatterns(List.of(
+                "https://reservasparkapp.netlify.app",
+                "http://localhost:5500",
+                "http://127.0.0.1:5500"
+        ));
 
-        // Métodos permitidos
         config.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
         ));
 
-        // Headers permitidos
         config.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
