@@ -1,0 +1,7 @@
+[build]
+builder = "nixpacks"
+buildCommand = "mvn clean package -DskipTests -f Backend/pom.xml"
+
+[deploy]
+startCommand = "java -jar Backend/target/*.jar"
+restartPolicyType = "on_failure"
