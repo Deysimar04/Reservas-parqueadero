@@ -2,7 +2,7 @@
 // api.js — Conexión con Backend Java (Spring Boot)
 // ============================================================
 
-const BASE_URL = "https://reservas-parqueadero-production.up.railway.app";
+const BASE_URL = "http://localhost:8080";
 
 // ============================================================
 // AUTH — HU13, HU14, HU15
