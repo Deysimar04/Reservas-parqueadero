@@ -1,0 +1,1531 @@
+/* ================= AJUSTE GLOBAL ================= */
+
+*{
+box-sizing:border-box;
+}
+
+/* ================= HTML / BODY ================= */
+
+html{
+height:100%;
+scroll-behavior:smooth;
+}
+
+body{
+font-family:Arial;
+margin:0;
+background:#f4f6f9;
+min-height:100vh;
+}
+
+/* ================= HEADER ================= */
+
+.header{
+
+background:#1e2a38;
+color:white;
+
+width:100%;
+
+padding:15px 30px;
+
+display:flex;
+justify-content:space-between;
+align-items:center;
+
+position:sticky;
+top:0;
+
+z-index:9999;
+
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+
+}
+
+.header-left{
+display:flex;
+flex-direction:column;
+}
+
+.logo{
+margin:0;
+font-size:24px;
+cursor:pointer;
+white-space:nowrap;
+}
+
+.lema{
+margin:0;
+font-size:14px;
+opacity:.8;
+}
+
+.header-right{
+display:flex;
+gap:10px;
+align-items:center;
+flex-wrap:nowrap;
+}
+
+.btn-header{
+
+padding:8px 14px;
+
+border:none;
+border-radius:6px;
+
+background:#3498db;
+color:white;
+
+cursor:pointer;
+
+white-space:nowrap;
+
+}
+
+.btn-header:hover{
+background:#2980b9;
+}
+
+/* ================= CATEGORIAS ================= */
+
+.categorias{
+padding:30px;
+text-align:center;
+}
+
+.categoria-container{
+display:flex;
+justify-content:center;
+gap:30px;
+flex-wrap:wrap;
+}
+
+.categoria-card{
+
+background:white;
+padding:20px;
+border-radius:10px;
+box-shadow:0 4px 10px rgba(0,0,0,.1);
+
+width:150px;
+
+transition:.3s;
+cursor:pointer;
+
+}
+
+.categoria-card:hover{
+transform:translateY(-5px);
+}
+
+.categoria-card img{
+width:60px;
+margin-bottom:10px;
+}
+
+/* categoria seleccionada */
+
+.categoria-card.activa{
+
+border:2px solid #3498db;
+transform:scale(1.05);
+background:#eef6ff;
+
+}
+
+/* ================= ZONAS ================= */
+
+.zonas{
+padding:30px;
+}
+
+.titulo-zonas{
+text-align:center;
+margin-bottom:25px;
+}
+
+.zonas-container{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+
+gap:20px;
+
+}
+
+.zona-card{
+
+background:white;
+
+padding:20px;
+
+border-radius:10px;
+
+box-shadow:0 4px 10px rgba(0,0,0,.1);
+
+text-align:center;
+
+transition:.3s;
+
+}
+
+.zona-card:hover{
+transform:translateY(-5px);
+}
+
+.zona-img{
+
+height:120px;
+
+background:#ddd;
+
+margin-bottom:10px;
+
+border-radius:8px;
+
+width: 100%;
+
+}
+
+/* ================= TITULO PLAZAS ================= */
+
+.titulo-plazas{
+text-align:center;
+margin-top:20px;
+}
+
+/* ================= CONTADOR ================= */
+
+.contador{
+
+display:flex;
+justify-content:center;
+gap:40px;
+
+font-weight:bold;
+
+background:white;
+
+margin:20px;
+padding:15px;
+
+border-radius:10px;
+
+box-shadow:0 4px 10px rgba(0,0,0,.08);
+
+flex-wrap:wrap;
+
+}
+
+/* ================= CONTENEDOR PLAZAS ================= */
+
+.buscador-reservas{
+padding:24px 30px 10px;
+}
+
+.buscador-inner{
+max-width:1100px;
+margin:0 auto;
+background:white;
+border-radius:12px;
+box-shadow:0 4px 12px rgba(0,0,0,.08);
+padding:20px;
+display:grid;
+grid-template-columns:1fr 1.2fr;
+gap:18px;
+align-items:center;
+}
+
+.buscador-inner h2{
+margin:0 0 6px;
+}
+
+.buscador-inner p{
+margin:0;
+color:#667085;
+}
+
+.buscador-controles{
+display:grid;
+grid-template-columns:1fr auto auto;
+gap:10px;
+}
+
+.buscador-campo input{
+width:100%;
+height:42px;
+border:1px solid #d8dee8;
+border-radius:8px;
+padding:0 12px;
+}
+
+.btn-buscar-plaza,
+.btn-limpiar-busqueda{
+height:42px;
+border:0;
+border-radius:8px;
+font-weight:bold;
+padding:0 14px;
+cursor:pointer;
+}
+
+.btn-buscar-plaza{
+background:#3498db;
+color:white;
+}
+
+.btn-limpiar-busqueda{
+background:#edf2f7;
+color:#344054;
+}
+
+#parkingContainer{
+
+display:grid;
+
+grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+
+gap:20px;
+
+padding:30px;
+
+}
+
+/* ================= TARJETAS ================= */
+
+.tarjeta{
+
+background:white;
+
+border-radius:12px;
+
+padding:18px;
+
+box-shadow:0 4px 12px rgba(0,0,0,0.08);
+
+transition:.25s;
+
+border-left:6px solid transparent;
+
+position:relative;
+
+}
+
+.tarjeta:hover{
+transform:translateY(-5px);
+}
+
+/* ================= ESTADOS ================= */
+
+.tarjeta.disponible{
+border-left:6px solid #27ae60;
+}
+
+.tarjeta.reservado{
+border-left:6px solid #f1c40f;
+}
+
+.tarjeta.ocupado{
+border-left:6px solid #e74c3c;
+}
+
+/* ================= ESTADO TEXTO ================= */
+
+.estado{
+font-weight:bold;
+}
+
+.estado.disponible{color:#27ae60;}
+.estado.reservado{color:#f1c40f;}
+.estado.ocupado{color:#e74c3c;}
+
+/* ================= BOTONES ================= */
+
+.tarjeta button{
+
+margin-top:10px;
+
+padding:8px 12px;
+
+border:none;
+
+border-radius:6px;
+
+font-weight:bold;
+
+cursor:pointer;
+
+}
+
+.btn-reservar{
+background:#27ae60;
+color:white;
+}
+
+.btn-cancelar{
+background:#e74c3c;
+color:white;
+}
+
+.btn-detalle{
+background:#edf2f7;
+color:#344054;
+margin-right:8px;
+}
+
+.plaza-features{
+display:flex;
+flex-wrap:wrap;
+gap:6px;
+min-height:28px;
+margin:8px 0;
+}
+
+.plaza-feature{
+font-size:12px;
+font-weight:bold;
+background:#eef6ff;
+color:#236192;
+border:1px solid #cfe7ff;
+border-radius:999px;
+padding:5px 8px;
+}
+
+.tarjeta .btn-favorito{
+position:absolute;
+top:10px;
+right:10px;
+width:34px;
+height:34px;
+padding:0;
+margin:0;
+border-radius:50%;
+border:1px solid #d8dee8;
+background:#ffffff;
+color:#7f8c8d;
+font-size:22px;
+line-height:1;
+display:flex;
+align-items:center;
+justify-content:center;
+box-shadow:0 2px 6px rgba(0,0,0,.08);
+}
+
+.tarjeta .btn-favorito:hover{
+background:#fff5f6;
+color:#e74c3c;
+}
+
+.tarjeta .btn-favorito.activo{
+background:#ffecef;
+border-color:#f5a6b0;
+color:#e74c3c;
+}
+
+.tarjeta h3{
+padding-right:38px;
+}
+
+.modal-detalle-plaza{
+max-width:820px;
+width:92%;
+text-align:left;
+}
+
+.detalle-header{
+display:flex;
+justify-content:space-between;
+gap:16px;
+align-items:flex-start;
+margin-bottom:18px;
+}
+
+.detalle-eyebrow{
+margin:0 0 4px;
+color:#667085;
+font-weight:bold;
+font-size:13px;
+}
+
+.detalle-header h2{
+margin:0;
+}
+
+.detalle-estado{
+border-radius:999px;
+padding:7px 10px;
+font-weight:bold;
+font-size:12px;
+background:#edf2f7;
+}
+
+.detalle-estado.disponible{color:#137a3a;background:#eafaf0;}
+.detalle-estado.reservado{color:#9a6a00;background:#fff8df;}
+.detalle-estado.ocupado{color:#a83228;background:#fff0ee;}
+
+.detalle-grid{
+display:grid;
+grid-template-columns:260px 1fr;
+gap:18px;
+}
+
+.detalle-imagen{
+min-height:190px;
+border-radius:10px;
+background:linear-gradient(135deg,#1e2a38,#3498db);
+}
+
+.detalle-info p{
+line-height:1.5;
+}
+
+.detalle-features{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+gap:10px;
+margin-top:12px;
+}
+
+.detalle-feature{
+border:1px solid #e4e7ec;
+border-radius:8px;
+padding:10px;
+display:flex;
+gap:8px;
+align-items:center;
+}
+
+.detalle-feature span{
+width:28px;
+height:28px;
+border-radius:50%;
+background:#eef6ff;
+color:#236192;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:12px;
+font-weight:bold;
+}
+
+.detalle-politicas{
+margin-top:18px;
+padding-top:14px;
+border-top:1px solid #e4e7ec;
+}
+
+.detalle-politicas h3{
+display:inline-block;
+border-bottom:3px solid #3498db;
+padding-bottom:4px;
+}
+
+.btn-whatsapp{
+position:fixed;
+right:22px;
+bottom:22px;
+width:56px;
+height:56px;
+border-radius:50%;
+background:#25d366;
+color:white;
+display:flex;
+align-items:center;
+justify-content:center;
+font-weight:bold;
+text-decoration:none;
+box-shadow:0 8px 20px rgba(0,0,0,.22);
+z-index:9998;
+}
+
+/* ================= GALERIA ================= */
+
+.galeria {
+  width: 100%;
+  padding: 40px;
+  background: white;
+  text-align: center;
+}
+
+.galeria h2 {
+  margin-bottom: 20px;
+}
+
+.galeria-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  grid-template-rows: 200px 200px;
+  gap: 10px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.galeria-grid img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+
+.galeria-grid img:hover {
+  opacity: 0.85;
+}
+
+/* Imagen grande: ocupa toda la columna izquierda (2 filas) */
+.galeria-principal {
+  grid-column: 1;
+  grid-row: 1 / span 2;
+}
+
+/* Las 4 pequeñas se ubican automáticamente en la columna 2 y 3 */
+
+.btn-galeria {
+  margin-top: 20px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  background: #3498db;
+  color: white;
+  cursor: pointer;
+}
+
+.btn-galeria:hover {
+  background: #2980b9;
+}
+
+@media (max-width: 768px) {
+  .buscador-inner{
+    grid-template-columns:1fr;
+  }
+
+  .buscador-controles{
+    grid-template-columns:1fr;
+  }
+
+  .detalle-grid{
+    grid-template-columns:1fr;
+  }
+
+  .galeria-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: auto;
+  }
+
+  .galeria-principal {
+    grid-column: 1 / span 2;
+    grid-row: auto;
+    height: 200px;
+  }
+}
+
+/* ================= CARACTERISTICAS ================= */
+
+.caracteristicas{
+
+padding:40px;
+
+background:#f4f6f9;
+
+text-align:center;
+
+}
+
+.caracteristicas h2{
+margin-bottom:30px;
+}
+
+.caracteristicas-container{
+
+display:flex;
+
+justify-content:center;
+
+gap:30px;
+
+flex-wrap:wrap;
+
+}
+
+.caracteristica{
+
+background:white;
+
+padding:25px;
+
+border-radius:10px;
+
+width:220px;
+
+box-shadow:0 4px 10px rgba(0,0,0,.08);
+
+transition:.3s;
+
+}
+
+.caracteristica:hover{
+transform:translateY(-5px);
+}
+
+.caracteristica img{
+width:50px;
+margin-bottom:10px;
+}
+
+/* ================= POLITICAS ================= */
+
+.politicas{
+
+padding:40px;
+
+background:white;
+
+margin:30px;
+
+}
+
+.politicas h2{
+
+text-align:center;
+
+margin-bottom:20px;
+
+}
+
+.politicas-container{
+
+display:flex;
+
+gap:20px;
+
+justify-content:center;
+
+flex-wrap:wrap;
+
+}
+
+.politica{
+
+background:#f4f6f9;
+
+padding:20px;
+
+border-radius:10px;
+
+width:250px;
+
+}
+
+/* ================= FOOTER ================= */
+
+.footer{
+
+background:#1e2a38;
+
+color:white;
+
+text-align:center;
+
+padding:20px;
+
+margin-top:40px;
+
+}
+
+/* ================= NOTIFICACION ================= */
+
+#notificacion{
+
+position:fixed;
+
+top:20px;
+right:20px;
+
+background:#333;
+
+color:white;
+
+padding:12px 18px;
+
+border-radius:8px;
+
+opacity:0;
+
+transform:translateY(-20px);
+
+transition:.3s;
+
+}
+
+#notificacion.mostrar{
+
+opacity:1;
+
+transform:translateY(0);
+
+}
+
+.notif-reserva{
+background:#27ae60;
+}
+
+.notif-cancelar{
+background:#e74c3c;
+}
+/* ================= MODAL GALERIA ================= */
+
+.modal{
+
+display:none;
+
+position:fixed;
+
+top:0;
+left:0;
+
+width:100%;
+height:100%;
+
+background:rgba(0,0,0,0.9);
+
+justify-content:center;
+align-items:center;
+
+z-index:10000;
+
+}
+
+.modal-img{
+
+max-width:80%;
+max-height:80%;
+
+border-radius:10px;
+
+}
+
+.cerrar{
+
+position:absolute;
+
+top:30px;
+right:40px;
+
+font-size:40px;
+
+color:white;
+
+cursor:pointer;
+
+}
+
+/* flechas */
+
+.flecha{
+
+position:absolute;
+
+top:50%;
+
+transform:translateY(-50%);
+
+background:none;
+
+border:none;
+
+font-size:40px;
+
+color:white;
+
+cursor:pointer;
+
+}
+
+.izquierda{
+left:40px;
+}
+
+.derecha{
+right:40px;
+}
+
+.modal-contenido{
+  background:white;
+  padding:30px;
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  min-width:300px;
+}
+
+.modal input{
+  padding:8px;
+  border-radius:6px;
+  border:1px solid #ccc;
+}
+
+.modal button{
+  padding:10px;
+  background:#3498db;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
+
+.modal button:hover{
+  background:#2980b9;
+}
+
+.modal .cerrar{
+  position:absolute;
+  top:10px;
+  right:15px;
+  font-size:24px;
+  cursor:pointer;
+}
+.categoria-card.deshabilitado {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.btn-zona:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+/* ================= EXTRAS ================= */
+
+.extras-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.extra-badge {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.extra-si {
+  background: #eafaf1;
+  color: #27ae60;
+  border: 1px solid #27ae60;
+}
+
+.extra-no {
+  background: #fdf2f2;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+/* ================= FECHA RESERVA ================= */
+
+.fecha-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: white;
+  padding: 14px 30px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin: 0 20px 10px 20px;
+  border-radius: 10px;
+}
+
+.fecha-wrapper label {
+  font-weight: bold;
+  color: #1e2a38;
+}
+
+.fecha-wrapper input[type="date"] {
+  padding: 8px 12px;
+  border: 2px solid #3498db;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.fecha-error {
+  color: #e74c3c;
+  font-size: 13px;
+  font-weight: bold;
+  display: none;
+}
+
+.fecha-error.visible {
+  display: inline;
+}
+
+/* ================= EXTRAS ================= */
+
+.extras-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0;
+}
+
+.extra-badge {
+  font-size: 12px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.extra-si {
+  background: #eafaf1;
+  color: #27ae60;
+  border: 1px solid #27ae60;
+}
+
+.extra-no {
+  background: #fdf2f2;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+}
+
+/* ================= FECHA EN TARJETA ================= */
+
+.plaza-fecha {
+  font-size: 13px;
+  color: #3498db;
+  font-weight: bold;
+  margin: 4px 0;
+}
+/* ================= BOTON OCUPADA ================= */
+
+.btn-ocupada {
+  background: #e74c3c;
+  color: white;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0.85;
+}
+
+.btn-ocupada:hover {
+  opacity: 1;
+}
+/* ================= PAGINA INTERNA DESC ================= */
+
+.pagina-interna-desc {
+  padding: 30px 40px 10px 40px;
+  background: white;
+  border-bottom: 1px solid #eee;
+}
+
+.pagina-interna-desc h2 {
+  margin: 0 0 8px 0;
+  color: #1e2a38;
+}
+
+.pagina-interna-desc p {
+  margin: 0;
+  color: #555;
+  font-size: 15px;
+}
+
+/* ================= GALERIA COMPLETA ================= */
+
+.galeria-completa-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  padding: 30px 40px;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.galeria-completa-grid img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 8px;
+  transition: transform 0.3s, opacity 0.3s;
+  cursor: pointer;
+}
+
+.galeria-completa-grid img:hover {
+  transform: scale(1.03);
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .galeria-completa-grid {
+    grid-template-columns: repeat(2, 1fr);
+    padding: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .galeria-completa-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ================= AVATAR ================= */
+.avatar {
+  width: 36px;
+  height: 36px;
+  background: #3498db;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 14px;
+  color: white;
+}
+
+#usuarioInfo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: white;
+}
+
+/* ================= VEHICULOS CTA ================= */
+.vehiculos-cta {
+  background: white;
+  padding: 30px 40px;
+  border-bottom: 1px solid #eee;
+}
+
+.vehiculos-cta-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  max-width: 1100px;
+  margin: 0 auto;
+  gap: 20px;
+}
+
+.vehiculos-cta-titulo {
+  font-size: 22px;
+  color: #1e2a38;
+  margin: 0 0 10px 0;
+}
+
+.vehiculos-cta-desc {
+  color: #555;
+  font-size: 15px;
+  margin: 0 0 16px 0;
+}
+
+.vehiculos-cta-icon {
+  font-size: 80px;
+  opacity: 0.15;
+}
+
+.btn-ver-categorias {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: #1e2a38;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: background 0.2s;
+}
+
+.btn-ver-categorias:hover {
+  background: #3498db;
+}
+
+.btn-ver-categorias.activo {
+  background: #3498db;
+}
+
+/* ================= AVISO LOGIN ================= */
+.aviso-login-banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: #fff8e1;
+  border: 1px solid #f1c40f;
+  border-radius: 10px;
+  padding: 16px 24px;
+  margin: 10px 30px;
+  flex-wrap: wrap;
+}
+
+.aviso-login-icono {
+  font-size: 28px;
+}
+
+.aviso-login-texto {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.aviso-login-texto strong {
+  color: #1e2a38;
+  font-size: 15px;
+}
+
+.aviso-login-texto span {
+  color: #666;
+  font-size: 13px;
+}
+
+.aviso-login-btn {
+  padding: 9px 18px;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+/* ================= BOTON VOLVER ================= */
+.btn-volver {
+  display: none;
+  margin: 10px 30px;
+  padding: 9px 18px;
+  background: #1e2a38;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.btn-volver:hover {
+  background: #3498db;
+}
+
+/* ================= AVISO LOGIN PLAZAS ================= */
+.aviso-login {
+  text-align: center;
+  padding: 40px;
+  color: #888;
+  font-size: 16px;
+  grid-column: 1 / -1;
+}
+
+/* ================= MIS RESERVAS ================= */
+.mis-reservas-wrapper {
+  background: white;
+  margin: 20px 30px;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+.mis-reservas-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.mis-reservas-icono {
+  font-size: 32px;
+}
+
+.mis-reservas-titulo {
+  margin: 0;
+  color: #1e2a38;
+  font-size: 18px;
+}
+
+.mis-reservas-subtitulo {
+  margin: 0;
+  color: #888;
+  font-size: 13px;
+}
+
+.mis-reservas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.reserva-card {
+  background: #f4f6f9;
+  border-radius: 10px;
+  padding: 16px;
+  border-left: 4px solid #3498db;
+}
+
+.reserva-card p {
+  margin: 4px 0;
+  font-size: 14px;
+  color: #444;
+}
+
+.reserva-fecha {
+  color: #3498db;
+  font-weight: bold;
+}
+
+/* ================= BADGE NOTIF ================= */
+.badge-notif {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #e74c3c;
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
+
+/* ================= MENSAJE CARD ================= */
+.mensaje-card {
+  background: #f4f6f9;
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 10px;
+  border-left: 4px solid #3498db;
+}
+
+.mensaje-card h4 {
+  margin: 0 0 6px 0;
+  color: #1e2a38;
+}
+
+.mensaje-card p {
+  margin: 0 0 6px 0;
+  color: #555;
+  font-size: 14px;
+}
+
+.mensaje-card small {
+  color: #aaa;
+  font-size: 12px;
+}
+
+/* ================= BTN LIBERAR ================= */
+.btn-liberar {
+  background: #27ae60;
+  color: white;
+  margin-top: 10px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.btn-liberar:hover {
+  background: #219a52;
+}
+
+/* ================= NOTIF CORREO ================= */
+#notifCorreo {
+  display: none;
+  position: fixed;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #27ae60;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  z-index: 99999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+#notifHU19 {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #e74c3c;
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 99999;
+}
+
+/* ================= FECHA RESERVA CONTAINER ================= */
+#fechaReservaContainer {
+  display: none;
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .vehiculos-cta-inner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .vehiculos-cta-icon {
+    display: none;
+  }
+
+  .contador {
+    gap: 20px;
+    font-size: 14px;
+  }
+
+  .zonas-container {
+    grid-template-columns: 1fr;
+  }
+
+  .mis-reservas-wrapper {
+    margin: 10px;
+  }
+}
+
+/* ================= CATEGORIA CARD INFO ================= */
+.categoria-card-info {
+  text-align: center;
+  color: #888;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.categoria-card h3 {
+  margin: 0;
+  font-size: 15px;
+  color: #1e2a38;
+}
+
+/* ================= SECCION CATEGORIAS ================= */
+.categorias {
+  padding: 30px;
+  background: #f4f6f9;
+}
+
+.categorias h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #1e2a38;
+}
+
+.categoria-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+.categoria-card {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  width: 140px;
+  text-align: center;
+  transition: 0.3s;
+  cursor: pointer;
+  border: 2px solid transparent;
+}
+
+.categoria-card:hover {
+  transform: translateY(-5px);
+  border-color: #3498db;
+}
+
+.categoria-card.activa {
+  border: 2px solid #3498db;
+  transform: scale(1.05);
+  background: #eef6ff;
+}
+.vehiculos-cta {
+  position: relative;
+  padding: 60px 20px;
+  overflow: hidden;
+}
+
+.vehiculos-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+
+  background-image: url("../img/descripcion.png"); 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+
+  opacity: 0.25;
+  z-index: 0;
+}
+
+.vehiculos-cta-inner {
+  position: relative;
+  z-index: 1;
+}
+.categoria-card img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+.categoria-dims {
+  font-size: 11px;
+  color: #888;
+  line-height: 1.6;
+  margin: 8px 0 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+/* ── Agregar al FINAL de styles.css ── */
+
+/* Imagen dentro de la tarjeta de categoría */
+.categoria-card img {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  margin-bottom: 8px;
+}
+
+/* Emoji de respaldo (cuando no hay imagen) */
+.cat-emoji {
+  font-size: 44px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+/* Dimensiones debajo del nombre */
+.categoria-dims {
+  font-size: 11px;
+  color: #888;
+  line-height: 1.6;
+  margin: 8px 0 0 0;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+  text-align: center;
+}
+.plaza-rating { display: flex; gap: 4px; margin: 6px 0; }
+.estrella { font-size: 20px; cursor: pointer; color: #ddd; transition: color 0.2s; }
+.estrella.activa { color: #f1c40f; }
+.estrella:hover { color: #f1c40f; }
+
+.btn-compartir {
+  padding: 6px 12px; background: #f0f4f8; border: 1px solid #ddd;
+  border-radius: 6px; cursor: pointer; font-size: 12px;
+  color: #555; margin-top: 6px; width: 100%;
+}
+.btn-compartir:hover { background: #e8edf2; }

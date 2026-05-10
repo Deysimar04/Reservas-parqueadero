@@ -1,176 +1,405 @@
-# ParkApp — Sistema de Reservas de Parqueadero
+# ParkApp — Sistema de Reservas de Parqueaderos
 
-> Plataforma web para reservar plazas de parqueo en tiempo real, con filtros por zona y tipo de vehículo.
+Plataforma integral para la reserva de plazas de estacionamiento con autenticacion segura, panel administrativo y disponibilidad en tiempo real.
 
+
+## Demo en vivo
+
+| Servicio | URL |
+|---|---|
+| Frontend | [reservasparkapp.netlify.app](https://reservasparkapp.netlify.app) |
+| Backend | `http://localhost:8080` (local) |
+
+---
+
+## Equipo
+
+| Integrante | Responsabilidad |
+|---|---|
+| Alejandra | Arquitectura HTML y Spring Security con JWT |
+| Oscar | Interfaz de usuario y control de permisos |
+| Juan Mario | Backend de autenticacion y API REST |
+| Juan Pablo | Logica de catalogo y CRUD de productos |
+
+
+---
+
+## Tecnologias usadas
+
+### Frontend
+- HTML5, CSS3, JavaScript ES6 Modules
+- Netlify para despliegue
+
+### Backend
+- Java 17 con Spring Boot
+- Spring Security con JWT
+- Spring Data JPA
+- MySQL para persistencia principal
+- MongoDB para favoritos
+
+---
+
+## Arquitectura del sistema
+
+```
+Frontend  <--HTTP/REST-->  Backend (Spring Boot + JWT)
+HTML/CSS/JS                         |
+LocalStorage              __________|__________
+                          |                   |
+                        MySQL             MongoDB
+                  usuarios, reservas,    favoritos
+                  productos, categorias
+```
+
+---
 
 ## Estructura del proyecto
+
 ```
-ParkApp/
-├── index.html
-├── galeria.html
-├── css/
-│   └── styles.css
-├── js/
-│   ├── main.js
-│   └── api.js
-└── img/
+Reservas-parqueadero/
+|-- Backend/
+|   |-- src/main/java/com/reservas/parqueaderos/
+|       |-- controller/
+|       |-- model/
+|       |-- repository/
+|       |-- service/
+|       |-- security/
+|-- Frontend/
+    |-- css/
+    |-- img/
+    |-- js/
+    |   |-- api.js
+    |   |-- main.js
+    |   |-- patrones.js
+    |-- index.html
+    |-- admin.html
+    |-- galeria.html
+```
 
-## Páginas
+---
 
-| Página | Descripción |
+## Endpoints del backend
+
+### Autenticacion
+
+| Metodo | Ruta | Acceso | Descripcion |
+|---|---|---|---|
+| POST | `/api/auth/registro` | Publico | Registrar usuario |
+| POST | `/api/auth/login` | Publico | Login y obtencion de JWT |
+| POST | `/api/auth/logout` | Publico | Cerrar sesion |
+| PUT | `/api/auth/usuarios/{id}/rol` | ADMIN | Cambiar rol de usuario |
+
+### Productos
+
+| Metodo | Ruta | Acceso | Descripcion |
+|---|---|---|---|
+| GET | `/api/productos` | Publico | Listar plazas |
+| POST | `/api/productos` | ADMIN | Crear producto |
+| DELETE | `/api/productos/{id}` | ADMIN | Eliminar producto |
+| GET | `/api/productos/categorias` | Publico | Listar categorias |
+| GET | `/api/productos/caracteristicas` | Publico | Listar caracteristicas |
+
+### Reservas
+
+| Metodo | Ruta | Acceso | Descripcion |
+|---|---|---|---|
+| POST | `/api/reservas` | Autenticado | Crear reserva |
+| GET | `/api/reservas/mis-reservas` | Autenticado | Ver mis reservas |
+| GET | `/api/reservas/todas` | ADMIN | Ver todas las reservas |
+| GET | `/api/reservas/{id}` | Autenticado | Detalle de reserva |
+| PUT | `/api/reservas/{id}/cancelar` | Autenticado | Cancelar reserva |
+| GET | `/api/reservas/ocupadas` | Publico | Plazas ocupadas por fecha |
+
+### Favoritos
+
+| Metodo | Ruta | Acceso | Descripcion |
+|---|---|---|---|
+| POST | `/api/favoritos/{productoId}` | Autenticado | Marcar favorito |
+| DELETE | `/api/favoritos/{productoId}` | Autenticado | Desmarcar favorito |
+| GET | `/api/favoritos` | Autenticado | Listar mis favoritos |
+
+---
+
+## Historias de usuario implementadas
+
+### Sprint 1
+
+| HU | Descripcion | Estado |
+|---|---|---|
+| HU1 | Header fijo con logo y botones | Completo |
+| HU2 | Body con color de marca y secciones | Completo |
+| HU4 | Visualizar productos en home | Completo |
+| HU5 | Detalle del producto | Completo |
+| HU6 | Galeria de imagenes con Ver mas | Completo |
+| HU18 | Caracteristicas con iconos | Completo |
+| HU22 | Busqueda con filtros | Completo |
+| HU26 | Bloque de politicas | Completo |
+
+### Sprint 2
+
+| HU | Descripcion | Estado |
+|---|---|---|
+| HU9 | Panel de administracion | Completo |
+| HU10 | Listar productos en panel | Completo |
+| HU3 | Registrar producto con validaciones | Completo |
+| HU12 | Categorizar productos | Completo |
+| HU13 | Registrar usuario | Completo |
+| HU14 | Login con JWT | Completo |
+| HU15 | Cerrar sesion | Completo |
+| HU16 | Identificar administrador | Completo |
+| HU17 | Administrar caracteristicas | Completo |
+| HU19 | Notificacion simulada de correo | Completo |
+| HU23 | Disponibilidad mock | Completo |
+
+### Sprint 3
+
+| HU | Descripcion | Estado |
+|---|---|---|
+| HU30 | Seleccionar fecha y validar login | Completo |
+| HU31 | Visualizar detalles de reserva | Completo |
+| HU32 | Realizar reserva con registro en SQL | Completo |
+| HU33 | Historial de reservas ordenado por usuario | Completo |
+| HU23 | Disponibilidad real con datos de la BD | Completo |
+| HU24-25 | Favoritos con MongoDB | Completo |
+
+---
+
+## Instrucciones de ejecucion
+
+### Backend en IntelliJ IDEA
+
+**Paso 1 — Configurar base de datos en MySQL Workbench**
+
+```sql
+CREATE DATABASE IF NOT EXISTS parqueadero_db;
+USE parqueadero_db;
+```
+
+**Paso 2 — Configurar application.properties**
+
+```properties
+spring.datasource.url=jdbc:mysql://localhost:3306/parqueadero_db
+spring.datasource.username=root
+spring.datasource.password=root
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+spring.jpa.database-platform=org.hibernate.dialect.MySQLDialect
+jwt.secret=mi_clave_super_segura_12345678901234567890
+```
+
+**Paso 3 — Ejecutar la clase principal**
+
+```
+ParqueaderosApplication.java
+```
+
+**Paso 4 — Backend disponible en**
+
+```
+http://localhost:8080
+```
+
+---
+
+### Frontend en VS Code
+
+**Paso 1 — Abrir carpeta Frontend en VS Code**
+
+**Paso 2 — Click derecho en index.html y seleccionar Open with Live Server**
+
+**Paso 3 — Abrir en el navegador**
+
+```
+http://127.0.0.1:5500
+```
+
+---
+
+## Usuarios de prueba
+
+| Usuario | Contrasena | Rol |
+|---|---|---|
+| admin | admin123 | ADMIN |
+| usuario | usuario123 | USER |
+
+---
+
+## Patrones de diseno implementados
+
+| Patron | Ubicacion | Descripcion |
+|---|---|---|
+| Strategy | ReservaService | Motor de disponibilidad de plazas |
+| Repository | Todos los repositorios | Persistencia con Spring Data JPA |
+| Singleton | PlazaManager frontend | Una sola instancia maneja las plazas |
+| Observer | ContadorObserver, NotificacionObserver, DisponibilidadObserver | Reaccionan a cambios en plazas |
+| Filter | JwtFilter | Seguridad en cada request HTTP |
+
+---
+
+## Base de datos
+
+### MySQL — tablas
+
+| Tabla | Descripcion |
 |---|---|
-| `index.html` | Página principal con header, categorías, zonas, filtros, plazas, galería, características y políticas |
-| `galeria.html` | Galería completa con header interno y botón de regreso |
+| users | Usuarios registrados del sistema |
+| products | Plazas de parqueadero disponibles |
+| categories | Tipos de plaza: Cubierto, Descubierto, Motos, etc |
+| features | Caracteristicas asociadas a cada plaza |
+| reservas | Registro de todas las reservas realizadas |
 
+### MongoDB — colecciones
 
-## Archivos JavaScript
+| Coleccion | Descripcion |
+|---|---|
+| favoritos | Plazas marcadas como favoritas por cada usuario |
 
-### api.js
+---
 
-Genera el mock de datos. Cada plaza tiene esta estructura:
-```json
+## Zonas disponibles
+
+| Zona | Plazas disponibles |
+|---|---|
+| Aeropuerto | 2 plazas |
+| Centro Comercial | 4 plazas |
+| Centro Ciudad | 4 plazas |
+| Aeropuerto Motos | 1 plaza |
+| Centro Ciudad Motos | 1 plaza |
+
+---
+
+## Precios por categoria
+
+| Categoria | Precio por hora |
+|---|---|
+| Cubierto | $5.000 COP |
+| Descubierto | $3.000 COP |
+| Motos | $2.000 COP |
+
+---
+
+## Panel de administracion
+
+Accesible en `/admin.html` unicamente para usuarios con rol ADMIN.
+
+| Seccion | Descripcion |
+|---|---|
+| Dashboard | KPIs en tiempo real: plazas disponibles, reservadas, ocupadas y total de usuarios |
+| Plazas | Crear y eliminar plazas conectadas a la base de datos |
+| Reservas | Ver historial completo de todas las reservas con opcion de cancelar |
+| Usuarios | Listar usuarios, cambiar roles y eliminar cuentas |
+| Caracteristicas | Crear, editar y eliminar caracteristicas asociables a plazas |
+| Categorias | Administrar categorias de vehiculos con dimensiones |
+| Reportes | Estadisticas de ocupacion, zona mas activa y tipo mas frecuente |
+
+---
+
+## Pruebas con Postman
+
+### HU13 — Registrar usuario
+
+```
+POST http://localhost:8080/api/auth/registro
+Content-Type: application/json
+
 {
-  "id": 1,
-  "zona": "Aeropuerto",
-  "tipo": "automovil",
-  "estado": "disponible",
-  "extras": {
-    "techado": true,
-    "camaras": false,
-    "iluminado": true,
-    "discapacitados": false
-  }
+  "username": "maria",
+  "email": "maria@gmail.com",
+  "password": "123456"
 }
 ```
 
-- Genera 10 plazas aleatorias al cargar la página
-- Zonas: `Aeropuerto` · `Centro Comercial` · `Centro Ciudad`
-- Tipos: `automovil` · `camioneta` · `moto`
-- Estados: `disponible` · `reservado` · `ocupado`
-- Extras asignados aleatoriamente con `Math.random() > 0.5`
+Respuesta esperada:
 
-### main.js
+```json
+{"mensaje": "Usuario registrado con exito"}
+```
 
-Controla toda la lógica de la aplicación.
+### HU14 — Iniciar sesion
 
-| Función | Descripción |
-|---|---|
-| `iniciar()` | Carga plazas, sesión y configura todos los eventos |
-| `cargarSesion()` | Lee usuario desde `localStorage` |
-| `guardarSesion()` | Guarda usuario en `localStorage` y actualiza UI |
-| `cerrarSesion()` | Elimina sesión y resetea la vista |
-| `render()` | Redibuja las plazas según filtros activos |
-| `filtrarPlazas()` | Filtra por zona y tipo de vehículo |
-| `mostrarPlazas()` | Genera las tarjetas de plaza en el DOM |
-| `actualizarContador()` | Actualiza el contador de estados |
-| `configurarCategorias()` | Maneja selección de tipo de vehículo |
-| `configurarBotonesZona()` | Maneja selección de zona de parqueo |
-| `configurarModales()` | Maneja login, crear cuenta y logout |
-| `mostrarNotificacion()` | Muestra alertas flotantes temporales |
+```
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+```
+
+Respuesta esperada:
+
+```json
+{
+  "token": "eyJhbGc...",
+  "role": "ADMIN",
+  "username": "admin"
+}
+```
+
+### HU32 — Crear reserva
+
+```
+POST http://localhost:8080/api/reservas
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "product": { "id": 1 },
+  "startTime": "2026-06-01T08:00:00",
+  "endTime": "2026-06-01T20:00:00"
+}
+```
+
+Respuesta esperada:
+
+```json
+{
+  "id": 1,
+  "estado": "CONFIRMED",
+  "startTime": "2026-06-01T08:00:00",
+  "endTime": "2026-06-01T20:00:00"
+}
+```
+
+### HU33 — Ver historial de reservas
+
+```
+GET http://localhost:8080/api/reservas/mis-reservas
+Authorization: Bearer {token}
+```
+
+### HU24-25 — Marcar favorito
+
+```
+POST http://localhost:8080/api/favoritos/1
+Authorization: Bearer {token}
+```
 
 ---
 
-## Flujo de uso
-```
-1. Entrar a la página
-2. Crear cuenta o iniciar sesión
-3. Seleccionar tipo de vehículo  →  Automóvil / Camioneta / Moto
-4. Seleccionar zona              →  Aeropuerto / Centro Comercial / Centro Ciudad
-5. Elegir fecha de reserva       →  Campo obligatorio
-6. Ver plazas filtradas con sus extras
-7. Clic en "Reservar" en una plaza disponible
-8. Cancelar reserva cuando se desee
-```
+## Seguridad
+
+- Autenticacion basada en JWT (JSON Web Token)
+- Roles ADMIN y USER controlados con Spring Security
+- CORS configurado para Netlify y localhost
+- Contrasenas encriptadas con BCrypt
+- Token con expiracion automatica
 
 ---
 
-## Funcionalidades implementadas
+## Flujo de trabajo en Git
 
-### Autenticación
-- Crear cuenta con nombre, email y contraseña
-- Iniciar y cerrar sesión
-- Datos guardados en `localStorage`
-- Sin sesión: categorías y zonas deshabilitadas visualmente
-
-### Filtros
-- Por tipo de vehículo (categoría)
-- Por zona de parqueo
-- Validación: no se puede filtrar zona sin seleccionar categoría primero
-- Botón Volver para resetear todos los filtros
-
-### Reservas
-- Fecha obligatoria antes de reservar (`input type="date"`)
-- Error visible si se intenta reservar sin fecha
-- Al reservar: plaza pasa a `reservado` y muestra la fecha elegida
-- Al cancelar: plaza vuelve a `disponible`
-- Plaza `ocupada`: mensaje de error amigable al hacer clic
-
-### Tarjetas de plaza
-Cada tarjeta muestra:
-- Número de plaza, zona y tipo de vehículo
-- Estado con color: DISPONIBLE · RESERVADO · OCUPADO
-- Badges de extras: `Techado` · `Camaras` · `Iluminado` · `Accesible`
-- Fecha de reserva si está reservada
-- Botón de acción según estado
-
-### Galería
-- Vista previa en `index.html`: 1 imagen grande + 4 pequeñas en 2x2
-- Vista completa en `galeria.html`: grid de 3 columnas con 8 imágenes
-- Responsive en móvil
-
----
-
-## Estilos CSS
-
-El archivo `styles.css` está organizado por secciones con comentarios:
-```
-AJUSTE GLOBAL → HEADER → CATEGORIAS → ZONAS → CONTADOR
-→ TARJETAS → ESTADOS → GALERIA → CARACTERISTICAS
-→ POLITICAS → FOOTER → NOTIFICACION → MODAL
-→ FECHA RESERVA → EXTRAS → PAGINA INTERNA
-```
-
-Paleta de colores:
-
-| Uso | Color |
-|---|---|
-| Header / fondo oscuro | `#1e2a38` |
-| Azul acento | `#3498db` |
-| Verde disponible | `#27ae60` |
-| Amarillo reservado | `#f1c40f` |
-| Rojo ocupado | `#e74c3c` |
-
----
-
-## Cómo ejecutar
-
-El proyecto usa módulos ES6 y requiere un servidor local. No funciona abriendo el `.html` directamente con doble clic.
 ```bash
-# Opción 1 — VS Code
-# Instalar extensión "Live Server" → clic derecho en index.html → Open with Live Server
-
-# Opción 2 — Python
-python -m http.server 5500
-
-# Opción 3 — Node
-npx serve .
+# Siempre antes de subir cambios
+git stash
+git pull origin integracion-final --no-edit
+git stash pop
+git add .
+git commit -m "descripcion del cambio"
+git push origin integracion-final
 ```
 
-Luego abrir `http://localhost:5500` en el navegador.
-
 ---
 
-## Tecnologías
-
-| Tecnología | Uso |
-|---|---|
-| HTML5 semántico | Estructura de las páginas |
-| CSS3 (Grid + Flexbox) | Diseño y responsive |
-| JavaScript ES6+ | Lógica, módulos, async/await |
-| localStorage | Persistencia de sesión y usuarios |
-
-Sin frameworks ni dependencias externas.
-
----
-
-
+Desarrollado por el equipo ParkApp — 2026

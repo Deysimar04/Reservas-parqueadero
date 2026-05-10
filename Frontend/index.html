@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParkApp</title>
+<link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-left">
+    <h1 class="logo">ParkApp</h1>
+    <p class="lema">Reserva tu plaza fácilmente</p>
+  </div>
+
+  <div class="header-right" id="headerBtns">
+    <button class="btn-header" id="btnHeaderCrear">Crear cuenta</button>
+    <button class="btn-header" id="btnHeaderLogin">Iniciar sesión</button>
+  </div>
+
+<div class="header-right" id="headerUser" style="display:none;">
+    <div id="usuarioInfo">
+      <div class="avatar"></div>
+      <span id="usuarioActual"></span>
+    </div>
+    <button class="btn-header" id="btnAdminPanel" style="display:none; background:#8e44ad;">Panel Admin</button>
+    
+    <div style="position: relative; display: inline-block;">
+        <button class="btn-header" id="btnBandeja">Bandeja</button>
+        <span id="badge-notif" class="badge-notif" style="display: none;">0</span>
+    </div>
+
+    <button class="btn-header" id="btnLogout">Cerrar sesión</button>
+</div>
+</header>
+
+<!-- SECCION DESCRIPCION + CTA VEHICULOS -->
+<section class="vehiculos-cta">
+  <div class="vehiculos-cta-inner">
+    <div class="vehiculos-cta-texto">
+      <h2 class="vehiculos-cta-titulo">¿Qué tipo de vehículo vas a parquear hoy?</h2>
+      <p class="vehiculos-cta-desc">
+        Cada plaza está pensada para el tamaño y necesidades de tu vehículo.
+        Selecciona tu categoría y te mostraremos las plazas disponibles ideales para ti.
+      </p>
+      <button class="btn-ver-categorias" id="btnVerCategorias">
+        <span>¿Qué vehículo vas a parquear?</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+    </div>
+    <div class="vehiculos-cta-icon" aria-hidden="true"></div>
+  </div>
+</section>
+
+<!-- AVISO LOGIN (visible cuando se abre categorías sin sesión) -->
+<div id="avisoLoginCategorias" style="display:none;">
+  <div class="aviso-login-banner">
+    <span class="aviso-login-icono"></span>
+    <div class="aviso-login-texto">
+      <strong>Inicia sesión para continuar</strong>
+      <span>Necesitas una cuenta activa para seleccionar tu vehículo y reservar una plaza.</span>
+    </div>
+    <button class="aviso-login-btn" id="btnAvisoLogin">Iniciar sesión</button>
+  </div>
+</div>
+
+<!-- CATEGORIAS (ocultas por defecto) -->
+<section class="categorias" id="seccionCategorias" style="display:none;">
+  <h2>Categorías de vehículos</h2>
+  <div id="contenedorCategorias" class="categoria-container"></div>
+</section>
+<!-- ZONAS -->
+<section class="zonas">
+  <h2 class="titulo-zonas">Zonas de parqueo</h2>
+  <div class="zonas-container">
+    <div class="zona-card">
+      <h3>Aeropuerto</h3>
+      <div class="zona-img">
+        <img class="zona-img" src="img/airport.jpg" alt="Aeropuerto">
+      </div>
+      <p>Parking 24/7 cerca del aeropuerto</p>
+      <button class="btn-zona">Ver plazas</button>
+    </div>
+    <div class="zona-card">
+      <h3>Centro Comercial</h3>
+      <div class="zona-img">
+        <img class="zona-img" src="img/mall.jpg" alt="Centro Comercial">
+      </div>
+      <p>Parking cubierto para visitantes</p>
+      <button class="btn-zona">Ver plazas</button>
+    </div>
+    <div class="zona-card">
+      <h3>Centro Ciudad</h3>
+      <div class="zona-img">
+        <img class="zona-img" src="img/central.jpg" alt="Centro Ciudad">
+      </div>
+      <p>Parking público en zona urbana</p>
+      <button class="btn-zona">Ver plazas</button>
+    </div>
+  </div>
+</section>
+
+<!-- BUSCADOR -->
+<section class="buscador-reservas">
+  <div class="buscador-inner">
+    <div>
+      <h2>Buscar plaza</h2>
+      <p>Filtra por nombre, zona, tipo o caracteristica y elige una fecha para consultar disponibilidad.</p>
+    </div>
+    <div class="buscador-controles">
+      <div class="buscador-campo">
+        <input type="search" id="buscarPlaza" list="sugerenciasPlazas" placeholder="Ej: Aeropuerto, moto, cubierta">
+        <datalist id="sugerenciasPlazas"></datalist>
+      </div>
+      <button id="btnBuscarPlaza" class="btn-buscar-plaza">Buscar</button>
+      <button id="btnLimpiarBusqueda" class="btn-limpiar-busqueda">Limpiar</button>
+    </div>
+  </div>
+</section>
+
+<!-- FECHA DE RESERVA -->
+<div id="fechaReservaContainer">
+  <div class="fecha-wrapper">
+    <label for="fechaReserva">Fecha de reserva:</label>
+    <input type="date" id="fechaReserva">
+    <span id="fechaError" class="fecha-error">Debes seleccionar una fecha antes de reservar</span>
+  </div>
+</div>
+
+<!-- CONTADOR -->
+<h2 class="titulo-plazas">Plazas disponibles</h2>
+<button id="btnVolver" class="btn-volver">← Volver a ver todas las plazas</button>
+<section class="contador">
+  <p>Total: <span id="totalPlazas">0</span></p>
+  <p>Disponibles: <span id="plazasLibres">0</span></p>
+  <p>Reservadas: <span id="plazasReservadas">0</span></p>
+  <p>Ocupadas: <span id="plazasOcupadas">0</span></p>
+</section>
+
+<section id="misReservasSection" style="display:none;">
+  <div class="mis-reservas-wrapper">
+    <div class="mis-reservas-header">
+      <span class="mis-reservas-icono">🅿️</span>
+      <div>
+        <h2 class="mis-reservas-titulo">Mis Reservas</h2>
+        <p class="mis-reservas-subtitulo">Tus plazas reservadas activas</p>
+      </div>
+    </div>
+    <div id="misReservas" class="mis-reservas-grid"></div>
+  </div>
+</section>
+
+<!-- PLAZAS -->
+<section id="parkingContainer"></section>
+
+<!-- MODAL DETALLE PLAZA -->
+<div id="modalDetallePlaza" class="modal">
+  <div class="modal-contenido modal-detalle-plaza">
+    <span class="cerrar" id="cerrarDetallePlaza">&times;</span>
+    <div id="detallePlazaContenido"></div>
+  </div>
+</div>
+
+<!-- GALERIA -->
+<section class="galeria">
+  <h2>Galería de parqueaderos</h2>
+  <div class="galeria-grid">
+    <img class="galeria-principal" src="img/gallery/parking1.jpg" alt="Parqueadero principal">
+    <img src="img/gallery/parking2.jpg" alt="Parqueadero 2">
+    <img src="img/gallery/parking3.jpg" alt="Parqueadero 3">
+    <img src="img/gallery/parking4.jpg" alt="Parqueadero 4">
+    <img src="img/gallery/parking5.jpg" alt="Parqueadero 5">
+  </div>
+  <br>
+  <a href="galeria.html"><button class="btn-galeria">Ver más</button></a>
+</section>
+
+<!-- CARACTERISTICAS -->
+<section class="caracteristicas">
+  <h2>Características del sistema</h2>
+  <div class="caracteristicas-container">
+    <div class="caracteristica">
+      <img src="img/reserva.png" alt="Reserva">
+      <h3>Reservas rápidas</h3>
+      <p>Reserva tu plaza de parqueo en segundos desde la plataforma.</p>
+    </div>
+    <div class="caracteristica">
+      <img src="img/seguridad.png" alt="Seguridad">
+      <h3>Alta seguridad</h3>
+      <p>Los parqueaderos cuentan con vigilancia y monitoreo constante.</p>
+    </div>
+    <div class="caracteristica">
+      <img src="img/tiempo-real.png" alt="Disponibilidad">
+      <h3>Disponibilidad en tiempo real</h3>
+      <p>Consulta plazas libres y ocupadas de forma dinámica.</p>
+    </div>
+  </div>
+</section>
+
+<!-- POLITICAS -->
+<section class="politicas">
+  <h2>Políticas</h2>
+  <div class="politicas-container">
+    <div class="politica">
+      <h3>Seguridad</h3>
+      <p>Vigilancia 24/7 con cámaras.</p>
+    </div>
+    <div class="politica">
+      <h3>Horarios</h3>
+      <p>Disponible las 24 horas.</p>
+    </div>
+    <div class="politica">
+      <h3>Pagos</h3>
+      <p>Múltiples métodos seguros.</p>
+    </div>
+  </div>
+</section>
+
+<!-- NOTIFICACION -->
+<div id="notificacion"></div>
+
+<!-- MODAL CREAR CUENTA -->
+<div id="modalCrear" class="modal">
+  <div class="modal-contenido">
+    <span class="cerrar" data-modal="modalCrear">&times;</span>
+    <h2>Crear Cuenta</h2>
+    <input type="text" id="nombreCrear" placeholder="Nombre">
+    <input type="email" id="emailCrear" placeholder="Email">
+    <input type="password" id="passCrear" placeholder="Contraseña">
+    <select id="rolCrear">
+      <option value="cliente">Cliente</option>
+      <option value="admin">Administrador</option>
+    </select>
+    <button id="btnCrearCuenta">Crear Cuenta</button>
+  </div>
+</div>
+
+<!-- MODAL INICIAR SESIÓN -->
+<div id="modalLogin" class="modal">
+  <div class="modal-contenido">
+    <span class="cerrar" data-modal="modalLogin">&times;</span>
+    <h2>Iniciar Sesión</h2>
+    <input type="text" id="emailLogin" placeholder="Email o usuario">
+    <input type="password" id="passLogin" placeholder="Contraseña">
+    <button id="btnLogin">Iniciar Sesión</button>
+  </div>
+</div>
+
+<footer class="footer">
+  <p>© 2026 ParkApp</p>
+  <p>Sistema inteligente de reservas de parqueaderos</p>
+</footer>
+
+<a class="btn-whatsapp" href="https://wa.me/573126857315?text=Hola%2C%20quiero%20informacion%20sobre%20una%20reserva%20de%20parqueadero" target="_blank" rel="noopener" aria-label="Contactar por WhatsApp">WA</a>
+
+<script type="module" src="js/main.js"></script>
+
+<script>
+  // Toggle categorías: muestra aviso si no hay sesión, categorías si hay sesión
+  document.getElementById("btnVerCategorias").addEventListener("click", function () {
+    const seccion   = document.getElementById("seccionCategorias");
+    const aviso     = document.getElementById("avisoLoginCategorias");
+    const btn       = document.getElementById("btnVerCategorias");
+    const abierto   = btn.classList.contains("activo");
+    const haySession = !!localStorage.getItem("usuarioActual");
+
+    if (abierto) {
+      // Cerrar todo
+      seccion.style.display = "none";
+      aviso.style.display   = "none";
+      btn.classList.remove("activo");
+    } else {
+      btn.classList.add("activo");
+      if (!haySession) {
+        aviso.style.display   = "block";
+        seccion.style.display = "none";
+        aviso.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        aviso.style.display   = "none";
+        seccion.style.display = "block";
+        seccion.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }
+  });
+
+  // Botón "Iniciar sesión" del banner abre el modal
+  document.getElementById("btnAvisoLogin").addEventListener("click", function () {
+    document.getElementById("modalLogin").style.display = "flex";
+  });
+
+  // Cuando el usuario inicia sesión, ocultar aviso y mostrar categorías
+  window.addEventListener("storage", function (e) {
+    if (e.key === "usuarioActual" && e.newValue) {
+      document.getElementById("avisoLoginCategorias").style.display = "none";
+      const btn = document.getElementById("btnVerCategorias");
+      if (btn.classList.contains("activo")) {
+        document.getElementById("seccionCategorias").style.display = "block";
+      }
+    }
+  });
+</script>
+
+<!-- ════════════ HU19: NOTIFICACIONES ════════════ -->
+ 
+<!-- Notificación azul: correo enviado (aparece arriba al centro) -->
+<div id="notifCorreo"></div>
+ 
+<!-- Notificación roja: alerta de acción no permitida (abajo a la derecha) -->
+<div id="notifHU19"></div>
+ 
+ 
+<!-- ════════════ HU19: MODAL CONFIRMACIÓN ANTES DE RESERVAR ════════════ -->
+<div id="modalConfirmacion" class="modal">
+  <div class="modal-contenido">
+    <h2>🅿️ Confirmar Reserva</h2>
+ 
+    <!-- Aquí se llena dinámicamente con info de la plaza -->
+    <div id="confirmInfoBox" class="info-confirmacion"></div>
+ 
+    <div style="display:flex; justify-content:center; gap:12px; margin-top:10px;">
+      <button id="btnConfirmarReserva" class="btn-ok">✅ Sí, reservar</button>
+      <button id="btnCancelarConfirmacion" class="btn-no">❌ No, volver</button>
+    </div>
+  </div>
+</div>
+ 
+ 
+<!-- ════════════ HU19: MODAL BANDEJA DE SALIDA FAKE ════════════ -->
+
+<div id="modalBandeja" class="modal">
+  <div class="modal-contenido">
+    <span class="cerrar" id="cerrarBandeja">&times;</span>
+    <h2> Bandeja de mensajes</h2>
+    <button id="btnLimpiarBandeja" class="btn-limpiar">
+     Limpiar bandeja
+     </button>
+
+    <div id="listaMensajes"></div>
+  </div>
+</div>
+
+<!-- ════════════ HU19: SCRIPT  ════════════ -->
+
+</body>
+</html>

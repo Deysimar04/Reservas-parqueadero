@@ -1,0 +1,174 @@
+package com.reservas.parqueaderos.controller;
+
+import com.reservas.parqueaderos.model.Users;
+import com.reservas.parqueaderos.repository.UserRepository;
+import com.reservas.parqueaderos.security.JwtUtil;
+import com.reservas.parqueaderos.service.AuthService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "*")
+@RequiredArgsConstructor
+public class AuthController {
+
+    private final UserRepository userRepository;
+    private final JwtUtil jwtUtil;
+    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
+
+    //  LOGIN CORREGIDO
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
+
+        String username = body.get("username");
+        String password = body.get("password");
+
+        return userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username))
+                .map(user -> {
+
+                    //  Validación REAL con BCrypt
+                    if (passwordEncoder.matches(password, user.getPassword())) {
+
+                        String token = jwtUtil.generateToken(
+                                user.getUsername(),
+                                user.getRole()
+                        );
+
+                        return ResponseEntity.ok(Map.of(
+                                "token", token,
+                                "role", user.getRole(),
+                                "username", user.getUsername()
+                        ));
+                    }
+
+                    return ResponseEntity.status(401)
+                            .body(Map.of("error", "Contraseña incorrecta"));
+                })
+                .orElse(ResponseEntity.status(401)
+                        .body(Map.of("error", "Usuario no encontrado")));
+    }
+
+    //  REGISTRO
+    @PostMapping("/registro")
+    public ResponseEntity<?> registro(@RequestBody Users user) {
+
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "El username es obligatorio"));
+        }
+
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "El email es obligatorio"));
+        }
+
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "La contraseña es obligatoria"));
+        }
+
+        String resultado = authService.registrar(user);
+
+        if (resultado.startsWith("Error")) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", resultado));
+        }
+
+        return ResponseEntity.ok(Map.of("mensaje", resultado));
+    }
+
+    // LOGOUT (stateless con JWT)
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout() {
+        return ResponseEntity.ok(Map.of("mensaje", "Sesión cerrada correctamente"));
+    }
+
+    @GetMapping("/usuarios")
+    public List<Users> obtenerUsuarios() {
+        return userRepository.findAll();
+    }
+
+    // CAMBIAR ROL (corregido)
+    @PutMapping("/usuarios/{id}/rol")
+    public ResponseEntity<?> cambiarRol(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body
+    ) {
+
+        Users user = userRepository.findById(id)
+                .orElseThrow();
+
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String actualUsername = auth.getName();
+
+        // ❌ No cambiarse el propio rol
+        if (user.getUsername().equals(actualUsername)) {
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "error",
+                            "No puedes modificar tu propio rol"
+                    ));
+        }
+
+        user.setRole(body.get("role"));
+
+        userRepository.save(user);
+
+        return ResponseEntity.ok(
+                Map.of("mensaje", "Rol actualizado")
+        );
+    }
+
+    @DeleteMapping("/usuarios/{id}")
+    public ResponseEntity<?> eliminarUsuario(
+            @PathVariable Long id
+    ) {
+
+        Users user = userRepository.findById(id)
+                .orElseThrow();
+
+        Authentication auth =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String actualUsername = auth.getName();
+
+        // ❌ No eliminarse a sí mismo
+        if (user.getUsername().equals(actualUsername)) {
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "error",
+                            "No puedes eliminarte a ti mismo"
+                    ));
+        }
+
+        // ❌ No eliminar admins
+        if ("ADMIN".equals(user.getRole())) {
+
+            return ResponseEntity.badRequest()
+                    .body(Map.of(
+                            "error",
+                            "No se puede eliminar un administrador"
+                    ));
+        }
+
+        userRepository.deleteById(id);
+
+        return ResponseEntity.ok(
+                Map.of("mensaje", "Usuario eliminado")
+        );
+    }
+}
