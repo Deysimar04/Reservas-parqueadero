@@ -2,19 +2,6 @@
 
 Plataforma integral para la reserva de plazas de estacionamiento con autenticacion segura, panel administrativo y disponibilidad en tiempo real.
 
----
-Diagrama de clases: 
-
----
-Modelo relacional: 
-
----
-Tablero HU: 
-https://trello.com/invite/b/69a1f4a33588ddeae5a93cfa/ATTI1aad5d072b108dcca66b5402cd893857EE4DA27C/parkapp-js 
-
----
-CODIGO:   
-
 
 ## Demo en vivo
 
