@@ -579,7 +579,7 @@ async function renderMisReservas(){
   const section = document.getElementById("misReservasSection");
   if(!cont || !section) return;
 
-  // ✅ FIX: cargar reservas reales del backend
+  // FIX: cargar reservas reales del backend
   const reservas = await obtenerMisReservas();
 
   if(!reservas || reservas.length === 0){
@@ -587,15 +587,51 @@ async function renderMisReservas(){
   }else{
     cont.innerHTML = reservas
       .filter(r => r.estado !== "CANCELLED")
-      .map(r => `
+      .map((r, idx) => `
         <div class="reserva-card">
-          <p><strong>${r.product?.name || "Plaza #" + r.product?.id}</strong></p>
-          <p>Zona: ${r.product?.zona || "—"}</p>
-          <p>Tipo: ${r.product?.category?.name || "—"}</p>
-          <p class="reserva-fecha">📅 ${r.startTime?.split("T")[0] || "Sin fecha"}</p>
-          <p style="font-size:12px;color:#888">Estado: ${r.estado}</p>
+          <div class="reserva-header" style="display:flex;justify-content:space-between;align-items:center;">
+            <span><strong>${r.product?.name || "Plaza #" + r.product?.id}</strong></span>
+            <button class="toggle-detalle" data-idx="${idx}" style="background:none;border:none;color:#007bff;cursor:pointer;font-size:16px;">Detalles ▼</button>
+          </div>
+          <div class="reserva-detalle" id="detalle-reserva-${idx}" style="display:none;margin-top:8px;">
+            <p>Zona: ${r.product?.zona || "—"}</p>
+            <p>Tipo: ${r.product?.category?.name || "—"}</p>
+            <p class="reserva-fecha">📅 ${r.startTime?.split("T")[0] || "Sin fecha"}</p>
+            <p style="font-size:12px;color:#888">Estado: ${r.estado}</p>
+            <button class="btn-cancelar-reserva" data-id="${r.id}" style="background:#e74c3c;color:#fff;border:none;padding:6px 12px;border-radius:4px;cursor:pointer;margin-top:8px;">Cancelar</button>
+          </div>
         </div>
       `).join("");
+    // Eventos toggle detalle
+    cont.querySelectorAll('.toggle-detalle').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const idx = this.getAttribute('data-idx');
+        const detalle = document.getElementById('detalle-reserva-' + idx);
+        if(detalle.style.display === 'none'){
+          detalle.style.display = 'block';
+          this.textContent = 'Detalles ▲';
+        }else{
+          detalle.style.display = 'none';
+          this.textContent = 'Detalles ▼';
+        }
+      });
+    });
+    // Evento cancelar reserva
+    cont.querySelectorAll('.btn-cancelar-reserva').forEach(btn => {
+      btn.addEventListener('click', async function() {
+        if(!confirm('¿Seguro que deseas cancelar esta reserva?')) return;
+        const reservaId = this.getAttribute('data-id');
+        const reserva = reservas.find(r => r.id == reservaId);
+        if(!reserva) return;
+        const res = await cancelarReservaBackend(reserva.id);
+        if(res.ok){
+          guardarNotificacion('Reserva cancelada ❌', `Cancelaste la reserva de la plaza ${reserva.product?.name || reserva.product?.id}`);
+          await renderMisReservas();
+        }else{
+          alert('Error al cancelar: ' + (res.error || 'Error desconocido'));
+        }
+      });
+    });
   }
 
   section.style.display = "block";
